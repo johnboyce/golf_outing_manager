@@ -1,167 +1,36 @@
-# Terraform configuration for Golf Outing Manager
+name: Deploy Infrastructure
 
-  provider "aws" {
-    region = "us-east-1"
-}
+on:
+  push:
+    branches:
+      - main
 
-  # S3 Bucket for Static Website Hosting
-    resource "aws_s3_bucket" "golf_outing_bucket" {
-    bucket        = "golf-outing-manager-${random_id.suffix.hex}"
-    acl           = "public-read"
-    force_destroy = true
-    
-    website {
-    index_document = "index.html"
-    error_document = "index.html"
-    }
-}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-    resource "aws_s3_bucket_policy" "golf_outing_policy" {
-    bucket = aws_s3_bucket.golf_outing_bucket.id
-    
-    policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-    {
-    Effect    = "Allow"
-    Principal = "*"
-    Action    = "s3:GetObject"
-    Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*"
-    }
-    ]
-    })
-}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-  # DynamoDB Table for Data Persistence
-    resource "aws_dynamodb_table" "golf_outing_table" {
-    name           = "GolfOutingTable"
-    billing_mode   = "PAY_PER_REQUEST"
-    hash_key       = "id"
-    
-    attribute {
-    name = "id"
-    type = "S"
-    }
-}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
 
-  # Lambda Function for Backend
-    resource "aws_lambda_function" "golf_outing_lambda" {
-    function_name = "GolfOutingHandler"
-    runtime       = "nodejs18.x"
-    role          = aws_iam_role.golf_outing_lambda_role.arn
-    handler       = "index.handler"
-    filename      = "${path.module}/lambda.zip"
-    
-    environment {
-    variables = {
-    DYNAMODB_TABLE = aws_dynamodb_table.golf_outing_table.name
-    }
-    }
-}
+      - name: Terraform Init
+        run: terraform init
 
-  # IAM Role for Lambda
-    resource "aws_iam_role" "golf_outing_lambda_role" {
-    name               = "golf_outing_lambda_role"
-    assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-    {
-    Action = "sts:AssumeRole",
-    Effect = "Allow",
-    Principal = {
-    Service = "lambda.amazonaws.com"
-    }
-    }
-    ]
-    })
-}
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
 
-    resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-    role       = aws_iam_role.golf_outing_lambda_role.name
-    policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
+      - name: Get S3 Bucket Name
+        id: get_bucket
+        run: echo "BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_ENV
 
-    resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
-    role       = aws_iam_role.golf_outing_lambda_role.name
-    policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
-}
-
-  # API Gateway for Backend
-    resource "aws_apigatewayv2_api" "golf_outing_api" {
-    name          = "GolfOutingAPI"
-    protocol_type = "HTTP"
-}
-
-    resource "aws_apigatewayv2_stage" "golf_outing_stage" {
-    api_id      = aws_apigatewayv2_api.golf_outing_api.id
-    name        = "$default"
-    auto_deploy = true
-}
-
-    resource "aws_lambda_permission" "api_gateway_invoke" {
-    statement_id  = "AllowAPIGatewayInvoke"
-    action        = "lambda:InvokeFunction"
-    function_name = aws_lambda_function.golf_outing_lambda.arn
-    principal     = "apigateway.amazonaws.com"
-    source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
-}
-
-    resource "aws_apigatewayv2_integration" "golf_outing_integration" {
-    api_id           = aws_apigatewayv2_api.golf_outing_api.id
-    integration_type = "AWS_PROXY"
-    integration_uri  = aws_lambda_function.golf_outing_lambda.arn
-}
-
-    resource "aws_apigatewayv2_route" "golf_outing_route" {
-    api_id    = aws_apigatewayv2_api.golf_outing_api.id
-    route_key = "ANY /{proxy+}"
-    target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
-}
-
-  # Random Suffix for Unique Resource Naming
-    resource "random_id" "suffix" {
-    byte_length = 4
-}
-
-  # GitHub Action for Populating Database
-    resource "null_resource" "populate_database_action" {
-    provisioner "local-exec" {
-    command = <<EOT
-    cat <<'EOF' > ../.github/workflows/populate-database.yml
-  name: Populate Database
-
-  on:
-    workflow_dispatch:
-
-  jobs:
-    populate:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout Repository
-          uses: actions/checkout@v3
-
-        - name: Install AWS CLI
-          run: |
-            sudo apt-get update
-            sudo apt-get install -y awscli
-
-        - name: Populate DynamoDB Table
-          env:
-            AWS_ACCESS_KEY_ID: \${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: \${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: "us-east-1"
-          run: |
-            aws dynamodb batch-write-item \
-              --request-items file://players.json
-    EOF
-    EOT
-}
-}
-
-    output "s3_bucket_website_url" {
-    value = aws_s3_bucket.golf_outing_bucket.website_endpoint
-}
-
-    output "api_gateway_url" {
-    value = aws_apigatewayv2_api.golf_outing_api.api_endpoint
-}
+      - name: Sync S3 Bucket
+        run: aws s3 sync src/ s3://$BUCKET_NAME --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: "us-east-1"
