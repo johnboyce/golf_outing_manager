@@ -31,7 +31,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_e
 # Configure Terraform Backend to Use S3
 terraform {
   backend "s3" {
-    bucket         = aws_s3_bucket.terraform_state_bucket.bucket
+    bucket         = "golf-outing-terraform-state"
     key            = "terraform/state"
     region         = "us-east-1"
     encrypt        = true
