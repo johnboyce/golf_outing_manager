@@ -2,6 +2,15 @@ provider "aws" {
   region = "us-east-1"
 }
 
+terraform {
+  backend "s3" {
+    bucket         = "golf-outing-terraform-state"
+    key            = "terraform/state"
+    region         = "us-east-1"
+    encrypt        = true
+  }
+}
+
 resource "aws_s3_bucket" "golf_outing_bucket" {
   bucket = "golf-outing-manager"
 
@@ -9,13 +18,17 @@ resource "aws_s3_bucket" "golf_outing_bucket" {
     prevent_destroy = false
   }
 
-  versioning {
-    enabled = true
-  }
-
   tags = {
     Name        = "Golf Outing Manager"
     Environment = "Production"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "golf_outing_versioning" {
+  bucket = aws_s3_bucket.golf_outing_bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
