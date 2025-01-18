@@ -1,37 +1,41 @@
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { readFileSync } from "fs";
-import { join } from "path";
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 
-// Configuration
-const REGION = process.env.REGION || "us-east-1";
+const REGION = process.env.AWS_REGION || "us-east-1";
 const TABLE_NAME = process.env.DYNAMODB_TABLE || "GolfOutingTable";
 
-// Load players from players.json
-const playersFile = join(process.cwd(), "players.json");
-const players = JSON.parse(readFileSync(playersFile, "utf8"));
+const dbClient = new DynamoDBClient({ region: REGION });
+const docClient = DynamoDBDocumentClient.from(dbClient);
 
-// Create DynamoDB client
-const ddbClient = new DynamoDBClient({ region: REGION });
+const players = JSON.parse(readFileSync("./players.json", "utf-8"));
 
-(async () => {
+const overwritePlayer = async (player) => {
     try {
-        for (const player of players) {
-            const params = {
+        await docClient.send(
+            new PutCommand({
                 TableName: TABLE_NAME,
                 Item: {
-                    id: { S: player.id.toString() },
-                    name: { S: player.name },
-                    handicap: { N: player.handicap.toString() },
-                    bio: { S: player.bio },
-                    prediction: { S: player.prediction }
+                    id: player.id,
+                    name: player.name,
+                    handicap: player.handicap,
+                    nickname: player.nickname,
+                    bio: player.bio,
+                    prediction: player.prediction,
                 },
-            };
-            const command = new PutItemCommand(params);
-            await ddbClient.send(command);
-            console.log(`Added player: ${JSON.stringify(player)}`);
-        }
-        console.log("Database population complete!");
-    } catch (err) {
-        console.error("Error populating database:", err);
+            })
+        );
+        console.log(`Overwritten player: ${player.name}`);
+    } catch (error) {
+        console.error(`Error overwriting player ${player.name}:`, error);
     }
-})();
+};
+
+const main = async () => {
+    for (const player of players) {
+        await overwritePlayer(player);
+    }
+    console.log("Database overwrite complete!");
+};
+
+main().catch((error) => console.error("Error running script:", error));
