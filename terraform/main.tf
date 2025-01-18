@@ -64,8 +64,10 @@ resource "null_resource" "package_lambda" {
     if [ ! -f ./lambda.zip ]; then
       mkdir -p ./lambda && zip -r ./lambda.zip ./lambda;
       echo "Lambda package created successfully.";
+      ls -la
     else
       echo "Lambda package already exists.";
+      ls -la
     fi
     EOT
   }
