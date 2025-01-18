@@ -78,13 +78,13 @@ jobs:
       - name: Validate Deployment
         run: |
           echo "Validating deployment..."
-          echo "Retrieving CloudFront Distribution ID..."
+          echo "Retrieving Cloudfront Domain..."
           cd terraform
-          CLOUDFRONT_DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id || echo "Failed to fetch CloudFront Distribution ID")
-          echo "CloudFront Distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
+          CLOUDFRONT_URL=$(terraform output -raw cloudfront_distribution_domain_name || echo "Failed to fetch Cloudfront Domain")
+          echo "Cloudfront Domain: $CLOUDFRONT_URL"
           echo "Attempting to validate..."
-          if [[ -z "$CLOUDFRONT_DISTRIBUTION_ID" ]]; then
-            echo "CloudFront Distribution ID is empty. Skipping validation."
+          if [[ -z "$CLOUDFRONT_URL" ]]; then
+            echo "Cloudfront Domain is empty. Skipping validation."
             exit 0
           fi
-          curl -I https://$CLOUDFRONT_DISTRIBUTION_ID || echo "Validation failed but continuing deployment"
+          curl -I https://$CLOUDFRONT_URL || echo "Validation failed but continuing deployment"

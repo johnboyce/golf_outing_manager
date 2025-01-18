@@ -219,3 +219,7 @@ output "s3_bucket_website_url" {
 output "cloudfront_distribution_id" {
   value = aws_cloudfront_distribution.golf_outing_distribution.id
 }
+
+output "cloudfront_distribution_domain_name" {
+  value = aws_cloudfront_distribution.golf_outing_distribution.domain_name
+}
