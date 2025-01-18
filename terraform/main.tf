@@ -89,7 +89,7 @@ resource "null_resource" "setup_npmrc" {
       echo "production=true" > ../lambda/.npmrc;
       echo "package-lock=false" >> ../lambda/.npmrc;
       echo "save-exact=true" >> ../lambda/.npmrc;
-      echo "omit=dev,test" >> ../lambda/.npmrc;
+      echo "omit=dev" >> ../lambda/.npmrc;
       echo ".npmrc file created successfully.";
     else
       echo ".npmrc file already exists.";
