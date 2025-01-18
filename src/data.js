@@ -1,4 +1,5 @@
 export const fetchPlayers = async () => {
+
     try {
         const response = await fetch('4epgafkkhl.execute-api.us-east-1.amazonaws.com/players'); // Replace with your API Gateway URL
         if (!response.ok) {
@@ -22,7 +23,7 @@ export const fetchPlayers = async () => {
 
 export const addPlayer = async (playerData) => {
     try {
-        const response = await fetch('<API-GATEWAY-URL>/players', { // Replace with your API Gateway URL
+        const response = await fetch('4epgafkkhl.execute-api.us-east-1.amazonaws.com/players', { // Replace with your API Gateway URL
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -43,7 +44,7 @@ export const addPlayer = async (playerData) => {
 
 export const getPlayer = async (playerId) => {
     try {
-        const response = await fetch(`<API-GATEWAY-URL>/players/${playerId}`); // Replace with your API Gateway URL
+        const response = await fetch(`4epgafkkhl.execute-api.us-east-1.amazonaws.com/players/${playerId}`); // Replace with your API Gateway URL
         if (!response.ok) {
             throw new Error(`Failed to fetch player: ${response.statusText}`);
         }
