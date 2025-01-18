@@ -76,7 +76,7 @@ function setupTeams(players) {
 
 function assignPlayerToTeam(teamId, player) {
     const teamList = document.getElementById(teamId);
-    const playerElement = createDraggablePlayerElement(player);
+    const playerElement = createPlayerElement(player);
     teamList.appendChild(playerElement);
 }
 
@@ -85,61 +85,52 @@ function populateAvailablePlayers(players) {
     availablePlayersList.innerHTML = '';
 
     players.forEach(player => {
-        const li = createDraggablePlayerElement(player);
+        const li = createAvailablePlayerElement(player);
         availablePlayersList.appendChild(li);
     });
 }
 
-function createDraggablePlayerElement(player) {
+function createAvailablePlayerElement(player) {
     const li = document.createElement('li');
-    li.className = 'list-group-item';
-    li.textContent = `${player.name} (Handicap: ${player.handicap})`;
-    li.setAttribute('draggable', true);
+    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.innerHTML = `
+        <span>${player.name} (Handicap: ${player.handicap})</span>
+        <div>
+            <button class="btn btn-sm btn-primary me-2" onclick="addPlayerToTeam('${player.id}', 'team-one')">⬅ Add to Team One</button>
+            <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}', 'team-two')">Add to Team Two ➡</button>
+        </div>
+    `;
     li.setAttribute('data-id', player.id);
-
-    // Drag start event
-    li.addEventListener('dragstart', (event) => {
-        event.dataTransfer.setData('text/plain', player.id);
-    });
-
     return li;
 }
 
-// Allow drop zones to accept dropped items
-function allowDrop(event) {
-    event.preventDefault();
-}
-
-// Handle the drop event
-function drop(event, targetId) {
-    event.preventDefault();
-
-    const playerId = event.dataTransfer.getData('text/plain');
+window.addPlayerToTeam = (playerId, teamId) => {
     const availablePlayersList = document.getElementById('available-players');
     const playerElement = availablePlayersList.querySelector(`[data-id="${playerId}"]`);
+    const playerName = playerElement.querySelector('span').textContent;
 
-    if (playerElement) {
-        // Remove from available players and add to the target team
-        playerElement.parentNode.removeChild(playerElement);
+    // Remove from available players
+    availablePlayersList.removeChild(playerElement);
 
-        const targetList = document.getElementById(targetId);
-        targetList.appendChild(playerElement);
+    // Add to the target team
+    const targetList = document.getElementById(teamId);
+    const li = document.createElement('li');
+    li.className = 'list-group-item';
+    li.textContent = playerName;
+    targetList.appendChild(li);
 
-        showMoveNotification(playerElement.textContent, targetId);
-    }
-}
+    // Show move notification
+    showMoveNotification(playerName, teamId);
+};
 
-// Displays a notification summarizing the move
 function showMoveNotification(playerName, targetTeam) {
     const notification = document.createElement('div');
-    notification.className = 'alert alert-success position-fixed top-0 end-0 m-3';
-    notification.style.zIndex = '1050';
+    notification.className = 'alert alert-success';
     notification.innerHTML = `<strong>${playerName}</strong> has been added to <strong>${targetTeam.replace('-', ' ').toUpperCase()}</strong>!`;
-
     document.body.appendChild(notification);
 
-    // Automatically hide the notification after 5 seconds
+    // Automatically remove after 5 seconds
     setTimeout(() => {
-        document.body.removeChild(notification);
+        notification.remove();
     }, 5000);
 }
