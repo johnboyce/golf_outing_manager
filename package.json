@@ -1,0 +1,23 @@
+{
+  "name": "golf_outing_manager",
+  "version": "1.0.0",
+  "description": "A fun, interactive, and visually appealing web app for managing golf outings. Built with:",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnboyce/golf_outing_manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/johnboyce/golf_outing_manager/issues"
+  },
+  "homepage": "https://github.com/johnboyce/golf_outing_manager#readme",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.731.1"
+  }
+}
