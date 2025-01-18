@@ -1,4 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Outing Draft</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-image: url('https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            color: #333;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .list-group-item {
+            cursor: grab;
+        }
+        .btn-golf {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-golf:hover {
+            background-color: #45a049;
+        }
+        .team-dropzone {
+            min-height: 100px;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
 <div class="container mt-5">
+    <h1 class="text-center">Golf Outing Draft</h1>
+    <p class="text-center">Select captains, draft your players, and create your teams!</p>
+
     <div>
         <h3>Select Captains</h3>
         <form>
@@ -34,8 +76,13 @@
                 </ul>
             </div>
         </div>
+        <h3 class="mt-4">Available Players</h3>
         <ul id="available-players" class="list-group mt-4" ondragover="allowDrop(event)" ondrop="drop(event, 'available-players')">
             <!-- Available players -->
         </ul>
     </div>
 </div>
+
+<script src="app.js" type="module"></script>
+</body>
+</html>
