@@ -84,8 +84,7 @@ jobs:
       # Step 9: CloudFront Cache Invalidation
       - name: Invalidate CloudFront Cache
         run: |
-          echo "Using Distro ID" $CLOUDFRONT_ID
-          terraform output -raw cloudfront_distribution_id
+          echo "CloudFront Distribution ID: $CLOUDFRONT_ID"          
           aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
