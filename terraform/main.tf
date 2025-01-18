@@ -57,6 +57,12 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
+  restrictions {
+    geo_restriction {
+      restriction_type = "none" # Allows access from all geographic locations
+    }
+  }
+
   viewer_certificate {
     cloudfront_default_certificate = true
   }
