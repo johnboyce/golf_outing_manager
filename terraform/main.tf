@@ -28,6 +28,22 @@ resource "aws_s3_bucket_public_access_block" "golf_outing_access_block" {
   restrict_public_buckets = false
 }
 
+resource "aws_s3_bucket_policy" "golf_outing_policy" {
+  bucket = aws_s3_bucket.golf_outing_bucket.bucket
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = "*",
+        Action    = "s3:GetObject",
+        Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*"
+      }
+    ]
+  })
+}
+
 resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   origin {
     domain_name = aws_s3_bucket.golf_outing_bucket.bucket_regional_domain_name
