@@ -78,6 +78,23 @@
         </div>
     </div>
 </div>
+<div id="draft-results" class="mt-4">
+    <h3>Mock Draft Results</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Team Jawn</h4>
+            <ul id="team-jawn" class="list-group">
+                <!-- Team Jawn players will be added here dynamically -->
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h4>Team Duck</h4>
+            <ul id="team-duck" class="list-group">
+                <!-- Team Duck players will be added here dynamically -->
+            </ul>
+        </div>
+    </div>
+</div>
 <script type="module">
     import { fetchPlayers } from './data.js';
 
@@ -97,7 +114,7 @@
             teamJawnSelect.appendChild(option.cloneNode(true));
             teamDuckSelect.appendChild(option.cloneNode(true));
         });
-        
+
     }
 
     function populatePlayerList(players) {
