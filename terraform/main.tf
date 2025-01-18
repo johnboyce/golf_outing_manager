@@ -77,15 +77,18 @@ resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
 resource "null_resource" "package_lambda" {
   provisioner "local-exec" {
     command = <<EOT
-    if [ ! -f ./lambda.zip ]; then
-      mkdir -p ./lambda && zip -r ./lambda.zip ./lambda;
-      echo "Lambda package created successfully.";
-      ls -la
-    else
-      echo "Lambda package already exists.";
-      ls -la
+    if [ ! -d "./lambda" ]; then
+      echo "Error: Lambda source directory './lambda' does not exist!";
+      exit 1;
     fi
+    zip -r ./lambda.zip ./lambda || { echo "Error creating Lambda package"; exit 1; }
+    echo "Lambda package created successfully.";
+    ls -la ./lambda.zip
     EOT
+  }
+
+  triggers = {
+    source_files = "${filemd5sum("./lambda/index.js")}" # Adjust for your Lambda source file(s)
   }
 }
 
