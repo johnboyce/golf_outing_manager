@@ -25,11 +25,15 @@
             background-color: #4CAF50;
             color: white;
         }
-        .btn-golf:hover {
+        .btn-golf:disabled {
+            background-color: #d3d3d3;
+            cursor: not-allowed;
+        }
+        .btn-golf:hover:not(:disabled) {
             background-color: #45a049;
         }
         .team-dropzone {
-            min-height: 100px;
+            min-height: 150px;
             border: 1px dashed #ccc;
             padding: 10px;
             border-radius: 8px;
@@ -39,8 +43,9 @@
 <body>
 <div class="container mt-5">
     <h1 class="text-center">Golf Outing Draft</h1>
-    <p class="text-center">Select captains, draft your players, and create your teams!</p>
+    <p class="text-center">Select captains, start the draft, and build your teams!</p>
 
+    <!-- Captain Selection -->
     <div>
         <h3>Select Captains</h3>
         <form>
@@ -56,30 +61,37 @@
                     <option value="" disabled selected>Select Captain</option>
                 </select>
             </div>
-            <button type="button" id="select-captains-btn" class="btn btn-golf">Set Captains</button>
-            <button type="button" id="reset-btn" class="btn btn-secondary">Reset</button>
+            <button type="button" id="start-draft-btn" class="btn btn-golf" disabled>Start Draft</button>
         </form>
     </div>
 
-    <div id="draft-results" class="mt-4 d-none">
+    <!-- Draft Panels -->
+    <div id="draft-panels" class="mt-4 d-none">
         <div class="row">
-            <div class="col-md-6">
+            <!-- Team One Panel -->
+            <div class="col-md-4">
                 <h4 id="team-one-name">Team One</h4>
                 <ul id="team-one" class="list-group team-dropzone" ondragover="allowDrop(event)" ondrop="drop(event, 'team-one')">
                     <!-- Team One players -->
                 </ul>
             </div>
-            <div class="col-md-6">
+
+            <!-- Available Players Panel -->
+            <div class="col-md-4">
+                <h4>Available Players</h4>
+                <ul id="available-players" class="list-group team-dropzone" ondragover="allowDrop(event)" ondrop="drop(event, 'available-players')">
+                    <!-- Available players -->
+                </ul>
+            </div>
+
+            <!-- Team Two Panel -->
+            <div class="col-md-4">
                 <h4 id="team-two-name">Team Two</h4>
                 <ul id="team-two" class="list-group team-dropzone" ondragover="allowDrop(event)" ondrop="drop(event, 'team-two')">
                     <!-- Team Two players -->
                 </ul>
             </div>
         </div>
-        <h3 class="mt-4">Available Players</h3>
-        <ul id="available-players" class="list-group mt-4" ondragover="allowDrop(event)" ondrop="drop(event, 'available-players')">
-            <!-- Available players -->
-        </ul>
     </div>
 </div>
 

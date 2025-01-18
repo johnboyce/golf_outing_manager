@@ -12,17 +12,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         populateCaptainSelectors(players);
 
-        document.getElementById('select-captains-btn').addEventListener('click', () => {
-            selectCaptains(players);
-        });
+        // Enable Start Draft button only when captains are selected
+        document.getElementById('team-one-captain').addEventListener('change', validateCaptainSelection);
+        document.getElementById('team-two-captain').addEventListener('change', validateCaptainSelection);
 
-        document.getElementById('reset-btn').addEventListener('click', resetDraft);
+        // Start draft logic
+        document.getElementById('start-draft-btn').addEventListener('click', () => {
+            startDraft(players);
+        });
     } catch (error) {
         console.error('Error initializing app:', error);
     }
 });
 
-// Populates the dropdowns for selecting captains
 function populateCaptainSelectors(players) {
     const teamOneSelector = document.getElementById('team-one-captain');
     const teamTwoSelector = document.getElementById('team-two-captain');
@@ -36,15 +38,18 @@ function populateCaptainSelectors(players) {
     });
 }
 
-// Handles captain selection and team initialization
-function selectCaptains(players) {
+function validateCaptainSelection() {
     const teamOneId = document.getElementById('team-one-captain').value;
     const teamTwoId = document.getElementById('team-two-captain').value;
+    const startButton = document.getElementById('start-draft-btn');
 
-    if (!teamOneId || !teamTwoId || teamOneId === teamTwoId) {
-        alert('Please select two different captains.');
-        return;
-    }
+    // Enable Start Draft button only if both captains are selected and not the same
+    startButton.disabled = !(teamOneId && teamTwoId && teamOneId !== teamTwoId);
+}
+
+function startDraft(players) {
+    const teamOneId = document.getElementById('team-one-captain').value;
+    const teamTwoId = document.getElementById('team-two-captain').value;
 
     selectedCaptains.teamOneCaptain = players.find(player => player.id === teamOneId);
     selectedCaptains.teamTwoCaptain = players.find(player => player.id === teamTwoId);
@@ -52,11 +57,11 @@ function selectCaptains(players) {
     setupTeams(players);
 }
 
-// Sets up teams with captains and displays the team panels
 function setupTeams(players) {
+    document.getElementById('draft-panels').classList.remove('d-none');
+
     const teamOneName = `Team ${selectedCaptains.teamOneCaptain.nickname}`;
     const teamTwoName = `Team ${selectedCaptains.teamTwoCaptain.nickname}`;
-
     document.getElementById('team-one-name').textContent = teamOneName;
     document.getElementById('team-two-name').textContent = teamTwoName;
 
@@ -67,11 +72,14 @@ function setupTeams(players) {
         player.id !== selectedCaptains.teamOneCaptain.id &&
         player.id !== selectedCaptains.teamTwoCaptain.id
     ));
-
-    document.getElementById('draft-results').classList.remove('d-none');
 }
 
-// Populates the available players list
+function assignPlayerToTeam(teamId, player) {
+    const teamList = document.getElementById(teamId);
+    const playerElement = createDraggablePlayerElement(player);
+    teamList.appendChild(playerElement);
+}
+
 function populateAvailablePlayers(players) {
     const availablePlayersList = document.getElementById('available-players');
     availablePlayersList.innerHTML = '';
@@ -82,7 +90,6 @@ function populateAvailablePlayers(players) {
     });
 }
 
-// Creates a draggable player element
 function createDraggablePlayerElement(player) {
     const li = document.createElement('li');
     li.className = 'list-group-item';
@@ -93,14 +100,6 @@ function createDraggablePlayerElement(player) {
     return li;
 }
 
-// Assigns a player to a team
-function assignPlayerToTeam(teamId, player) {
-    const teamList = document.getElementById(teamId);
-    const playerElement = createDraggablePlayerElement(player);
-    teamList.appendChild(playerElement);
-}
-
-// Drag-and-Drop Handlers
 function drag(event) {
     event.dataTransfer.setData('text', event.target.outerHTML);
 }
@@ -121,18 +120,4 @@ function drop(event, targetId) {
     // Remove from available players and add to team
     availablePlayersList.removeChild(document.querySelector(`[data-id='${playerLi.getAttribute('data-id')}']`));
     document.getElementById(targetId).appendChild(playerLi);
-}
-
-// Resets the draft
-function resetDraft() {
-    selectedCaptains = { teamOneCaptain: null, teamTwoCaptain: null };
-
-    document.getElementById('team-one').innerHTML = '';
-    document.getElementById('team-two').innerHTML = '';
-    document.getElementById('available-players').innerHTML = '';
-    document.getElementById('team-one-captain').value = '';
-    document.getElementById('team-two-captain').value = '';
-    document.getElementById('team-one-name').textContent = 'Team One';
-    document.getElementById('team-two-name').textContent = 'Team Two';
-    document.getElementById('draft-results').classList.add('d-none');
 }
