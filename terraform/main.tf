@@ -4,30 +4,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# S3 Bucket for Terraform State
-resource "aws_s3_bucket" "terraform_state_bucket" {
-  bucket        = "golf-outing-terraform-state"
-  force_destroy = true
-}
-
-resource "aws_s3_bucket_versioning" "terraform_state_versioning" {
-  bucket = aws_s3_bucket.terraform_state_bucket.bucket
-
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_encryption" {
-  bucket = aws_s3_bucket.terraform_state_bucket.bucket
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
 # Configure Terraform Backend to Use S3
 terraform {
   backend "s3" {
@@ -42,7 +18,6 @@ terraform {
 resource "aws_s3_bucket" "golf_outing_bucket" {
   bucket        = "golf-outing-manager"
   force_destroy = true
-  depends_on    = [aws_s3_bucket.terraform_state_bucket]
 }
 
 resource "aws_s3_bucket_versioning" "versioning" {
