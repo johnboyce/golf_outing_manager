@@ -290,7 +290,11 @@ resource "aws_apigatewayv2_route" "golf_outing_route" {
 
 # Terraform Outputs
 output "s3_bucket_name" {
-  value = aws_s3_bucket.golf_outing_bucket.bucket
+  value = aws_s3_bucket.lambda_deployment_bucket.bucket
+}
+
+output "s3_key" {
+  value = aws_s3_object.lambda_zip.key
 }
 
 output "s3_bucket_website_url" {
