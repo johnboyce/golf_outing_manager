@@ -4,6 +4,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
+# Configure Terraform Backend to Use S3
 terraform {
   backend "s3" {
     bucket         = "golf-outing-terraform-state"
@@ -13,6 +14,7 @@ terraform {
   }
 }
 
+# S3 Bucket for Static Website Hosting via CloudFront
 resource "aws_s3_bucket" "golf_outing_bucket" {
   bucket        = "golf-outing-manager"
   force_destroy = true
@@ -28,18 +30,35 @@ resource "aws_s3_bucket_versioning" "versioning" {
 
 resource "aws_s3_bucket_acl" "bucket_acl" {
   bucket = aws_s3_bucket.golf_outing_bucket.bucket
-  acl    = "public-read"
+  acl    = "private"
 }
 
-resource "aws_s3_bucket_website_configuration" "website_config" {
-  bucket = aws_s3_bucket.golf_outing_bucket.bucket
-
-  index_document {
-    suffix = "index.html"
+resource "aws_cloudfront_distribution" "golf_outing_distribution" {
+  origin {
+    domain_name = aws_s3_bucket.golf_outing_bucket.bucket_regional_domain_name
+    origin_id   = aws_s3_bucket.golf_outing_bucket.id
   }
 
-  error_document {
-    key = "index.html"
+  enabled             = true
+  is_ipv6_enabled     = true
+
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = aws_s3_bucket.golf_outing_bucket.id
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
   }
 }
 
@@ -59,6 +78,7 @@ resource "aws_s3_bucket_policy" "golf_outing_policy" {
   })
 }
 
+# DynamoDB Table for Data Persistence
 resource "aws_dynamodb_table" "golf_outing_table" {
   name           = "GolfOutingTable"
   billing_mode   = "PAY_PER_REQUEST"
@@ -70,6 +90,7 @@ resource "aws_dynamodb_table" "golf_outing_table" {
   }
 }
 
+# Lambda Function for Backend
 resource "aws_lambda_function" "golf_outing_lambda" {
   function_name = "GolfOutingHandler"
   runtime       = "nodejs18.x"
@@ -84,6 +105,7 @@ resource "aws_lambda_function" "golf_outing_lambda" {
   }
 }
 
+# IAM Role for Lambda
 resource "aws_iam_role" "golf_outing_lambda_role" {
   name               = "golf_outing_lambda_role"
   assume_role_policy = jsonencode({
@@ -110,6 +132,7 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
+# API Gateway for Backend
 resource "aws_apigatewayv2_api" "golf_outing_api" {
   name          = "GolfOutingAPI"
   protocol_type = "HTTP"
@@ -142,12 +165,13 @@ resource "aws_apigatewayv2_route" "golf_outing_route" {
   target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
 }
 
+# Terraform Outputs
 output "s3_bucket_name" {
   value = aws_s3_bucket.golf_outing_bucket.bucket
 }
 
 output "s3_bucket_website_url" {
-  value = aws_s3_bucket.golf_outing_bucket.website_endpoint
+  value = aws_cloudfront_distribution.golf_outing_distribution.domain_name
 }
 
 output "api_gateway_url" {
