@@ -9,6 +9,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      S3_BUCKET_NAME: "golf-outing-manager"
+      SOURCE_DIRECTORY: "./src"
+      AWS_REGION: "us-east-1"
+
     steps:
       # Step 1: Checkout Repository
       - name: Checkout Repository
@@ -20,7 +25,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
+          AWS_REGION: ${{ env.AWS_REGION }}
 
       # Step 3: Setup Terraform
       - name: Setup Terraform
@@ -35,7 +40,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
+          AWS_REGION: ${{ env.AWS_REGION }}
 
       # Step 5: Apply Terraform Changes
       - name: Apply Terraform Changes
@@ -44,9 +49,16 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
+          AWS_REGION: ${{ env.AWS_REGION }}
 
-      # Step 6: Retrieve CloudFront Distribution ID and Invalidate Cache (Fails Gracefully)
+      # Step 6: Upload Files to S3
+      - name: Upload Files to S3
+        run: aws s3 sync ${{ env.SOURCE_DIRECTORY }} s3://${{ env.S3_BUCKET_NAME }} --region ${{ env.AWS_REGION }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Step 7: Retrieve CloudFront Distribution ID and Invalidate Cache (Fails Gracefully)
       - name: Retrieve CloudFront Distribution ID and Invalidate Cache
         run: |
           echo "Retrieving CloudFront Distribution ID..."
@@ -63,9 +75,32 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
+          AWS_REGION: ${{ env.AWS_REGION }}
 
-      # Step 7: Final Deployment Status
+      # Step 8: Validate Deployment
+      - name: Validate Deployment
+        run: |
+          echo "Validating CloudFront and API Gateway..."
+          CLOUDFRONT_URL=$(terraform output -raw cloudfront_distribution_url 2>/dev/null)
+          API_GATEWAY_URL=$(terraform output -raw api_gateway_url 2>/dev/null)
+          if [ -n "$CLOUDFRONT_URL" ]; then
+            echo "Validating CloudFront URL: $CLOUDFRONT_URL"
+            curl -I "$CLOUDFRONT_URL"
+          else
+            echo "CloudFront URL not available. Skipping CloudFront validation."
+          fi
+          if [ -n "$API_GATEWAY_URL" ]; then
+            echo "Validating API Gateway URL: $API_GATEWAY_URL"
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$API_GATEWAY_URL")
+            if [ "$RESPONSE" -ne 200 ]; then
+              echo "Error: API Gateway returned status code $RESPONSE"
+              exit 1
+            fi
+          else
+            echo "API Gateway URL not available. Skipping API Gateway validation."
+          fi
+
+      # Step 9: Final Deployment Status
       - name: Deployment Complete
         run: |
           echo "Deployment finished successfully."
