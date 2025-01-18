@@ -102,7 +102,8 @@ resource "aws_lambda_function" "golf_outing_lambda" {
   runtime       = "nodejs18.x"
   role          = aws_iam_role.golf_outing_lambda_role.arn
   handler       = "index.handler"
-  filename      = "${path.module}/lambda.zip"
+  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.bucket
+  s3_key        = aws_s3_object.lambda_zip.key
 
   environment {
     variables = {
@@ -110,7 +111,6 @@ resource "aws_lambda_function" "golf_outing_lambda" {
     }
   }
 }
-
 # IAM Role for Lambda
 resource "aws_iam_role" "golf_outing_lambda_role" {
   name               = "golf_outing_lambda_role"
@@ -189,21 +189,6 @@ resource "aws_s3_object" "lambda_zip" {
   bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
   key    = "lambda.zip"
   source = "${path.module}/lambda.zip"
-}
-
-resource "aws_lambda_function" "golf_outing_lambda" {
-  function_name = "GolfOutingHandler"
-  runtime       = "nodejs18.x"
-  role          = aws_iam_role.golf_outing_lambda_role.arn
-  handler       = "index.handler"
-  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.bucket
-  s3_key        = aws_s3_object.lambda_zip.key
-
-  environment {
-    variables = {
-      DYNAMODB_TABLE = aws_dynamodb_table.golf_outing_table.name
-    }
-  }
 }
 
 # Terraform Outputs
