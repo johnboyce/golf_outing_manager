@@ -7,10 +7,10 @@ provider "aws" {
 # Configure Terraform Backend to Use S3
 terraform {
   backend "s3" {
-    bucket  = "golf-outing-terraform-state"
-    key     = "terraform/state"
-    region  = "us-east-1"
-    encrypt = true
+    bucket         = "golf-outing-terraform-state"
+    key            = "terraform/state"
+    region         = "us-east-1"
+    encrypt        = true
   }
 }
 
@@ -44,18 +44,56 @@ resource "aws_s3_bucket_policy" "golf_outing_policy" {
   })
 }
 
+# S3 Bucket for Lambda Deployment
+resource "aws_s3_bucket" "lambda_deployment_bucket" {
+  bucket        = "golf-outing-lambda-deployments"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
+  bucket                  = aws_s3_bucket.lambda_deployment_bucket.bucket
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "null_resource" "package_lambda" {
+  provisioner "local-exec" {
+    command = <<EOT
+    if [ ! -f ./lambda.zip ]; then
+      mkdir -p ./lambda && zip -r ./lambda.zip ./lambda;
+      echo "Lambda package created successfully.";
+    else
+      echo "Lambda package already exists.";
+    fi
+    EOT
+  }
+}
+
+resource "aws_s3_object" "lambda_zip" {
+  bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
+  key    = "lambda.zip"
+  source = "${path.module}/lambda.zip"
+
+  depends_on = [
+    null_resource.package_lambda
+  ]
+}
+
+# CloudFront Distribution
 resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   origin {
     domain_name = aws_s3_bucket.golf_outing_bucket.bucket_regional_domain_name
     origin_id   = aws_s3_bucket.golf_outing_bucket.id
   }
 
-  enabled         = true
-  is_ipv6_enabled = true
+  enabled             = true
+  is_ipv6_enabled     = true
 
   default_cache_behavior {
-    allowed_methods = ["GET", "HEAD"]
-    cached_methods = ["GET", "HEAD"]
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
     target_origin_id = aws_s3_bucket.golf_outing_bucket.id
 
     forwarded_values {
@@ -83,36 +121,11 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   }
 }
 
-
-# S3 Bucket for Lambda Deployment
-resource "aws_s3_bucket" "lambda_deployment_bucket" {
-  bucket        = "golf-outing-lambda-deployments"
-  force_destroy = true
-}
-
-resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
-  bucket                  = aws_s3_bucket.lambda_deployment_bucket.bucket
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
-}
-
-resource "aws_s3_object" "lambda_zip" {
-  bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
-  key    = "lambda.zip"
-  source = "${path.module}/lambda.zip"
-
-  depends_on = [
-    aws_s3_bucket.lambda_deployment_bucket
-  ]
-}
-
 # DynamoDB Table for Data Persistence
 resource "aws_dynamodb_table" "golf_outing_table" {
-  name         = "GolfOutingTable"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
+  name           = "GolfOutingTable"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
 
   attribute {
     name = "id"
@@ -138,7 +151,7 @@ resource "aws_lambda_function" "golf_outing_lambda" {
 
 # IAM Role for Lambda
 resource "aws_iam_role" "golf_outing_lambda_role" {
-  name = "golf_outing_lambda_role"
+  name               = "golf_outing_lambda_role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
