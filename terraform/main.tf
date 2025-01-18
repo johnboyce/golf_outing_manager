@@ -85,6 +85,8 @@ resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
 resource "null_resource" "setup_npmrc" {
   provisioner "local-exec" {
     command = <<EOT
+    echo "Before setting up .npmrc:"
+    ls -la ../lambda
     if [ ! -f "../lambda/.npmrc" ]; then
       echo "production=true" > ../lambda/.npmrc;
       echo "package-lock=false" >> ../lambda/.npmrc;
@@ -94,6 +96,8 @@ resource "null_resource" "setup_npmrc" {
     else
       echo ".npmrc file already exists.";
     fi
+    echo "After setting up .npmrc:"
+    ls -la ../lambda
     EOT
   }
 }
@@ -101,6 +105,8 @@ resource "null_resource" "setup_npmrc" {
 resource "null_resource" "setup_lambda_environment" {
   provisioner "local-exec" {
     command = <<EOT
+    echo "Before setting up Lambda environment:"
+    ls -la ../lambda
     if [ ! -d "../lambda" ]; then
       echo "Error: Lambda source directory '../lambda' does not exist!";
       exit 1;
@@ -113,6 +119,8 @@ resource "null_resource" "setup_lambda_environment" {
     npm install @aws-sdk/client-dynamodb --save
     echo "Installed @aws-sdk/client-dynamodb."
     cd -
+    echo "After setting up Lambda environment:"
+    ls -la ../lambda
     EOT
   }
 
@@ -128,6 +136,8 @@ resource "null_resource" "setup_lambda_environment" {
 resource "null_resource" "package_lambda" {
   provisioner "local-exec" {
     command = <<EOT
+    echo "Before packaging Lambda:"
+    ls -la ../lambda
     if [ ! -d "../lambda" ]; then
       echo "Error: Lambda source directory '../lambda' does not exist!";
       exit 1;
@@ -137,6 +147,7 @@ resource "null_resource" "package_lambda" {
     zip -r ../lambda.zip . -x "*.git*" "*.md" "test/*" || { echo "Error creating Lambda package"; exit 1; }
     cd -
     echo "Lambda package created successfully.";
+    echo "After packaging Lambda:"
     ls -la ../lambda.zip
     EOT
   }
