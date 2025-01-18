@@ -44,7 +44,10 @@ jobs:
       - name: Package Lambda Function
         run: |
           cd lambda
+           echo "Before Zip creation"
+          ls -la
           zip -r ../lambda.zip .
+          echo "After Zip creation"
           cd ..
 
       # Step 6: Upload Lambda ZIP to S3
@@ -71,6 +74,10 @@ jobs:
         id: cloudfront
         run: terraform output -raw cloudfront_distribution_id
         working-directory: terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: "us-east-1"
 
       # Step 9: CloudFront Cache Invalidation
       - name: Invalidate CloudFront Cache
