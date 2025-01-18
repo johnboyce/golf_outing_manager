@@ -7,10 +7,10 @@ provider "aws" {
 # Configure Terraform Backend to Use S3
 terraform {
   backend "s3" {
-    bucket         = "golf-outing-terraform-state"
-    key            = "terraform/state"
-    region         = "us-east-1"
-    encrypt        = true
+    bucket  = "golf-outing-terraform-state"
+    key     = "terraform/state"
+    region  = "us-east-1"
+    encrypt = true
   }
 }
 
@@ -50,12 +50,12 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
     origin_id   = aws_s3_bucket.golf_outing_bucket.id
   }
 
-  enabled             = true
-  is_ipv6_enabled     = true
+  enabled         = true
+  is_ipv6_enabled = true
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
+    allowed_methods = ["GET", "HEAD"]
+    cached_methods = ["GET", "HEAD"]
     target_origin_id = aws_s3_bucket.golf_outing_bucket.id
 
     forwarded_values {
@@ -83,21 +83,6 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   }
 }
 
-resource "aws_s3_bucket_policy" "golf_outing_policy" {
-  bucket = aws_s3_bucket.golf_outing_bucket.bucket
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect    = "Allow",
-        Principal = "*",
-        Action    = "s3:GetObject",
-        Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*"
-      }
-    ]
-  })
-}
 
 # S3 Bucket for Lambda Deployment
 resource "aws_s3_bucket" "lambda_deployment_bucket" {
@@ -117,13 +102,17 @@ resource "aws_s3_object" "lambda_zip" {
   bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
   key    = "lambda.zip"
   source = "${path.module}/lambda.zip"
+
+  depends_on = [
+    aws_s3_bucket.lambda_deployment_bucket
+  ]
 }
 
 # DynamoDB Table for Data Persistence
 resource "aws_dynamodb_table" "golf_outing_table" {
-  name           = "GolfOutingTable"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "id"
+  name         = "GolfOutingTable"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
 
   attribute {
     name = "id"
@@ -149,7 +138,7 @@ resource "aws_lambda_function" "golf_outing_lambda" {
 
 # IAM Role for Lambda
 resource "aws_iam_role" "golf_outing_lambda_role" {
-  name               = "golf_outing_lambda_role"
+  name = "golf_outing_lambda_role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
