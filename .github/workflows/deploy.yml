@@ -50,7 +50,7 @@ jobs:
       - name: Retrieve CloudFront Distribution ID and Invalidate Cache
         run: |
           echo "Retrieving CloudFront Distribution ID..."
-          CLOUDFRONT_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
+          CLOUDFRONT_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null | tr -d '\n' | tr -d '\r')
           if [ -z "$CLOUDFRONT_ID" ]; then
             echo "Error: Could not retrieve CloudFront Distribution ID. Please verify Terraform outputs."
             exit 1
