@@ -139,7 +139,7 @@ resource "null_resource" "package_lambda" {
     echo "Packaging Lambda..."
     cd ../lambda
     npm install --production
-    zip -r ../lambda.zip . -x "*.git*" "*.md" "test/*" || { echo "Error creating Lambda package"; exit 1; }
+    zip -r ../lambda.zip . -x "*.git*" "*.md" "test/*" "../lambda.zip" "lambda.zip"|| { echo "Error creating Lambda package"; exit 1; }
     echo "Lambda package created successfully at ../lambda.zip."
     ls -la ../lambda.zip
     EOT
