@@ -28,40 +28,8 @@ jobs:
         with:
           terraform_version: 1.5.0
 
-        # Step 4: Initialize Terraform
-        # This ensures the S3 bucket for Lambda is created first
-      - name: Apply Initial Infrastructure (Lambda Bucket)
-        run: |
-          terraform init
-          terraform apply -auto-approve -target=aws_s3_bucket.lambda_deployment_bucket
-        working-directory: terraform
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
-
-      # Step 5: Package Lambda Function
-      - name: Package Lambda Function
-        run: |
-          cd lambda
-           echo "Before Zip creation"
-          ls -la
-          zip -r ../lambda.zip .
-          echo "After Zip creation"
-          cd ..
-
-      # Step 6: Upload Lambda ZIP to S3
-      - name: Upload Lambda ZIP to S3
-        run: |
-          aws s3 cp lambda.zip s3://golf-outing-lambda-deployments/
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
-
-        # Step 7: Apply Full Infrastructure
-        # This deploys the full infrastructure, including the Lambda function
-      - name: Apply Full Infrastructure
+      # Step 4: Apply Terraform Changes
+      - name: Apply Terraform Changes
         run: terraform apply -auto-approve
         working-directory: terraform
         env:
@@ -69,25 +37,26 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      # Step 8: Retrieve CloudFront Distribution ID
-      - name: Get CloudFront Distribution ID
-        id: cloudfront
+      # Step 5: Retrieve CloudFront Distribution ID
+      - name: Retrieve CloudFront Distribution ID
+        id: get_cloudfront_id
         run: |
           CLOUDFRONT_ID=$(terraform output -raw cloudfront_distribution_id)
           echo "CLOUDFRONT_ID=$CLOUDFRONT_ID" >> $GITHUB_ENV
-          echo "Retrieved CloudFront Distribution ID: $CLOUDFRONT_ID"
+          echo "CloudFront Distribution ID: $CLOUDFRONT_ID"
         working-directory: terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      # Step 9: CloudFront Cache Invalidation
+      # Step 6: Invalidate CloudFront Cache
       - name: Invalidate CloudFront Cache
         run: |
-          echo "CloudFront Distribution ID:  $CLOUDFRONT_ID"          
+          echo "Using CloudFront Distribution ID: $CLOUDFRONT_ID"
           aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
+          CLOUDFRONT_ID: ${{ env.CLOUDFRONT_ID }}
