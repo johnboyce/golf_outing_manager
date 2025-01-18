@@ -81,9 +81,9 @@ resource "null_resource" "package_lambda" {
       echo "Error: Lambda source directory '../lambda' does not exist!";
       exit 1;
     fi
-    zip -r ../lambda.zip ../lambda || { echo "Error creating Lambda package"; exit 1; }
+    zip -r ./lambda.zip ../lambda || { echo "Error creating Lambda package"; exit 1; }
     echo "Lambda package created successfully.";
-    ls -la ../lambda.zip
+    ls -la ./lambda.zip
     EOT
   }
 
@@ -177,6 +177,10 @@ resource "aws_lambda_function" "golf_outing_lambda" {
       DYNAMODB_TABLE = aws_dynamodb_table.golf_outing_table.name
     }
   }
+
+  depends_on = [
+    aws_s3_object.lambda_zip
+  ]
 }
 
 # IAM Role for Lambda
