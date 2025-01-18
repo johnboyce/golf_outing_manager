@@ -136,23 +136,15 @@ resource "null_resource" "setup_lambda_environment" {
 resource "null_resource" "package_lambda" {
   provisioner "local-exec" {
     command = <<EOT
-    echo "Before packaging Lambda:"
-    ls -la ../lambda
-    if [ ! -d "../lambda" ]; then
-      echo "Error: Lambda source directory '../lambda' does not exist!";
-      exit 1;
-    fi
+    echo "Packaging Lambda..."
     cd ../lambda
     npm install --production
     zip -r ../lambda.zip . -x "*.git*" "*.md" "test/*" || { echo "Error creating Lambda package"; exit 1; }
-    cd -
-    echo "Lambda package created successfully.";
-    echo "After packaging Lambda:"
+    echo "Lambda package created successfully at ../lambda.zip."
     ls -la ../lambda.zip
-    echo "Contents of lambda.zip:"
-    unzip -l ../lambda.zip
     EOT
   }
+
 
   triggers = {
     last_updated = timestamp() # Updates the zip file on every `apply`
@@ -166,7 +158,7 @@ resource "null_resource" "package_lambda" {
 resource "aws_s3_object" "lambda_zip" {
   bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
   key    = "lambda.zip"
-  source = "${path.module}/lambda.zip"
+  source = "../lambda.zip"
 
   depends_on = [
     null_resource.package_lambda
