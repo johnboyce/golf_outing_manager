@@ -22,13 +22,17 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      # Step 3: Setup Terraform
+      # Step 3: Install jq
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      # Step 4: Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
 
-      # Step 4: Initialize Terraform
+      # Step 5: Initialize Terraform
       - name: Initialize Terraform
         run: terraform init
         working-directory: terraform
@@ -37,7 +41,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      # Step 5: Apply Terraform Changes
+      # Step 6: Apply Terraform Changes
       - name: Apply Terraform Changes
         run: terraform apply -auto-approve
         working-directory: terraform
@@ -46,11 +50,11 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      # Step 6: Retrieve CloudFront Distribution ID and Invalidate Cache
+      # Step 7: Retrieve CloudFront Distribution ID and Invalidate Cache
       - name: Retrieve CloudFront Distribution ID and Invalidate Cache
         run: |
           echo "Retrieving CloudFront Distribution ID..."
-          CLOUDFRONT_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null | tr -d '\n' | tr -d '\r')
+          CLOUDFRONT_ID=$(terraform output -json cloudfront_distribution_id | jq -r '.')
           if [ -z "$CLOUDFRONT_ID" ]; then
             echo "Error: Could not retrieve CloudFront Distribution ID. Please verify Terraform outputs."
             exit 1
