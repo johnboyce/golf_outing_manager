@@ -1,30 +1,28 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { readFileSync } from "fs";
 
 const REGION = process.env.AWS_REGION || "us-east-1";
 const TABLE_NAME = process.env.DYNAMODB_TABLE || "GolfOutingTable";
 
 const dbClient = new DynamoDBClient({ region: REGION });
-const docClient = DynamoDBDocumentClient.from(dbClient);
 
 const players = JSON.parse(readFileSync("./players.json", "utf-8"));
 
 const overwritePlayer = async (player) => {
     try {
-        await docClient.send(
-            new PutCommand({
-                TableName: TABLE_NAME,
-                Item: {
-                    id: player.id,
-                    name: player.name,
-                    handicap: player.handicap,
-                    nickname: player.nickname,
-                    bio: player.bio,
-                    prediction: player.prediction,
-                },
-            })
-        );
+        const params = {
+            TableName: TABLE_NAME,
+            Item: {
+                id: { S: player.id },
+                name: { S: player.name },
+                handicap: { N: player.handicap.toString() },
+                nickname: { S: player.nickname },
+                bio: { S: player.bio },
+                prediction: { S: player.prediction },
+            },
+        };
+
+        await dbClient.send(new PutItemCommand(params));
         console.log(`Overwritten player: ${player.name}`);
     } catch (error) {
         console.error(`Error overwriting player ${player.name}:`, error);
