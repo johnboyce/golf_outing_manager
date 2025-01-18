@@ -28,7 +28,16 @@ jobs:
         with:
           terraform_version: 1.5.0
 
-      # Step 4: Apply Terraform Changes
+      # Step 4: Initialize Terraform
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: "us-east-1"
+
+      # Step 5: Apply Terraform Changes
       - name: Apply Terraform Changes
         run: terraform apply -auto-approve
         working-directory: terraform
@@ -37,7 +46,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      # Step 5: Retrieve CloudFront Distribution ID
+      # Step 6: Retrieve CloudFront Distribution ID
       - name: Retrieve CloudFront Distribution ID
         id: get_cloudfront_id
         run: |
@@ -50,7 +59,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      # Step 6: Invalidate CloudFront Cache
+      # Step 7: Invalidate CloudFront Cache
       - name: Invalidate CloudFront Cache
         run: |
           echo "Using CloudFront Distribution ID: $CLOUDFRONT_ID"
