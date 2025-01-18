@@ -1,45 +1,56 @@
-const apiUrl = 'https://4epgafkkhl.execute-api.us-east-1.amazonaws.com'; // Replace with your actual API Gateway URL
-
-// Fetch all players
-async function fetchPlayers() {
+export const fetchPlayers = async () => {
     try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ operation: 'listPlayers' }),
-        });
-
+        const response = await fetch('<API-GATEWAY-URL>/players'); // Replace with your API Gateway URL
         if (!response.ok) {
-            throw new Error(`Error fetching players: ${response.statusText}`);
+            throw new Error(`Failed to fetch players: ${response.statusText}`);
         }
 
         const players = await response.json();
-        return players;
+        return players.map(player => ({
+            id: player.id,
+            name: player.name,
+            handicap: player.handicap,
+            nickname: player.nickname,
+            bio: player.bio,
+            prediction: player.prediction
+        }));
     } catch (error) {
-        console.error('Error in fetchPlayers:', error);
-        return [];
+        console.error('Error fetching players:', error);
+        throw error;
     }
-}
+};
 
-// Add a player
-async function addPlayer(playerData) {
+export const addPlayer = async (playerData) => {
     try {
-        const response = await fetch(apiUrl, {
+        const response = await fetch('<API-GATEWAY-URL>/players', { // Replace with your API Gateway URL
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ operation: 'addPlayer', playerData }),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(playerData)
         });
 
         if (!response.ok) {
-            throw new Error(`Error adding player: ${response.statusText}`);
+            throw new Error(`Failed to add player: ${response.statusText}`);
         }
 
-        const result = await response.json();
-        return result;
+        return await response.json();
     } catch (error) {
-        console.error('Error in addPlayer:', error);
+        console.error('Error adding player:', error);
+        throw error;
     }
-}
+};
 
-// Export functions
-export { fetchPlayers, addPlayer };
+export const getPlayer = async (playerId) => {
+    try {
+        const response = await fetch(`<API-GATEWAY-URL>/players/${playerId}`); // Replace with your API Gateway URL
+        if (!response.ok) {
+            throw new Error(`Failed to fetch player: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching player:', error);
+        throw error;
+    }
+};
