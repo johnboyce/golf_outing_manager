@@ -88,7 +88,7 @@ resource "null_resource" "package_lambda" {
   }
 
   triggers = {
-    source_files = "${filemd5sum("./lambda/index.js")}" # Adjust for your Lambda source file(s)
+    last_updated = timestamp() # Updates the zip file on every `apply`
   }
 }
 
