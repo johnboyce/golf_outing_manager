@@ -100,4 +100,4 @@ jobs:
       - name: Validate API Gateway Deployment
         run: |
           echo "Validating deployment..."
-          terraform output api_gateway_url
+          terraform -chdir=terraform output api_gateway_url

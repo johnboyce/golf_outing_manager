@@ -32,6 +32,14 @@ resource "aws_s3_bucket_versioning" "golf_outing_versioning" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "block_public_access" {
+  bucket                  = aws_s3_bucket.golf_outing_bucket.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_cloudfront_origin_access_identity" "golf_outing_oai" {
   comment = "OAI for Golf Outing CloudFront"
 }
@@ -68,10 +76,53 @@ resource "aws_s3_bucket" "lambda_deployment_bucket" {
 
 resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
   bucket                  = aws_s3_bucket.lambda_deployment_bucket.bucket
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "null_resource" "setup_npmrc" {
+  provisioner "local-exec" {
+    command = <<EOT
+    if [ ! -f "../lambda/.npmrc" ]; then
+      echo "production=true" > ../lambda/.npmrc;
+      echo "package-lock=false" >> ../lambda/.npmrc;
+      echo "save-exact=true" >> ../lambda/.npmrc;
+      echo "omit=dev,test" >> ../lambda/.npmrc;
+      echo ".npmrc file created successfully.";
+    else
+      echo ".npmrc file already exists.";
+    fi
+    EOT
+  }
+}
+
+resource "null_resource" "setup_lambda_environment" {
+  provisioner "local-exec" {
+    command = <<EOT
+    if [ ! -d "../lambda" ]; then
+      echo "Error: Lambda source directory '../lambda' does not exist!";
+      exit 1;
+    fi
+    cd ../lambda
+    if [ ! -f "package.json" ]; then
+      npm init -y
+      echo "Initialized package.json."
+    fi
+    npm install @aws-sdk/client-dynamodb --save
+    echo "Installed @aws-sdk/client-dynamodb."
+    cd -
+    EOT
+  }
+
+  triggers = {
+    last_updated = timestamp()
+  }
+
+  depends_on = [
+    null_resource.setup_npmrc
+  ]
 }
 
 resource "null_resource" "package_lambda" {
@@ -81,15 +132,22 @@ resource "null_resource" "package_lambda" {
       echo "Error: Lambda source directory '../lambda' does not exist!";
       exit 1;
     fi
-    zip -r ./lambda.zip ../lambda || { echo "Error creating Lambda package"; exit 1; }
+    cd ../lambda
+    npm install --production
+    zip -r ../lambda.zip . -x "*.git*" "*.md" "test/*" || { echo "Error creating Lambda package"; exit 1; }
+    cd -
     echo "Lambda package created successfully.";
-    ls -la ./lambda.zip
+    ls -la ../lambda.zip
     EOT
   }
 
   triggers = {
     last_updated = timestamp() # Updates the zip file on every `apply`
   }
+
+  depends_on = [
+    null_resource.setup_lambda_environment
+  ]
 }
 
 resource "aws_s3_object" "lambda_zip" {
@@ -136,6 +194,9 @@ resource "aws_lambda_function" "golf_outing_lambda" {
   s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.bucket
   s3_key        = aws_s3_object.lambda_zip.key
 
+  memory_size   = 128
+  timeout       = 10
+
   environment {
     variables = {
       DYNAMODB_TABLE = aws_dynamodb_table.golf_outing_table.name
@@ -176,7 +237,7 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
       }
     }
 
-    min_ttl                = 0
+    min_ttl                = 300
     default_ttl            = 3600
     max_ttl                = 86400
   }
@@ -230,25 +291,4 @@ resource "aws_dynamodb_table" "golf_outing_table" {
     name = "id"
     type = "S"
   }
-}
-
-# Terraform Outputs
-output "s3_bucket_name" {
-  value = aws_s3_bucket.lambda_deployment_bucket.bucket
-}
-
-output "s3_key" {
-  value = aws_s3_object.lambda_zip.key
-}
-
-output "s3_bucket_website_url" {
-  value = aws_cloudfront_distribution.golf_outing_distribution.domain_name
-}
-
-output "api_gateway_url" {
-  value = aws_apigatewayv2_api.golf_outing_api.api_endpoint
-}
-
-output "cloudfront_distribution_id" {
-  value = aws_cloudfront_distribution.golf_outing_distribution.id
 }
