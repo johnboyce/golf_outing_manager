@@ -1,27 +1,31 @@
-name: Populate Players Data
+name: Populate Database
 
 on:
   workflow_dispatch:
 
 jobs:
-  populate:
+  populate-database:
     runs-on: ubuntu-latest
 
+    env:
+      REGION: us-east-1
+      DYNAMODB_TABLE: GolfOutingTable
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install AWS CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y awscli
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-      - name: Populate DynamoDB Table
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run database population script
+        run: |
+          node ./scripts/populate-database.js
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
-        run: |
-          aws dynamodb batch-write-item \
-            --request-items file://players.json
-
