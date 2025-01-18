@@ -54,15 +54,10 @@ resource "aws_s3_bucket_policy" "golf_outing_policy" {
         Sid       = "AllowCloudFrontAccess",
         Effect    = "Allow",
         Principal = {
-          Service = "cloudfront.amazonaws.com"
+          AWS = aws_cloudfront_origin_access_identity.golf_outing_oai.iam_arn
         },
         Action    = "s3:GetObject",
-        Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*",
-        Condition = {
-          StringEquals = {
-            "AWS:SourceArn" = aws_cloudfront_distribution.golf_outing_distribution.arn
-          }
-        }
+        Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*"
       }
     ]
   })
@@ -242,7 +237,7 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
       }
     }
 
-    min_ttl                = 300
+    min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
   }

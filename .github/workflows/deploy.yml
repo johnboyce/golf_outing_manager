@@ -56,38 +56,44 @@ jobs:
           aws s3 sync ./src s3://${{ env.S3_GOLF_BUCKET }} --delete
           echo "Static files synced to S3 bucket."
 
-#      - name: Package Lambda
-#        run: |
-#          cd lambda
-#          zip -r ../lambda.zip .
-#          echo "Lambda package created successfully."
-#          ls -la ../lambda.zip
-#
-#      - name: Upload Lambda to S3
-#        run: |
-#          aws s3 cp ./lambda.zip s3://$S3_BUCKET/lambda.zip
-#
-#      - name: Deploy Lambda Function
-#        run: |
-#          echo "Checking if Lambda function $LAMBDA_NAME exists..."
-#          FUNCTION_EXISTS=$(aws lambda get-function --function-name $LAMBDA_NAME 2>/dev/null || echo "NOT_EXISTS")
-#
-#          if [[ "$FUNCTION_EXISTS" == "NOT_EXISTS" ]]; then
-#          echo "Creating Lambda function $LAMBDA_NAME..."
-#          aws lambda create-function \
-#           --function-name $LAMBDA_NAME \
-#           --runtime $LAMBDA_RUNTIME \
-#           --role $ROLE_ARN \
-#           --handler $LAMBDA_HANDLER \
-#           --code S3Bucket=$S3_BUCKET,S3Key=lambda.zip \
-#           --environment Variables="{DYNAMODB_TABLE=$DYNAMODB_TABLE}"
-#          else
-#          echo "Updating Lambda function $LAMBDA_NAME..."
-#          aws lambda update-function-code \
-#           --function-name $LAMBDA_NAME \
-#           --s3-bucket $S3_BUCKET \
-#           --s3-key lambda.zip
-#          fi
+      - name: Package Lambda
+        run: |
+          cd lambda
+          zip -r ../lambda.zip .
+          echo "Lambda package created successfully."
+          ls -la ../lambda.zip
+
+      - name: Upload Lambda to S3
+        run: |
+          aws s3 cp ./lambda.zip s3://$S3_BUCKET/lambda.zip
+
+      - name: Deploy Lambda Function
+        run: |
+          echo "Checking if Lambda function $LAMBDA_NAME exists..."
+          FUNCTION_EXISTS=$(aws lambda get-function --function-name $LAMBDA_NAME 2>/dev/null || echo "NOT_EXISTS")
+
+          if [[ "$FUNCTION_EXISTS" == "NOT_EXISTS" ]]; then
+          echo "Creating Lambda function $LAMBDA_NAME..."
+          aws lambda create-function \
+           --function-name $LAMBDA_NAME \
+           --runtime $LAMBDA_RUNTIME \
+           --role $ROLE_ARN \
+           --handler $LAMBDA_HANDLER \
+           --code S3Bucket=$S3_BUCKET,S3Key=lambda.zip \
+           --environment Variables="{DYNAMODB_TABLE=$DYNAMODB_TABLE}"
+          else
+          echo "Updating Lambda function $LAMBDA_NAME..."
+          aws lambda update-function-code \
+           --function-name $LAMBDA_NAME \
+           --s3-bucket $S3_BUCKET \
+           --s3-key lambda.zip
+          fi
+
+      # Invalidate CloudFront cache
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id E143Q96G9TRDSS --paths "/*"
+          echo "CloudFront cache invalidated. Explicitly"
 
       - name: Validate Cloudfront Deployment
         run: |
