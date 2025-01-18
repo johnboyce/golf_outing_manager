@@ -42,6 +42,7 @@ terraform {
 resource "aws_s3_bucket" "golf_outing_bucket" {
   bucket        = "golf-outing-manager"
   force_destroy = true
+  depends_on    = [aws_s3_bucket.terraform_state_bucket]
 }
 
 resource "aws_s3_bucket_versioning" "versioning" {
