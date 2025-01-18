@@ -102,6 +102,51 @@ resource "aws_s3_object" "lambda_zip" {
   ]
 }
 
+resource "aws_iam_policy" "lambda_s3_access" {
+  name = "LambdaS3AccessPolicy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
+        Effect   = "Allow",
+        Resource = [
+          aws_s3_bucket.lambda_deployment_bucket.arn,
+          "${aws_s3_bucket.lambda_deployment_bucket.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_s3_access_attachment" {
+  role       = aws_iam_role.golf_outing_lambda_role.name
+  policy_arn = aws_iam_policy.lambda_s3_access.arn
+}
+
+resource "aws_s3_bucket_policy" "lambda_deployment_bucket_policy" {
+  bucket = aws_s3_bucket.lambda_deployment_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AllowLambdaAccess",
+        Effect    = "Allow",
+        Principal = {
+          AWS = aws_iam_role.golf_outing_lambda_role.arn
+        },
+        Action    = "s3:GetObject",
+        Resource  = "${aws_s3_bucket.lambda_deployment_bucket.arn}/*"
+      }
+    ]
+  })
+}
+
 resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   origin {
     domain_name = aws_s3_bucket.golf_outing_bucket.bucket_regional_domain_name
