@@ -63,24 +63,32 @@ jobs:
 
       - name: Deploy Lambda Function
         run: |
+          echo "Checking if Lambda function $LAMBDA_NAME exists..."
+          FUNCTION_EXISTS=$(aws lambda get-function --function-name $LAMBDA_NAME 2>/dev/null || echo "NOT_EXISTS")
+          
+          if [[ "$FUNCTION_EXISTS" == "NOT_EXISTS" ]]; then
+          echo "Creating Lambda function $LAMBDA_NAME..."
           aws lambda create-function \
-            --function-name $LAMBDA_NAME \
-            --runtime $LAMBDA_RUNTIME \
-            --role $ROLE_ARN \
-            --handler $LAMBDA_HANDLER \
-            --code S3Bucket=$S3_BUCKET,S3Key=lambda.zip \
-            --environment Variables="{DYNAMODB_TABLE=$DYNAMODB_TABLE}" \
-            || aws lambda update-function-code \
-            --function-name $LAMBDA_NAME \
-            --s3-bucket $S3_BUCKET \
-            --s3-key lambda.zip
+           --function-name $LAMBDA_NAME \
+           --runtime $LAMBDA_RUNTIME \
+           --role $ROLE_ARN \
+           --handler $LAMBDA_HANDLER \
+           --code S3Bucket=$S3_BUCKET,S3Key=lambda.zip \
+           --environment Variables="{DYNAMODB_TABLE=$DYNAMODB_TABLE}"
+          else
+          echo "Updating Lambda function $LAMBDA_NAME..."
+          aws lambda update-function-code \
+           --function-name $LAMBDA_NAME \
+           --s3-bucket $S3_BUCKET \
+           --s3-key lambda.zip
+          fi
 
       - name: Validate Deployment
         run: |
           echo "Validating deployment..."
           echo "Retrieving Cloudfront Domain..."
           cd terraform
-          CLOUDFRONT_URL=$(terraform output -raw cloudfront_distribution_domain_name || echo "Failed to fetch Cloudfront Domain")
+          CLOUDFRONT_URL=$(terraform output -raw s3_bucket_website_url || echo "Failed to fetch Cloudfront Domain")
           echo "Cloudfront Domain: $CLOUDFRONT_URL"
           echo "Attempting to validate..."
           if [[ -z "$CLOUDFRONT_URL" ]]; then
