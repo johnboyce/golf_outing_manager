@@ -1,6 +1,6 @@
 export const fetchPlayers = async () => {
     try {
-        const response = await fetch('<API-GATEWAY-URL>/players'); // Replace with your API Gateway URL
+        const response = await fetch('4epgafkkhl.execute-api.us-east-1.amazonaws.com/players'); // Replace with your API Gateway URL
         if (!response.ok) {
             throw new Error(`Failed to fetch players: ${response.statusText}`);
         }
