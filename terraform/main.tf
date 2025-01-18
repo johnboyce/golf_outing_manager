@@ -297,3 +297,11 @@ resource "aws_dynamodb_table" "golf_outing_table" {
     type = "S"
   }
 }
+
+resource "aws_lambda_permission" "api_gateway_invoke" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.golf_outing_lambda.arn
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
+}
