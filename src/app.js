@@ -104,6 +104,14 @@ function createAvailablePlayerElement(player) {
     return li;
 }
 
+function createPlayerElement(player) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item';
+    li.textContent = `${player.name} (Handicap: ${player.handicap})`;
+    li.setAttribute('data-id', player.id);
+    return li;
+}
+
 window.addPlayerToTeam = (playerId, teamId) => {
     const availablePlayersList = document.getElementById('available-players');
     const playerElement = availablePlayersList.querySelector(`[data-id="${playerId}"]`);
