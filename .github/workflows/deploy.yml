@@ -47,25 +47,16 @@ jobs:
           AWS_REGION: "us-east-1"
 
       # Step 6: Retrieve CloudFront Distribution ID
-      - name: Retrieve CloudFront Distribution ID
-        id: get_cloudfront_id
+      - name: Retrieve CloudFront Distribution ID and Invalidate Cache
         run: |
+          echo "Retrieving CloudFront Distribution ID..."
           CLOUDFRONT_ID=$(terraform output -raw cloudfront_distribution_id)
-          echo "CLOUDFRONT_ID=$CLOUDFRONT_ID" >> $GITHUB_ENV
           echo "CloudFront Distribution ID: $CLOUDFRONT_ID"
+          echo "Invalidating CloudFront Cache..."
+          aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"
         working-directory: terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      # Step 7: Invalidate CloudFront Cache
-      - name: Invalidate CloudFront Cache
-        run: |
-          echo "Using CloudFront Distribution ID: $CLOUDFRONT_ID"
-          aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
-          CLOUDFRONT_ID: ${{ env.CLOUDFRONT_ID }}
