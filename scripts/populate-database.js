@@ -22,7 +22,8 @@ const overwritePlayer = async (player) => {
             },
         };
 
-        await dbClient.send(new PutItemCommand(params));
+        const result = await dbClient.send(new PutItemCommand(params));
+        console.log(`DynamoDB response:`, result);
         console.log(`Overwritten player: ${player.name}`);
     } catch (error) {
         console.error(`Error overwriting player ${player.name}:`, error);
