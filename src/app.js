@@ -96,43 +96,40 @@ function createDraggablePlayerElement(player) {
     li.textContent = `${player.name} (Handicap: ${player.handicap})`;
     li.setAttribute('draggable', true);
     li.setAttribute('data-id', player.id);
-    li.ondragstart = drag;
+
+    // Drag start event
+    li.addEventListener('dragstart', (event) => {
+        event.dataTransfer.setData('text/plain', player.id);
+    });
+
     return li;
 }
 
-// Handles the drag event
-function drag(event) {
-    event.dataTransfer.setData('text/plain', event.target.getAttribute('data-id'));
-}
-
-// Allows dropping in valid dropzones
+// Allow drop zones to accept dropped items
 function allowDrop(event) {
     event.preventDefault();
 }
 
-// Handles the drop event
+// Handle the drop event
 function drop(event, targetId) {
     event.preventDefault();
 
-    // Get the player ID from the drag event
     const playerId = event.dataTransfer.getData('text/plain');
+    const availablePlayersList = document.getElementById('available-players');
+    const playerElement = availablePlayersList.querySelector(`[data-id="${playerId}"]`);
 
-    // Find the player in the available players list
-    const playerElement = document.querySelector(`#available-players [data-id="${playerId}"]`);
     if (playerElement) {
-        // Remove player from the available players list
+        // Remove from available players and add to the target team
         playerElement.parentNode.removeChild(playerElement);
 
-        // Add player to the target team
         const targetList = document.getElementById(targetId);
         targetList.appendChild(playerElement);
 
-        // Show a notification summarizing the move
         showMoveNotification(playerElement.textContent, targetId);
     }
 }
 
-// Displays a UI panel summarizing the move
+// Displays a notification summarizing the move
 function showMoveNotification(playerName, targetTeam) {
     const notification = document.createElement('div');
     notification.className = 'alert alert-success position-fixed top-0 end-0 m-3';
