@@ -46,10 +46,15 @@ resource "aws_s3_bucket_policy" "golf_outing_policy" {
         Sid       = "AllowCloudFrontAccess",
         Effect    = "Allow",
         Principal = {
-          AWS = aws_cloudfront_origin_access_identity.golf_outing_oai.iam_arn
+          Service = "cloudfront.amazonaws.com"
         },
         Action    = "s3:GetObject",
-        Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*"
+        Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*",
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.golf_outing_distribution.arn
+          }
+        }
       }
     ]
   })
@@ -123,6 +128,27 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
+resource "aws_lambda_function" "golf_outing_lambda" {
+  function_name = "GolfOutingHandler"
+  runtime       = "nodejs18.x"
+  role          = aws_iam_role.golf_outing_lambda_role.arn
+  handler       = "index.handler"
+  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.bucket
+  s3_key        = aws_s3_object.lambda_zip.key
+
+  environment {
+    variables = {
+      DYNAMODB_TABLE = aws_dynamodb_table.golf_outing_table.name
+    }
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.lambda_basic_execution,
+    aws_iam_role_policy_attachment.lambda_dynamodb_access,
+    aws_s3_object.lambda_zip
+  ]
+}
+
 resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   origin {
     domain_name = aws_s3_bucket.golf_outing_bucket.bucket_regional_domain_name
@@ -170,7 +196,29 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   }
 }
 
-data "aws_caller_identity" "current" {}
+resource "aws_apigatewayv2_api" "golf_outing_api" {
+  name          = "GolfOutingAPI"
+  protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_integration" "golf_outing_integration" {
+  api_id                 = aws_apigatewayv2_api.golf_outing_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.golf_outing_lambda.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_stage" "golf_outing_stage" {
+  api_id      = aws_apigatewayv2_api.golf_outing_api.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+resource "aws_apigatewayv2_route" "golf_outing_route" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "ANY /{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
 
 # DynamoDB Table for Data Persistence
 resource "aws_dynamodb_table" "golf_outing_table" {
@@ -195,6 +243,10 @@ output "s3_key" {
 
 output "s3_bucket_website_url" {
   value = aws_cloudfront_distribution.golf_outing_distribution.domain_name
+}
+
+output "api_gateway_url" {
+  value = aws_apigatewayv2_api.golf_outing_api.api_endpoint
 }
 
 output "cloudfront_distribution_id" {
