@@ -28,14 +28,26 @@ jobs:
         with:
           terraform_version: 1.5.0
 
-      # Step 4: Package Lambda Function
+        # Step 4: Initialize Terraform
+        # This ensures the S3 bucket for Lambda is created first
+      - name: Apply Initial Infrastructure (Lambda Bucket)
+        run: |
+          terraform init
+          terraform apply -auto-approve -target=aws_s3_bucket.lambda_deployment_bucket
+        working-directory: terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: "us-east-1"
+
+      # Step 5: Package Lambda Function
       - name: Package Lambda Function
         run: |
           cd lambda
           zip -r ../lambda.zip .
           cd ..
 
-      # Step 5: Upload Lambda ZIP to S3
+      # Step 6: Upload Lambda ZIP to S3
       - name: Upload Lambda ZIP to S3
         run: |
           aws s3 cp lambda.zip s3://golf-outing-lambda-deployments/
@@ -44,17 +56,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      # Step 6: Plan Terraform Changes
-      - name: Terraform Plan
-        run: terraform plan
-        working-directory: terraform
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "us-east-1"
-
-      # Step 7: Apply Terraform Changes
-      - name: Terraform Apply
+        # Step 7: Apply Full Infrastructure
+        # This deploys the full infrastructure, including the Lambda function
+      - name: Apply Full Infrastructure
         run: terraform apply -auto-approve
         working-directory: terraform
         env:
