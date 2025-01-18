@@ -33,6 +33,11 @@
         .btn-golf:hover {
             background-color: #45a049;
         }
+        .team-dropzone {
+            min-height: 50px;
+            border: 1px dashed #4caf50;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -46,14 +51,14 @@
                 <h3>Teams</h3>
                 <form id="team-selection-form">
                     <div class="mb-3">
-                        <label for="team-jawn-captain" class="form-label">Team Jawn Captain</label>
-                        <select id="team-jawn-captain" class="form-select">
+                        <label for="team-one-captain" class="form-label">Team One Captain</label>
+                        <select id="team-one-captain" class="form-select">
                             <!-- Populate dynamically -->
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="team-duck-captain" class="form-label">Team Duck Captain</label>
-                        <select id="team-duck-captain" class="form-select">
+                        <label for="team-two-captain" class="form-label">Team Two Captain</label>
+                        <select id="team-two-captain" class="form-select">
                             <!-- Populate dynamically -->
                         </select>
                     </div>
@@ -72,21 +77,25 @@
         </div>
     </div>
     <div id="draft-results" class="mt-4">
-        <h3>Mock Draft Results</h3>
+        <h3>Mock Draft</h3>
+        <p id="draft-turn" class="text-center text-info fw-bold">Team One's Turn</p>
         <div class="row">
             <div class="col-md-6">
-                <h4>Team Jawn</h4>
-                <ul id="team-jawn" class="list-group">
-                    <!-- Team Jawn players will be added here dynamically -->
+                <h4 id="team-one-name">Team One</h4>
+                <ul id="team-one" class="list-group team-dropzone" ondragover="allowDrop(event)" ondrop="drop(event, 'team-one')">
+                    <!-- Team One players -->
                 </ul>
             </div>
             <div class="col-md-6">
-                <h4>Team Duck</h4>
-                <ul id="team-duck" class="list-group">
-                    <!-- Team Duck players will be added here dynamically -->
+                <h4 id="team-two-name">Team Two</h4>
+                <ul id="team-two" class="list-group team-dropzone" ondragover="allowDrop(event)" ondrop="drop(event, 'team-two')">
+                    <!-- Team Two players -->
                 </ul>
             </div>
         </div>
+        <ul id="available-players" class="list-group mt-4" ondragover="allowDrop(event)" ondrop="drop(event, 'available-players')">
+            <!-- Available players -->
+        </ul>
     </div>
 </div>
 <script type="module" src="app.js"></script>

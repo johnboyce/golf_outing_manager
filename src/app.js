@@ -1,9 +1,11 @@
 import { fetchPlayers } from './data.js';
 
+let currentTurn = 'team-one';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const players = await fetchPlayers();
-    populateTeams(players);
-    populatePlayerList(players);
+    setupTeams(players);
+    populateAvailablePlayers(players);
 
     document.getElementById('mock-draft-btn').addEventListener('click', () => {
         startMockDraft(players);
@@ -12,67 +14,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('reset-btn').addEventListener('click', resetDraft);
 });
 
-function populateTeams(players) {
-    const teamJawnSelect = document.getElementById('team-jawn-captain');
-    const teamDuckSelect = document.getElementById('team-duck-captain');
-    players.forEach(player => {
-        const option = document.createElement('option');
-        option.value = player.id;
-        option.textContent = `${player.name} (Handicap: ${player.handicap})`;
-        teamJawnSelect.appendChild(option.cloneNode(true));
-        teamDuckSelect.appendChild(option.cloneNode(true));
-    });
+function setupTeams(players) {
+    const teamOneCaptain = players.find(player => player.nickname === 'Jawn');
+    const teamTwoCaptain = players.find(player => player.nickname === 'Duck');
+
+    assignPlayerToTeam('team-one', teamOneCaptain);
+    assignPlayerToTeam('team-two', teamTwoCaptain);
+
+    document.getElementById('team-one-name').textContent = `Team ${teamOneCaptain.nickname}`;
+    document.getElementById('team-two-name').textContent = `Team ${teamTwoCaptain.nickname}`;
 }
 
-function populatePlayerList(players) {
-    const playerList = document.getElementById('player-list');
+function populateAvailablePlayers(players) {
+    const availablePlayersList = document.getElementById('available-players');
+    availablePlayersList.innerHTML = '';
+
     players.forEach(player => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item';
-        li.textContent = `${player.name} (Handicap: ${player.handicap})`;
-        playerList.appendChild(li);
-    });
-}
-
-function startMockDraft(players) {
-    const shuffledPlayers = [...players].sort(() => 0.5 - Math.random());
-    const teamJawn = [];
-    const teamDuck = [];
-
-    shuffledPlayers.forEach((player, index) => {
-        if (index % 2 === 0) {
-            teamJawn.push(player);
-        } else {
-            teamDuck.push(player);
+        if (player.nickname !== 'Jawn' && player.nickname !== 'Duck') {
+            const li = createDraggablePlayerElement(player);
+            availablePlayersList.appendChild(li);
         }
     });
-
-    updateTeamLists(teamJawn, teamDuck);
 }
 
-function updateTeamLists(teamJawn, teamDuck) {
-    const teamJawnList = document.getElementById('team-jawn');
-    const teamDuckList = document.getElementById('team-duck');
+function createDraggablePlayerElement(player) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item';
+    li.textContent = `${player.name} (Handicap: ${player.handicap})`;
+    li.setAttribute('draggable', true);
+    li.setAttribute('data-id', player.id);
+    li.setAttribute('data-name', player.name);
+    li.setAttribute('data-handicap', player.handicap);
+    li.setAttribute('data-nickname', player.nickname);
+    li.ondragstart = drag;
+    return li;
+}
 
-    teamJawnList.innerHTML = '';
-    teamDuckList.innerHTML = '';
+function drag(event) {
+    event.dataTransfer.setData('text', event.target.outerHTML);
+}
 
-    teamJawn.forEach(player => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item';
-        li.textContent = `${player.name} (Handicap: ${player.handicap})`;
-        teamJawnList.appendChild(li);
-    });
+function allowDrop(event) {
+    event.preventDefault();
+}
 
-    teamDuck.forEach(player => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item';
-        li.textContent = `${player.name} (Handicap: ${player.handicap})`;
-        teamDuckList.appendChild(li);
-    });
+function drop(event, targetId) {
+    event.preventDefault();
+    const data = event.dataTransfer.getData('text');
+    const playerElement = document.createElement('div');
+    playerElement.innerHTML = data;
+    const playerLi = playerElement.firstElementChild;
+
+    if (targetId === currentTurn) {
+        document.getElementById(targetId).appendChild(playerLi);
+        switchTurn();
+    }
+}
+
+function switchTurn() {
+    currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
+    document.getElementById('draft-turn').textContent = currentTurn === 'team-one' ? "Team One's Turn" : "Team Two's Turn";
 }
 
 function resetDraft() {
-    document.getElementById('team-jawn').innerHTML = '';
-    document.getElementById('team-duck').innerHTML = '';
+    document.getElementById('team-one').innerHTML = '';
+    document.getElementById('team-two').innerHTML = '';
+    document.getElementById('available-players').innerHTML = '';
+    document.getElementById('draft-turn').textContent = "Team One's Turn";
+    currentTurn = 'team-one';
 }
