@@ -37,7 +37,7 @@
 </head>
 <body>
 <div class="header d-flex justify-content-center align-items-center">
-    <h1 class="display-4">Ocean City Golf Kuntz Outing Manager</h1>
+    <h1 class="display-4">Ocean City Golf Outing Manager</h1>
 </div>
 <div class="container mt-5">
     <div class="row">
@@ -71,61 +71,24 @@
             </div>
         </div>
     </div>
-    <div class="mt-4">
-        <h3>Player Bios</h3>
-        <div id="player-bios" class="row">
-            <!-- Player bios and links dynamically added here -->
+    <div id="draft-results" class="mt-4">
+        <h3>Mock Draft Results</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Team Jawn</h4>
+                <ul id="team-jawn" class="list-group">
+                    <!-- Team Jawn players will be added here dynamically -->
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h4>Team Duck</h4>
+                <ul id="team-duck" class="list-group">
+                    <!-- Team Duck players will be added here dynamically -->
+                </ul>
+            </div>
         </div>
     </div>
 </div>
-<div id="draft-results" class="mt-4">
-    <h3>Mock Draft Results</h3>
-    <div class="row">
-        <div class="col-md-6">
-            <h4>Team Jawn</h4>
-            <ul id="team-jawn" class="list-group">
-                <!-- Team Jawn players will be added here dynamically -->
-            </ul>
-        </div>
-        <div class="col-md-6">
-            <h4>Team Duck</h4>
-            <ul id="team-duck" class="list-group">
-                <!-- Team Duck players will be added here dynamically -->
-            </ul>
-        </div>
-    </div>
-</div>
-<script type="module">
-    import { fetchPlayers } from './data.js';
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        const players = await fetchPlayers();
-        populateTeams(players);
-        populatePlayerList(players);
-    });
-
-    function populateTeams(players) {
-        const teamJawnSelect = document.getElementById('team-jawn-captain');
-        const teamDuckSelect = document.getElementById('team-duck-captain');
-        players.forEach(player => {
-            const option = document.createElement('option');
-            option.value = player.id;
-            option.textContent = `${player.name} (Handicap: ${player.handicap})`;
-            teamJawnSelect.appendChild(option.cloneNode(true));
-            teamDuckSelect.appendChild(option.cloneNode(true));
-        });
-
-    }
-
-    function populatePlayerList(players) {
-        const playerList = document.getElementById('player-list');
-        players.forEach(player => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.textContent = `${player.name} (Handicap: ${player.handicap})`;
-            playerList.appendChild(li);
-        });
-    }
-</script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
