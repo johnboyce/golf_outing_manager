@@ -33,11 +33,11 @@ resource "aws_s3_bucket_versioning" "golf_outing_versioning" {
 }
 
 resource "aws_cloudfront_origin_access_identity" "golf_outing_oai" {
-  comment = "Origin Access Identity for Golf Outing"
+  comment = "OAI for Golf Outing CloudFront"
 }
 
-resource "aws_s3_bucket_policy" "golf_outing_policy" {
-  bucket = aws_s3_bucket.golf_outing_bucket.id
+resource "aws_iam_policy" "cloudfront_s3_access" {
+  name = "CloudFrontS3AccessPolicy"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -52,12 +52,18 @@ resource "aws_s3_bucket_policy" "golf_outing_policy" {
         Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*",
         Condition = {
           StringEquals = {
-            "AWS:SourceArn" = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/*"
+            "AWS:SourceArn" = aws_cloudfront_distribution.golf_outing_distribution.arn
           }
         }
       }
     ]
   })
+}
+
+resource "aws_s3_bucket_policy" "golf_outing_policy" {
+  bucket = aws_s3_bucket.golf_outing_bucket.id
+
+  policy = aws_iam_policy.cloudfront_s3_access.policy
 }
 
 # S3 Bucket for Lambda Deployment
@@ -102,44 +108,30 @@ resource "aws_s3_object" "lambda_zip" {
   ]
 }
 
-resource "aws_iam_policy" "lambda_s3_access" {
-  name = "LambdaS3AccessPolicy"
-
-  policy = jsonencode({
+resource "aws_iam_role" "golf_outing_lambda_role" {
+  name               = "GolfOutingLambdaRole"
+  assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ],
-        Effect   = "Allow",
-        Resource = [
-          aws_s3_bucket.lambda_deployment_bucket.arn,
-          "${aws_s3_bucket.lambda_deployment_bucket.arn}/*"
-        ]
+        Effect = "Allow",
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
       }
     ]
   })
 }
 
-resource "aws_s3_bucket_policy" "lambda_deployment_bucket_policy" {
-  bucket = aws_s3_bucket.lambda_deployment_bucket.id
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+  role       = aws_iam_role.golf_outing_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
 
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Sid       = "AllowLambdaAccess",
-        Effect    = "Allow",
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        },
-        Action    = "s3:GetObject",
-        Resource  = "${aws_s3_bucket.lambda_deployment_bucket.arn}/*"
-      }
-    ]
-  })
+resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
+  role       = aws_iam_role.golf_outing_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
 resource "aws_cloudfront_distribution" "golf_outing_distribution" {
@@ -189,8 +181,6 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   }
 }
 
-data "aws_caller_identity" "current" {}
-
 # DynamoDB Table for Data Persistence
 resource "aws_dynamodb_table" "golf_outing_table" {
   name           = "GolfOutingTable"
@@ -218,8 +208,4 @@ output "s3_bucket_website_url" {
 
 output "cloudfront_distribution_id" {
   value = aws_cloudfront_distribution.golf_outing_distribution.id
-}
-
-output "cloudfront_distribution_domain_name" {
-  value = aws_cloudfront_distribution.golf_outing_distribution.domain_name
 }
