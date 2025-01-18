@@ -149,6 +149,8 @@ resource "null_resource" "package_lambda" {
     echo "Lambda package created successfully.";
     echo "After packaging Lambda:"
     ls -la ../lambda.zip
+    echo "Contents of lambda.zip:"
+    unzip -l ../lambda.zip
     EOT
   }
 
