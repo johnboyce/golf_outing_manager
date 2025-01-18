@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload Lambda to S3
         run: |
-          aws s3 cp ./lambda.zip s3://$S3_BUCKET/lambda.zip
+          aws s3 cp ./lambda.zip s3://${{ env.S3_LAMBDA_BUCKET }}/lambda.zip
 
       - name: Deploy Lambda Function
         run: |
@@ -79,13 +79,13 @@ jobs:
            --runtime $LAMBDA_RUNTIME \
            --role $ROLE_ARN \
            --handler $LAMBDA_HANDLER \
-           --code S3Bucket=$S3_BUCKET,S3Key=lambda.zip \
+           --code S3Bucket=${{ env.S3_LAMBDA_BUCKET }} ,S3Key=lambda.zip \
            --environment Variables="{DYNAMODB_TABLE=$DYNAMODB_TABLE}"
           else
           echo "Updating Lambda function $LAMBDA_NAME..."
           aws lambda update-function-code \
            --function-name $LAMBDA_NAME \
-           --s3-bucket $S3_BUCKET \
+           --s3-bucket ${{ env.S3_LAMBDA_BUCKET }} \
            --s3-key lambda.zip
           fi
 
