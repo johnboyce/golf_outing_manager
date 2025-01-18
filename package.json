@@ -1,6 +1,7 @@
 {
   "name": "golf_outing_manager",
   "version": "1.0.0",
+  "type": "module",
   "description": "A fun, interactive, and visually appealing web app for managing golf outings. Built with:",
   "main": "index.js",
   "scripts": {
