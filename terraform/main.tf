@@ -20,17 +20,12 @@ resource "aws_s3_bucket" "golf_outing_bucket" {
   force_destroy = true
 }
 
-resource "aws_s3_bucket_versioning" "versioning" {
-  bucket = aws_s3_bucket.golf_outing_bucket.bucket
-
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_acl" "bucket_acl" {
-  bucket = aws_s3_bucket.golf_outing_bucket.bucket
-  acl    = "private"
+resource "aws_s3_bucket_public_access_block" "golf_outing_access_block" {
+  bucket                  = aws_s3_bucket.golf_outing_bucket.bucket
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
 
 resource "aws_cloudfront_distribution" "golf_outing_distribution" {
@@ -59,12 +54,16 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
 
   restrictions {
     geo_restriction {
-      restriction_type = "none" # Allows access from all geographic locations
+      restriction_type = "none"
     }
   }
 
   viewer_certificate {
     cloudfront_default_certificate = true
+  }
+
+  tags = {
+    Name = "GolfOutingDistribution"
   }
 }
 
@@ -82,6 +81,26 @@ resource "aws_s3_bucket_policy" "golf_outing_policy" {
       }
     ]
   })
+}
+
+# S3 Bucket for Lambda Deployment
+resource "aws_s3_bucket" "lambda_deployment_bucket" {
+  bucket        = "golf-outing-lambda-deployments"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
+  bucket                  = aws_s3_bucket.lambda_deployment_bucket.bucket
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_object" "lambda_zip" {
+  bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
+  key    = "lambda.zip"
+  source = "${path.module}/lambda.zip"
 }
 
 # DynamoDB Table for Data Persistence
@@ -111,6 +130,7 @@ resource "aws_lambda_function" "golf_outing_lambda" {
     }
   }
 }
+
 # IAM Role for Lambda
 resource "aws_iam_role" "golf_outing_lambda_role" {
   name               = "golf_outing_lambda_role"
@@ -169,26 +189,6 @@ resource "aws_apigatewayv2_route" "golf_outing_route" {
   api_id    = aws_apigatewayv2_api.golf_outing_api.id
   route_key = "ANY /{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
-}
-
-resource "aws_s3_bucket" "lambda_deployment_bucket" {
-  bucket        = "golf-outing-lambda-deployments"
-  force_destroy = true
-
-  tags = {
-    Name = "GolfOutingLambdaBucket"
-  }
-}
-
-resource "aws_s3_bucket_acl" "lambda_bucket_acl" {
-  bucket = aws_s3_bucket.lambda_deployment_bucket.id
-  acl    = "private"
-}
-
-resource "aws_s3_object" "lambda_zip" {
-  bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
-  key    = "lambda.zip"
-  source = "${path.module}/lambda.zip"
 }
 
 # Terraform Outputs
