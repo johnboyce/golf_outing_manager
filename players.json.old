@@ -1,0 +1,424 @@
+{
+  "GolfOutingTable": [
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "0"
+          },
+          "name": {
+            "S": "John Boyce"
+          },
+          "handicap": {
+            "N": "10"
+          },
+          "bio": {
+            "S": "John is known as 'The Hammer' for his powerful drives that seem to defy physics. Off the course, he\u2019s a trivia master who can name every U.S. Open winner since 1900. A lover of the short game, John has an uncanny ability to get out of the sand like a magician pulling a rabbit from a hat."
+          },
+          "prediction": {
+            "S": "Expect John to dominate the long-drive contests but occasionally find himself in the rough with his overambitious swings."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "1"
+          },
+          "name": {
+            "S": "Jimmy Boyce"
+          },
+          "handicap": {
+            "N": "12"
+          },
+          "bio": {
+            "S": "Jimmy, the older sibling of the Boyce duo, is a steady golfer who thrives under pressure. He\u2019s the kind of player who can sink a 30-foot putt with an audience watching, yet forgets where he parked his cart. A raconteur by nature, Jimmy loves entertaining his foursome with hilarious tales between shots."
+          },
+          "prediction": {
+            "S": "Jimmy\u2019s putting game will shine, making him the savior of crucial holes. However, don\u2019t expect miracles when his ball meets a water hazard."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "2"
+          },
+          "name": {
+            "S": "Eric Hall"
+          },
+          "handicap": {
+            "N": "15"
+          },
+          "bio": {
+            "S": "Eric is the group\u2019s philosopher, contemplating the metaphysics of every swing and shot. Known for his laser-like focus, he approaches golf like a chess match. When he\u2019s not golfing, Eric enjoys woodworking and has even built his own putter, which he swears by."
+          },
+          "prediction": {
+            "S": "Eric\u2019s meticulous nature will make him the most consistent player, but overthinking might cost him a stroke or two on simpler shots."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "3"
+          },
+          "name": {
+            "S": "John Snow"
+          },
+          "handicap": {
+            "N": "8"
+          },
+          "bio": {
+            "S": "Despite his infamous name, John Snow is anything but clueless on the course. This fearless golfer thrives in windy conditions, earning him the nickname 'The Blizzard.' John is also a fan of risk-reward scenarios, often going for the green in two on par-5s."
+          },
+          "prediction": {
+            "S": "John\u2019s fearless style will either win him glory or leave him cursing a lake he didn\u2019t see coming."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "4"
+          },
+          "name": {
+            "S": "Brian Cregan"
+          },
+          "handicap": {
+            "N": "18"
+          },
+          "bio": {
+            "S": "Brian is the joker of the group, keeping everyone laughing while quietly plotting his next move. His swing is as unpredictable as his one-liners, but when it clicks, the results are spectacular. He\u2019s also known for his gourmet sandwiches, which make him a favorite among his foursome."
+          },
+          "prediction": {
+            "S": "Brian will provide unforgettable moments, both on and off the course, but his inconsistency could be his Achilles' heel."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "5"
+          },
+          "name": {
+            "S": "Andy McDonald"
+          },
+          "handicap": {
+            "N": "20"
+          },
+          "bio": {
+            "S": "Andy is a powerhouse who lives for the thrill of the long drive. Despite his strength, his putting game often resembles a game of pinball. Off the course, Andy is a fitness enthusiast who runs marathons, making him the fittest golfer in the group."
+          },
+          "prediction": {
+            "S": "Andy will crush the ball off the tee but could struggle to find the cup on the green."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "6"
+          },
+          "name": {
+            "S": "Dan Hamilton"
+          },
+          "handicap": {
+            "N": "22"
+          },
+          "bio": {
+            "S": "Dan is the group\u2019s tactician, carefully calculating every shot as if he\u2019s solving a complex equation. Known for his love of data, Dan has an app for tracking every stat imaginable. Off the course, he enjoys grilling and is famous for his secret BBQ sauce."
+          },
+          "prediction": {
+            "S": "Dan\u2019s methodical approach will pay off on tricky holes, but overanalysis might slow him down on the easier ones."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "7"
+          },
+          "name": {
+            "S": "Chris Troyan"
+          },
+          "handicap": {
+            "N": "25"
+          },
+          "bio": {
+            "S": "Chris is the cheerleader of the group, always lifting everyone\u2019s spirits. Though his game might not be as sharp as others, his enthusiasm is unmatched. Chris is also known for his collection of colorful golf shirts, each one brighter than the last."
+          },
+          "prediction": {
+            "S": "Chris may not score low, but his attitude will make him the true MVP of the outing."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "8"
+          },
+          "name": {
+            "S": "Brian Skilton"
+          },
+          "handicap": {
+            "N": "14"
+          },
+          "bio": {
+            "S": "Brian\u2019s nickname is 'The Surgeon' because of his precise short game. His wedge shots are the stuff of legend, though his tee shots sometimes leave him in awkward spots. Off the course, Brian is a chess enthusiast who sees golf as a strategic battle."
+          },
+          "prediction": {
+            "S": "Expect Brian to shine around the greens but occasionally falter off the tee."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "9"
+          },
+          "name": {
+            "S": "Steve Higbee"
+          },
+          "handicap": {
+            "N": "16"
+          },
+          "bio": {
+            "S": "Steve is a zen master on the course, never letting bad shots affect his mood. His calm demeanor and steady game make him a rock-solid teammate. Steve is also an avid birdwatcher and often points out rare species during rounds."
+          },
+          "prediction": {
+            "S": "Steve\u2019s consistency will be the glue that holds his team together, even if he rarely makes the highlight reel."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "10"
+          },
+          "name": {
+            "S": "Bill Tuefel"
+          },
+          "handicap": {
+            "N": "17"
+          },
+          "bio": {
+            "S": "Bill is the quiet powerhouse, letting his game speak louder than words. Known for his booming drives, Bill\u2019s approach game can be streaky but always entertaining. Off the course, he\u2019s a barbecue aficionado who loves hosting post-game feasts."
+          },
+          "prediction": {
+            "S": "Expect Bill to crush a few drives past 300 yards, but don\u2019t count on him to save the day with finesse shots."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "11"
+          },
+          "name": {
+            "S": "Tony Marandola"
+          },
+          "handicap": {
+            "N": "13"
+          },
+          "bio": {
+            "S": "Tony is a risk-taker who never backs down from a challenge. Known for attempting impossible shots, he\u2019s the group\u2019s highlight-reel creator. When he\u2019s not golfing, Tony loves restoring classic cars."
+          },
+          "prediction": {
+            "S": "Tony will pull off at least one jaw-dropping shot but might pay the price for his aggressive style."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "12"
+          },
+          "name": {
+            "S": "Brian Cusick"
+          },
+          "handicap": {
+            "N": "11"
+          },
+          "bio": {
+            "S": "Brian is a perfectionist who spends hours fine-tuning his swing. His disciplined approach often pays off, especially on the greens. A wine connoisseur, Brian often brings a bottle to celebrate a great round."
+          },
+          "prediction": {
+            "S": "Brian\u2019s consistency will keep his team in the game, but he might overthink in high-pressure moments."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "13"
+          },
+          "name": {
+            "S": "Frank O'Neill"
+          },
+          "handicap": {
+            "N": "19"
+          },
+          "bio": {
+            "S": "Frank is the group\u2019s storyteller, regaling everyone with tales of his youth. Though his game is a bit rusty, he makes up for it with unmatched camaraderie. Frank is also a history buff, often pointing out historical landmarks near the course."
+          },
+          "prediction": {
+            "S": "Frank\u2019s stories will keep the group entertained, but his game might need a little polishing to keep up."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "14"
+          },
+          "name": {
+            "S": "Brian McCollum"
+          },
+          "handicap": {
+            "N": "9"
+          },
+          "bio": {
+            "S": "Brian is a shot-shaping wizard who can bend the ball like Beckham. His creativity around the course is unparalleled, though it sometimes leads him into trouble. Off the course, Brian is a painter who sees golf as an art form."
+          },
+          "prediction": {
+            "S": "Brian\u2019s shot creativity will produce magic moments, but his risk-taking could cost him a few strokes."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "15"
+          },
+          "name": {
+            "S": "Nick Markley"
+          },
+          "handicap": {
+            "N": "23"
+          },
+          "bio": {
+            "S": "Nick is a golf gadget enthusiast, always testing out the latest tech. His bag is a mini pro shop, with every tool imaginable. Nick\u2019s methodical approach is both a strength and a weakness."
+          },
+          "prediction": {
+            "S": "Nick\u2019s love for gadgets will help him analyze his game, but he might lose focus on simpler tasks."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "16"
+          },
+          "name": {
+            "S": "Paul Philson"
+          },
+          "handicap": {
+            "N": "21"
+          },
+          "bio": {
+            "S": "Paul is the prankster of the group, always ready with a joke or a sneaky trick. His golf game is surprisingly sharp, especially on the greens. Paul is also an amateur comedian, keeping his foursome laughing through every hole."
+          },
+          "prediction": {
+            "S": "Paul\u2019s humor will lighten the mood, but his game might falter if he\u2019s too focused on getting laughs."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "17"
+          },
+          "name": {
+            "S": "Mark Rowles"
+          },
+          "handicap": {
+            "N": "18"
+          },
+          "bio": {
+            "S": "Mark is the steady veteran who\u2019s seen it all. His calm demeanor and reliable game make him a valuable teammate. Off the course, Mark is an avid fisherman who loves sharing his latest catch stories."
+          },
+          "prediction": {
+            "S": "Mark\u2019s reliability will be key, but his lack of risk-taking might hold him back in crucial moments."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "18"
+          },
+          "name": {
+            "S": "Sam Novak"
+          },
+          "handicap": {
+            "N": "24"
+          },
+          "bio": {
+            "S": "Sam is the wildcard of the group, capable of brilliance or disaster on any given hole. His high-risk, high-reward style keeps things exciting. Sam is also a foodie who loves discovering new golf course diners."
+          },
+          "prediction": {
+            "S": "Sam\u2019s unpredictability will lead to incredible highs and hilarious lows, making him the ultimate wildcard."
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": {
+            "S": "19"
+          },
+          "name": {
+            "S": "Noel Morning"
+          },
+          "handicap": {
+            "N": "20"
+          },
+          "bio": {
+            "S": "Noel is a strategic thinker who plays the percentages. Known for his sharp wit, Noel keeps everyone on their toes both on and off the course. A trivia buff, he often turns rounds into informal quiz competitions."
+          },
+          "prediction": {
+            "S": "Noel\u2019s strategy will make him a contender, but he might overthink some shots, costing him valuable strokes."
+          }
+        }
+      }
+    }
+  ]
+}
