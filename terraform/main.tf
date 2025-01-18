@@ -171,6 +171,41 @@ resource "aws_apigatewayv2_route" "golf_outing_route" {
   target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
 }
 
+resource "aws_s3_bucket" "lambda_deployment_bucket" {
+  bucket        = "golf-outing-lambda-deployments"
+  force_destroy = true
+
+  tags = {
+    Name = "GolfOutingLambdaBucket"
+  }
+}
+
+resource "aws_s3_bucket_acl" "lambda_bucket_acl" {
+  bucket = aws_s3_bucket.lambda_deployment_bucket.id
+  acl    = "private"
+}
+
+resource "aws_s3_object" "lambda_zip" {
+  bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
+  key    = "lambda.zip"
+  source = "${path.module}/lambda.zip"
+}
+
+resource "aws_lambda_function" "golf_outing_lambda" {
+  function_name = "GolfOutingHandler"
+  runtime       = "nodejs18.x"
+  role          = aws_iam_role.golf_outing_lambda_role.arn
+  handler       = "index.handler"
+  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.bucket
+  s3_key        = aws_s3_object.lambda_zip.key
+
+  environment {
+    variables = {
+      DYNAMODB_TABLE = aws_dynamodb_table.golf_outing_table.name
+    }
+  }
+}
+
 # Terraform Outputs
 output "s3_bucket_name" {
   value = aws_s3_bucket.golf_outing_bucket.bucket
@@ -182,4 +217,8 @@ output "s3_bucket_website_url" {
 
 output "api_gateway_url" {
   value = aws_apigatewayv2_api.golf_outing_api.api_endpoint
+}
+
+output "cloudfront_distribution_id" {
+  value = aws_cloudfront_distribution.golf_outing_distribution.id
 }

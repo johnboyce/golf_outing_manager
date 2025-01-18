@@ -10,14 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.5.0
-
+      # Step 2: Validate AWS Credentials
       - name: Validate AWS Credentials
         run: aws sts get-caller-identity
         env:
@@ -25,25 +22,56 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      - name: Initialize Terraform
-        working-directory: terraform
-        run: terraform init
+      # Step 3: Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      # Step 4: Package Lambda Function
+      - name: Package Lambda Function
+        run: |
+          cd lambda
+          zip -r ../lambda.zip .
+          cd ..
+
+      # Step 5: Upload Lambda ZIP to S3
+      - name: Upload Lambda ZIP to S3
+        run: |
+          aws s3 cp lambda.zip s3://golf-outing-lambda-deployments/
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      - name: Plan Terraform
-        working-directory: terraform
+      # Step 6: Plan Terraform Changes
+      - name: Terraform Plan
         run: terraform plan
+        working-directory: terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
 
-      - name: Apply Terraform
-        working-directory: terraform
+      # Step 7: Apply Terraform Changes
+      - name: Terraform Apply
         run: terraform apply -auto-approve
+        working-directory: terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: "us-east-1"
+
+      # Step 8: Retrieve CloudFront Distribution ID
+      - name: Get CloudFront Distribution ID
+        id: cloudfront
+        run: terraform output -raw cloudfront_distribution_id
+        working-directory: terraform
+
+      # Step 9: CloudFront Cache Invalidation
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ steps.cloudfront.outputs.value }} --paths "/*"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
