@@ -122,7 +122,7 @@ resource "aws_apigatewayv2_api" "golf_outing_api" {
 }
 
 resource "aws_apigatewayv2_stage" "golf_outing_stage" {
-  api_id      = aws_apigatewayv2_api.id
+  api_id      = aws_apigatewayv2_api.golf_outing_api.id
   name        = "$default"
   auto_deploy = true
 }
@@ -132,17 +132,17 @@ resource "aws_lambda_permission" "api_gateway_invoke" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.golf_outing_lambda.arn
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.execution_arn}/*"
+  source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
 }
 
 resource "aws_apigatewayv2_integration" "golf_outing_integration" {
-  api_id           = aws_apigatewayv2_api.id
+  api_id           = aws_apigatewayv2_api.golf_outing_api.id
   integration_type = "AWS_PROXY"
   integration_uri  = aws_lambda_function.golf_outing_lambda.arn
 }
 
 resource "aws_apigatewayv2_route" "golf_outing_route" {
-  api_id    = aws_apigatewayv2_api.id
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
   route_key = "ANY /{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.id}"
 }
@@ -153,7 +153,7 @@ output "s3_bucket_name" {
 }
 
 output "s3_bucket_website_url" {
-  value = aws_s3_bucket.golf_outing_bucket.website_endpoint
+  value = aws_s3_bucket.golf_outing_bucket.website_domain
 }
 
 output "api_gateway_url" {
