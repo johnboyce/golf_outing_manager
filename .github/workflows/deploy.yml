@@ -36,15 +36,19 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        working-directory: terraform
 
       - name: Terraform Validate
         run: terraform validate
+        working-directory: terraform
 
       - name: Terraform Plan
         run: terraform plan
+        working-directory: terraform
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
+        working-directory: terraform
 
       - name: Package Lambda
         run: |
@@ -74,4 +78,4 @@ jobs:
       - name: Validate Deployment
         run: |
           echo "Validating deployment..."
-          curl -I https://$(terraform output -raw cloudfront_distribution_id) || echo "Validation failed"
+          curl -I https://$(cd terraform && terraform output -raw cloudfront_distribution_id) || echo "Validation failed"
