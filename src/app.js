@@ -110,14 +110,25 @@ function allowDrop(event) {
 
 function drop(event, targetId) {
     event.preventDefault();
-    const data = event.dataTransfer.getData('text');
-    const playerElement = document.createElement('div');
-    playerElement.innerHTML = data;
 
-    const playerLi = playerElement.firstElementChild;
+    // Get the dragged player's data
+    const data = event.dataTransfer.getData('text');
+    const playerElementWrapper = document.createElement('div');
+    playerElementWrapper.innerHTML = data;
+    const playerLi = playerElementWrapper.firstElementChild;
+
+    // Find the available players list
     const availablePlayersList = document.getElementById('available-players');
 
-    // Remove from available players and add to team
-    availablePlayersList.removeChild(document.querySelector(`[data-id='${playerLi.getAttribute('data-id')}']`));
-    document.getElementById(targetId).appendChild(playerLi);
+    // Check if the player exists in the available players list and remove it
+    const playerId = playerLi.getAttribute('data-id');
+    const existingPlayer = availablePlayersList.querySelector(`[data-id='${playerId}']`);
+    if (existingPlayer) {
+        availablePlayersList.removeChild(existingPlayer);
+    }
+
+    // Append the player to the target team
+    const targetList = document.getElementById(targetId);
+    targetList.appendChild(playerLi);
 }
+
