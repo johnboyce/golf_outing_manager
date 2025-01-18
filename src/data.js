@@ -1,6 +1,7 @@
 export const fetchPlayers = async () => {
     try {
         const response = await fetch('https://4epgafkkhl.execute-api.us-east-1.amazonaws.com/players');
+        console.log(response);
         if (!response.ok) {
             throw new Error(`Failed to fetch players: ${response.statusText}`);
         }
@@ -34,7 +35,9 @@ export const addPlayer = async (playerData) => {
             throw new Error(`Failed to add player: ${response.statusText}`);
         }
 
-        return await response.json();
+        const response2 = await response.json();
+        console.log(response2);
+        return ;
     } catch (error) {
         console.error('Error adding player:', error);
         throw error;
@@ -44,6 +47,7 @@ export const addPlayer = async (playerData) => {
 export const getPlayer = async (playerId) => {
     try {
         const response = await fetch(`https://4epgafkkhl.execute-api.us-east-1.amazonaws.com/players/${playerId}`);
+        console.log(response);
         if (!response.ok) {
             throw new Error(`Failed to fetch player: ${response.statusText}`);
         }
