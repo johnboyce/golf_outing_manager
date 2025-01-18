@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      S3_BUCKET: golf-outing-lambda-deployments
+      S3_LAMBDA_BUCKET: golf-outing-lambda-deployments
+      S3_GOLF_BUCKET: golf-outing-manager
       LAMBDA_NAME: GolfOutingHandler
       LAMBDA_RUNTIME: nodejs18.x
       LAMBDA_HANDLER: index.handler
@@ -49,6 +50,11 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: terraform
+
+      - name: Sync to S3
+        run: |
+          aws s3 sync ./src s3://${{ env.S3_GOLF_BUCKET }} --delete
+          echo "Static files synced to S3 bucket."
 
 #      - name: Package Lambda
 #        run: |

@@ -278,6 +278,29 @@ resource "aws_apigatewayv2_stage" "golf_outing_stage" {
   api_id      = aws_apigatewayv2_api.golf_outing_api.id
   name        = "$default"
   auto_deploy = true
+
+  default_route_settings {
+    throttling_rate_limit = 1000
+    throttling_burst_limit = 500
+  }
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway_logs.arn
+    format = jsonencode({
+      requestId       = "$context.requestId",
+      ip              = "$context.identity.sourceIp",
+      requestTime     = "$context.requestTime",
+      routeKey        = "$context.routeKey",
+      status          = "$context.status",
+      protocol        = "$context.protocol",
+      responseLength  = "$context.responseLength"
+    })
+  }
+}
+
+resource "aws_cloudwatch_log_group" "api_gateway_logs" {
+  name              = "/aws/api-gateway/golf-outing-api"
+  retention_in_days = 5 # Adjust retention period as needed
 }
 
 resource "aws_apigatewayv2_route" "golf_outing_route" {

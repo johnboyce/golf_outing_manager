@@ -22,11 +22,17 @@ exports.handler = async (event) => {
                 return await addPlayer(event.playerData);
             default:
                 throw new Error(`Unsupported operation: ${operation}`);
+
         }
     } catch (error) {
         console.error('Error processing event:', error);
         return {
             statusCode: 500,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            },
             body: JSON.stringify({
                 message: 'Internal server error',
                 error: error.message
@@ -40,6 +46,11 @@ const listPlayers = async () => {
         const data = await docClient.send(new ScanCommand({ TableName: TABLE_NAME }));
         return {
             statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            },
             body: JSON.stringify(data.Items),
         };
     } catch (error) {
@@ -58,12 +69,22 @@ const getPlayer = async (playerId) => {
         if (!data.Item) {
             return {
                 statusCode: 404,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                },
                 body: JSON.stringify({ message: 'Player not found' }),
             };
         }
 
         return {
             statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            },
             body: JSON.stringify(data.Item),
         };
     } catch (error) {
@@ -81,6 +102,11 @@ const addPlayer = async (playerData) => {
 
         return {
             statusCode: 201,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            },
             body: JSON.stringify({ message: 'Player added successfully' }),
         };
     } catch (error) {
