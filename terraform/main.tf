@@ -153,7 +153,7 @@ output "s3_bucket_name" {
 }
 
 output "s3_bucket_website_url" {
-  value = aws_s3_bucket.golf_outing_bucket.website_domain
+  value = "http://${aws_s3_bucket.golf_outing_bucket.bucket}.s3-website-us-east-1.amazonaws.com"
 }
 
 output "api_gateway_url" {
