@@ -36,8 +36,8 @@ resource "aws_cloudfront_origin_access_identity" "golf_outing_oai" {
   comment = "OAI for Golf Outing CloudFront"
 }
 
-resource "aws_iam_policy" "cloudfront_s3_access" {
-  name = "CloudFrontS3AccessPolicy"
+resource "aws_s3_bucket_policy" "golf_outing_policy" {
+  bucket = aws_s3_bucket.golf_outing_bucket.id
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -58,12 +58,6 @@ resource "aws_iam_policy" "cloudfront_s3_access" {
       }
     ]
   })
-}
-
-resource "aws_s3_bucket_policy" "golf_outing_policy" {
-  bucket = aws_s3_bucket.golf_outing_bucket.id
-
-  policy = aws_iam_policy.cloudfront_s3_access.policy
 }
 
 # S3 Bucket for Lambda Deployment
@@ -180,6 +174,8 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
     Name = "Golf Outing Distribution"
   }
 }
+
+data "aws_caller_identity" "current" {}
 
 # DynamoDB Table for Data Persistence
 resource "aws_dynamodb_table" "golf_outing_table" {
