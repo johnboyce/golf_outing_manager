@@ -1,3 +1,90 @@
+/* Background Image */
+body {
+    background-image: url('https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header styles */
+header {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+/* Container styles */
+.container {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 960px;
+}
+
+/* Profile Image */
+.profile-image-sm {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Player Info Panel */
+#player-info-panel {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+}
+
+/* Team and Available Players Panels */
+.team-dropzone, #available-players {
+    min-height: 200px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 15px;
+}
+
+.list-group-item {
+    margin-bottom: 5px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Buttons */
+.btn {
+    margin-top: 10px;
+}
+
+/* Hover Effects */
+.btn:hover, .profile-image-sm:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+#player-info-panel img {
+    max-width: 80px;
+    margin: 10px auto;
+    display: block;
+    border-radius: 50%;
+}
+
 /* Animation: Fade-In */
 @keyframes fadeIn {
     from {
