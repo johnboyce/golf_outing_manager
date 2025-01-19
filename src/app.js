@@ -15,9 +15,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         populateCaptainSelectors(allPlayers);
 
-        // Enable Start Draft button only when captains are selected
-        document.getElementById('team-one-captain').addEventListener('change', validateCaptainSelection);
-        document.getElementById('team-two-captain').addEventListener('change', validateCaptainSelection);
+        // Event listeners for captain selection
+        const teamOneSelector = document.getElementById('team-one-captain');
+        const teamTwoSelector = document.getElementById('team-two-captain');
+
+        teamOneSelector.addEventListener('change', () => {
+            filterCaptainOptions(teamOneSelector.value, teamTwoSelector);
+            validateCaptainSelection();
+        });
+
+        teamTwoSelector.addEventListener('change', () => {
+            filterCaptainOptions(teamTwoSelector.value, teamOneSelector);
+            validateCaptainSelection();
+        });
 
         // Start draft logic
         document.getElementById('start-draft-btn').addEventListener('click', () => {
@@ -39,6 +49,23 @@ function populateCaptainSelectors(players) {
         teamOneSelector.add(optionOne);
         teamTwoSelector.add(optionTwo);
     });
+}
+
+function filterCaptainOptions(selectedId, otherSelector) {
+    const otherOptions = Array.from(otherSelector.options);
+
+    // Reset options for the other selector
+    otherOptions.forEach(option => {
+        option.disabled = false;
+    });
+
+    // Disable the selected captain in the other selector
+    if (selectedId) {
+        const optionToDisable = otherOptions.find(option => option.value === selectedId);
+        if (optionToDisable) {
+            optionToDisable.disabled = true;
+        }
+    }
 }
 
 function validateCaptainSelection() {
@@ -98,7 +125,7 @@ function createAvailablePlayerElement(player) {
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
     li.innerHTML = `
         <div class="d-flex align-items-center">
-            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onclick="showPlayerProfile('${player.id}')"/>
+            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="showPlayerInfo('${player.id}')" />
             <span>${player.name} (${player.handicap})</span>
         </div>
         <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}')">
@@ -120,37 +147,22 @@ function createPlayerElement(player) {
     return li;
 }
 
-function showPlayerProfile(playerId) {
+function showPlayerInfo(playerId) {
     const player = allPlayers.find(p => p.id === playerId);
+    const playerInfoPanel = document.getElementById('player-info-panel');
 
-    const profilePopup = document.createElement('div');
-    profilePopup.className = 'profile-popup';
-    profilePopup.innerHTML = `
-        <img src="${player.profileImage}" alt="${player.name}" class="profile-image-lg" />
-        <h4>${player.name} (${player.nickname})</h4>
+    playerInfoPanel.innerHTML = `
+        <img src="${player.profileImage}" alt="${player.name}" />
+        <h5>${player.name} (${player.nickname})</h5>
+        <p><strong>Handicap:</strong> ${player.handicap}</p>
         <p><strong>Bio:</strong> ${player.bio}</p>
         <p><strong>Prediction:</strong> ${player.prediction}</p>
     `;
-
-    profilePopup.style.position = 'fixed';
-    profilePopup.style.top = '20%';
-    profilePopup.style.left = '50%';
-    profilePopup.style.transform = 'translate(-50%, -20%)';
-    profilePopup.style.zIndex = '1050';
-
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = 'Close';
-    closeBtn.className = 'btn btn-danger mt-2';
-    closeBtn.onclick = () => profilePopup.remove();
-    profilePopup.appendChild(closeBtn);
-
-    document.body.appendChild(profilePopup);
 }
 
 window.addPlayerToTeam = (playerId) => {
     const availablePlayersList = document.getElementById('available-players');
     const playerElement = availablePlayersList.querySelector(`[data-id="${playerId}"]`);
-    const playerName = playerElement.querySelector('span').textContent;
 
     // Remove from available players
     availablePlayersList.removeChild(playerElement);
@@ -158,10 +170,12 @@ window.addPlayerToTeam = (playerId) => {
     // Add to the current team
     const targetTeam = currentTurn;
     const targetList = document.getElementById(targetTeam);
-    const li = document.createElement('li');
-    li.className = 'list-group-item';
-    li.textContent = playerName; // Show only the handicap in parentheses
+    const player = allPlayers.find(p => p.id === playerId);
+    const li = createPlayerElement(player);
     targetList.appendChild(li);
+
+    // Update the last draft selection
+    updateLastDraftSelection(player);
 
     // Switch turn
     currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
@@ -172,3 +186,12 @@ window.addPlayerToTeam = (playerId) => {
         profileImage: li.querySelector('img').src
     })));
 };
+
+function updateLastDraftSelection(player) {
+    const playerInfoPanel = document.getElementById('player-info-panel');
+    playerInfoPanel.innerHTML = `
+        <h5>Last Draft Selection</h5>
+        <img src="${player.profileImage}" alt="${player.name}" />
+        <p><strong>${player.name}</strong> has been added to <strong>${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}</strong>.</p>
+    `;
+}
