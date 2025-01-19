@@ -96,7 +96,7 @@ function createAvailablePlayerElement(player) {
     const li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
     li.innerHTML = `
-        <span>${player.name} (Handicap: ${player.handicap})</span>
+        <span>${player.name} (${player.handicap})</span>
         <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}')">
             Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
         </button>
@@ -108,7 +108,7 @@ function createAvailablePlayerElement(player) {
 function createPlayerElement(player) {
     const li = document.createElement('li');
     li.className = 'list-group-item';
-    li.textContent = `${player.name} (Handicap: ${player.handicap})`;
+    li.textContent = `${player.name} (${player.handicap})`; // Show only the handicap in parentheses
     li.setAttribute('data-id', player.id);
     return li;
 }
@@ -126,7 +126,7 @@ window.addPlayerToTeam = (playerId) => {
     const targetList = document.getElementById(targetTeam);
     const li = document.createElement('li');
     li.className = 'list-group-item';
-    li.textContent = playerName;
+    li.textContent = playerName; // Show only the handicap in parentheses
     targetList.appendChild(li);
 
     // Show move notification
