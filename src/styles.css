@@ -86,42 +86,81 @@ header {
 }
 
 /* Animation: Fade-In */
+/* General Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
+        transform: translateY(-10px);
     }
     to {
         opacity: 1;
-    }
-}
-
-.fade-in {
-    animation: fadeIn 1s ease-in-out;
-}
-
-/* Animation: Slide-In */
-@keyframes slideIn {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    to {
         transform: translateY(0);
-        opacity: 1;
     }
 }
 
-.slide-in {
-    animation: slideIn 0.8s ease-in-out;
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
 }
 
-/* Hover effects for buttons and images */
-.btn:hover, .profile-image-sm:hover {
-    transform: scale(1.05);
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 5px 2px rgba(0, 255, 0, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 15px 4px rgba(0, 255, 0, 0.8);
+    }
+    100% {
+        box-shadow: 0 0 5px 2px rgba(0, 255, 0, 0.5);
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.fade-out {
+    animation: fadeOut 0.5s ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+.pulse {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Profile Image */
+.profile-image-sm {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    cursor: pointer;
     transition: transform 0.2s ease-in-out;
 }
 
-#player-info-panel:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: box-shadow 0.3s ease-in-out;
+.profile-image-sm:hover {
+    transform: scale(1.1);
+}
+
+/* Player Info Panel Image */
+#player-info-panel img {
+    max-width: 80px;
+    margin: 10px auto;
+    display: block;
+    border-radius: 50%;
+}
+
+/* Team Dropzone */
+.team-dropzone {
+    transition: background-color 0.3s ease-in-out;
+}
+
+.team-dropzone:hover {
+    background-color: rgba(0, 255, 0, 0.2);
 }

@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         populateCaptainSelectors(allPlayers);
 
-        // Event listeners for captain selection
         const teamOneSelector = document.getElementById('team-one-captain');
         const teamTwoSelector = document.getElementById('team-two-captain');
 
@@ -30,7 +29,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             validateCaptainSelection();
         });
 
-        // Start draft logic
         document.getElementById('start-draft-btn').addEventListener('click', () => {
             startDraft(allPlayers);
         });
@@ -52,7 +50,6 @@ async function fetchPlayersFromAPI() {
 }
 
 function populateCaptainSelectors(players) {
-    console.log('Populating captain selectors with players:', players);
     const teamOneSelector = document.getElementById('team-one-captain');
     const teamTwoSelector = document.getElementById('team-two-captain');
 
@@ -63,18 +60,15 @@ function populateCaptainSelectors(players) {
         teamOneSelector.add(optionOne);
         teamTwoSelector.add(optionTwo);
     });
-    console.log('Captain selectors populated successfully.');
 }
 
 function filterCaptainOptions(selectedId, otherSelector) {
     const otherOptions = Array.from(otherSelector.options);
 
-    // Reset options for the other selector
     otherOptions.forEach(option => {
         option.disabled = false;
     });
 
-    // Disable the selected captain in the other selector
     if (selectedId) {
         const optionToDisable = otherOptions.find(option => option.value === selectedId);
         if (optionToDisable) {
@@ -88,7 +82,6 @@ function validateCaptainSelection() {
     const teamTwoId = document.getElementById('team-two-captain').value;
     const startButton = document.getElementById('start-draft-btn');
 
-    // Enable Start Draft button only if both captains are selected and not the same
     startButton.disabled = !(teamOneId && teamTwoId && teamOneId !== teamTwoId);
 }
 
@@ -122,7 +115,19 @@ function setupTeams(players) {
 function assignPlayerToTeam(teamId, player) {
     const teamList = document.getElementById(teamId);
     const playerElement = createPlayerElement(player);
+    playerElement.classList.add('fade-in'); // Add fade-in animation
     teamList.appendChild(playerElement);
+
+    // Highlight active team
+    const teamOneName = document.getElementById('team-one-name');
+    const teamTwoName = document.getElementById('team-two-name');
+    if (teamId === 'team-one') {
+        teamOneName.classList.add('pulse');
+        teamTwoName.classList.remove('pulse');
+    } else {
+        teamTwoName.classList.add('pulse');
+        teamOneName.classList.remove('pulse');
+    }
 }
 
 function populateAvailablePlayers(players) {
@@ -130,37 +135,49 @@ function populateAvailablePlayers(players) {
     availablePlayersList.innerHTML = '';
 
     players.forEach(player => {
-        const li = createAvailablePlayerElement(player);
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in'; // Fade-in animation
+        li.innerHTML = `
+            <div class="d-flex align-items-center">
+                <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="showPlayerInfo('${player.id}')">
+                <span>${player.name} (${player.handicap})</span>
+            </div>
+            <button class="btn btn-sm btn-${currentTurn === 'team-one' ? 'primary' : 'success'}" onclick="addPlayerToTeam('${player.id}')">
+                Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
+            </button>
+        `;
+        li.addEventListener('animationend', () => {
+            li.classList.remove('fade-in'); // Clean up animation class
+        });
         availablePlayersList.appendChild(li);
     });
-    console.log('Available players populated.');
 }
 
-function createAvailablePlayerElement(player) {
-    const li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
-    li.innerHTML = `
-        <div class="d-flex align-items-center">
-            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="showPlayerInfo('${player.id}')" />
-            <span>${player.name} (${player.handicap})</span>
-        </div>
-        <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}')">
-            Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
-        </button>
-    `;
-    li.setAttribute('data-id', player.id);
-    return li;
-}
+function addPlayerToTeam(playerId) {
+    const player = allPlayers.find(p => p.id === playerId);
 
-function createPlayerElement(player) {
-    const li = document.createElement('li');
-    li.className = 'list-group-item d-flex align-items-center slide-in';
-    li.innerHTML = `
-        <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2"/>
-        <span>${player.name} (${player.handicap})</span>
-    `;
-    li.setAttribute('data-id', player.id);
-    return li;
+    // Animate removal from available players
+    const availablePlayersList = document.getElementById('available-players');
+    const playerElement = availablePlayersList.querySelector(`[data-id="${playerId}"]`);
+    if (playerElement) {
+        playerElement.classList.add('fade-out'); // Fade-out animation
+        playerElement.addEventListener('animationend', () => {
+            availablePlayersList.removeChild(playerElement);
+        });
+    }
+
+    // Assign player to team
+    if (currentTurn === 'team-one') {
+        assignPlayerToTeam('team-one', player);
+    } else {
+        assignPlayerToTeam('team-two', player);
+    }
+
+    // Update players and switch turn
+    allPlayers = allPlayers.filter(p => p.id !== playerId);
+    populateAvailablePlayers(allPlayers);
+
+    currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
 }
 
 function showPlayerInfo(playerId) {
@@ -168,7 +185,7 @@ function showPlayerInfo(playerId) {
     const playerInfoPanel = document.getElementById('player-info-panel');
 
     playerInfoPanel.innerHTML = `
-        <img src="${player.profileImage}" alt="${player.name}" />
+        <img src="${player.profileImage}" alt="${player.name}">
         <h5>${player.name} (${player.nickname})</h5>
         <p><strong>Handicap:</strong> ${player.handicap}</p>
         <p><strong>Bio:</strong> ${player.bio}</p>
