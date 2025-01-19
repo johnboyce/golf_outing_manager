@@ -119,7 +119,7 @@ function populateAvailablePlayers(players) {
         li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
         li.innerHTML = `
             <div class="d-flex align-items-center">
-                <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2">
+                <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="updatePlayerInfo('${player.id}')" onclick="updatePlayerInfo('${player.id}')">
                 <span>${player.name} (${player.handicap})</span>
             </div>
             <button class="btn btn-sm btn-${currentTurn === 'team-one' ? 'primary' : 'success'}" onclick="addPlayerToTeam('${player.id}')">
@@ -153,9 +153,25 @@ function createPlayerElement(player) {
     li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
     li.innerHTML = `
         <div class="d-flex align-items-center">
-            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2">
+            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="updatePlayerInfo('${player.id}')" onclick="updatePlayerInfo('${player.id}')">
             <span>${player.name} (${player.handicap})</span>
         </div>
     `;
     return li;
+}
+
+// Update Player Info Panel
+function updatePlayerInfo(playerId) {
+    const player = allPlayers.find(p => p.id === playerId);
+    const playerInfoPanel = document.getElementById('player-info-panel');
+
+    if (player) {
+        playerInfoPanel.innerHTML = `
+            <img src="${player.profileImage}" alt="${player.name}">
+            <h5>${player.name} (${player.nickname})</h5>
+            <p><strong>Handicap:</strong> ${player.handicap}</p>
+            <p><strong>Bio:</strong> ${player.bio}</p>
+            <p><strong>Prediction:</strong> ${player.prediction}</p>
+        `;
+    }
 }
