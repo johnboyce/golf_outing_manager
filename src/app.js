@@ -6,13 +6,14 @@ let selectedCaptains = {
 };
 
 let currentTurn = 'team-one'; // Tracks whose turn it is
+let allPlayers = []; // Store all players for quick access
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const players = await fetchPlayers();
-        console.log('Fetched players:', players);
+        allPlayers = await fetchPlayers();
+        console.log('Fetched players:', allPlayers);
 
-        populateCaptainSelectors(players);
+        populateCaptainSelectors(allPlayers);
 
         // Enable Start Draft button only when captains are selected
         document.getElementById('team-one-captain').addEventListener('change', validateCaptainSelection);
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Start draft logic
         document.getElementById('start-draft-btn').addEventListener('click', () => {
-            startDraft(players);
+            startDraft(allPlayers);
         });
     } catch (error) {
         console.error('Error initializing app:', error);
@@ -92,62 +93,58 @@ function populateAvailablePlayers(players) {
     });
 }
 
-function showPlayerProfile(event, playerId) {
-    const player = getPlayerById(playerId); // Fetch player from stored data
+function createAvailablePlayerElement(player) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.innerHTML = `
+        <div class="d-flex align-items-center">
+            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onclick="showPlayerProfile('${player.id}')"/>
+            <span>${player.name} (${player.handicap})</span>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}')">
+            Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
+        </button>
+    `;
+    li.setAttribute('data-id', player.id);
+    return li;
+}
+
+function createPlayerElement(player) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex align-items-center';
+    li.innerHTML = `
+        <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2"/>
+        <span>${player.name} (${player.handicap})</span>
+    `;
+    li.setAttribute('data-id', player.id);
+    return li;
+}
+
+function showPlayerProfile(playerId) {
+    const player = allPlayers.find(p => p.id === playerId);
+
     const profilePopup = document.createElement('div');
     profilePopup.className = 'profile-popup';
     profilePopup.innerHTML = `
-        <img src="${player.profileImage}" alt="${player.name}" class="profile-image" />
+        <img src="${player.profileImage}" alt="${player.name}" class="profile-image-lg" />
         <h4>${player.name} (${player.nickname})</h4>
         <p><strong>Bio:</strong> ${player.bio}</p>
         <p><strong>Prediction:</strong> ${player.prediction}</p>
     `;
 
-    profilePopup.style.position = 'absolute';
-    profilePopup.style.left = `${event.pageX + 10}px`;
-    profilePopup.style.top = `${event.pageY + 10}px`;
+    profilePopup.style.position = 'fixed';
+    profilePopup.style.top = '20%';
+    profilePopup.style.left = '50%';
+    profilePopup.style.transform = 'translate(-50%, -20%)';
+    profilePopup.style.zIndex = '1050';
 
-    profilePopup.id = 'player-profile-popup';
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Close';
+    closeBtn.className = 'btn btn-danger mt-2';
+    closeBtn.onclick = () => profilePopup.remove();
+    profilePopup.appendChild(closeBtn);
+
     document.body.appendChild(profilePopup);
-}
-
-function hidePlayerProfile() {
-    const profilePopup = document.getElementById('player-profile-popup');
-    if (profilePopup) {
-        profilePopup.remove();
-    }
-}
-
-function getPlayerById(id) {
-    return allPlayers.find(player => player.id === id); // Replace `allPlayers` with your actual data source
-}
-
-
-function createAvailablePlayerElement(player) {
-    const li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center';
-    li.innerHTML = `
-        <span>${player.name} (${player.handicap})</span>
-        <div>
-            <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}')">
-                Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
-            </button>
-            <i class="fas fa-info-circle profile-icon" 
-               onmouseover="showPlayerProfile(event, '${player.id}')"
-               onmouseout="hidePlayerProfile(event)"></i>
-        </div>
-    `;
-    li.setAttribute('data-id', player.id);
-    return li;
-}
-
-
-function createPlayerElement(player) {
-    const li = document.createElement('li');
-    li.className = 'list-group-item';
-    li.textContent = `${player.name} (${player.handicap})`; // Show only the handicap in parentheses
-    li.setAttribute('data-id', player.id);
-    return li;
 }
 
 window.addPlayerToTeam = (playerId) => {
@@ -166,28 +163,12 @@ window.addPlayerToTeam = (playerId) => {
     li.textContent = playerName; // Show only the handicap in parentheses
     targetList.appendChild(li);
 
-    // Show move notification
-    showMoveNotification(playerName, targetTeam);
-
     // Switch turn
     currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
     populateAvailablePlayers(Array.from(availablePlayersList.querySelectorAll('li')).map(li => ({
         id: li.getAttribute('data-id'),
         name: li.querySelector('span').textContent.split(' (')[0],
         handicap: li.querySelector('span').textContent.match(/\(([^)]+)\)/)[1],
+        profileImage: li.querySelector('img').src
     })));
 };
-
-function showMoveNotification(playerName, targetTeam) {
-    const notification = document.createElement('div');
-    notification.className = 'alert alert-success position-fixed top-0 end-0 m-3';
-    notification.style.zIndex = '1050';
-    notification.innerHTML = `<strong>${playerName}</strong> has been added to <strong>${targetTeam.replace('-', ' ').toUpperCase()}</strong>!`;
-
-    document.body.appendChild(notification);
-
-    // Automatically remove after 3 seconds
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
