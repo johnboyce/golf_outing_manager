@@ -1,3 +1,31 @@
+/* Tabs Customization */
+.nav-tabs .nav-link {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: none;
+}
+
+.nav-tabs .nav-link.active {
+    color: #333;
+    background-color: #fff;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+/* Tab Content */
+.tab-content {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    color: #fff;
+}
+
+/* Golf Course Images */
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
 /* General Body Styling */
 body {
     background-image: url('https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg');

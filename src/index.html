@@ -17,42 +17,124 @@
 </header>
 
 <div class="container my-4">
-    <!-- Captain Selection -->
-    <div class="row">
-        <div class="col-md-6">
-            <h4>Select Captains</h4>
-            <div class="mb-3">
-                <label for="team-one-captain" class="form-label">Team One Captain</label>
-                <select id="team-one-captain" class="form-select"></select>
-            </div>
-            <div class="mb-3">
-                <label for="team-two-captain" class="form-label">Team Two Captain</label>
-                <select id="team-two-captain" class="form-select"></select>
-            </div>
-            <button id="start-draft-btn" class="btn btn-primary w-100" disabled>Start Draft</button>
-        </div>
-        <!-- Player Info Panel -->
-        <div class="col-md-6">
-            <h4>Player Info</h4>
-            <div id="player-info-panel" class="border p-3 rounded bg-light">
-                <p class="text-center text-muted">Hover over a player to view their profile here.</p>
-            </div>
-        </div>
-    </div>
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="players-tab" data-bs-toggle="tab" data-bs-target="#players" type="button" role="tab">Players</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="draft-tab" data-bs-toggle="tab" data-bs-target="#draft" type="button" role="tab">Draft</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="foursomes-tab" data-bs-toggle="tab" data-bs-target="#foursomes" type="button" role="tab">Foursomes</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses" type="button" role="tab">Courses</button>
+        </li>
+    </ul>
 
-    <!-- Draft Panels -->
-    <div id="draft-panels" class="row mt-4 d-none">
-        <div class="col-md-4">
-            <h4 id="team-one-name" class="text-center">Team One</h4>
-            <ul id="team-one" class="list-group team-dropzone"></ul>
+    <!-- Tabs Content -->
+    <div class="tab-content" id="mainTabsContent">
+        <!-- Tab 1: Players -->
+        <div class="tab-pane fade show active" id="players" role="tabpanel">
+            <h3 class="text-center my-3">Players</h3>
+            <div id="players-list" class="row"></div>
         </div>
-        <div class="col-md-4">
-            <h4 class="text-center">Available Players</h4>
-            <ul id="available-players" class="list-group"></ul>
+
+        <!-- Tab 2: Draft -->
+        <div class="tab-pane fade" id="draft" role="tabpanel">
+            <h3 class="text-center my-3">Draft</h3>
+            <div id="draft-content">
+                <!-- Captain Selection -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Select Captains</h4>
+                        <div class="mb-3">
+                            <label for="team-one-captain" class="form-label">Team One Captain</label>
+                            <select id="team-one-captain" class="form-select"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="team-two-captain" class="form-label">Team Two Captain</label>
+                            <select id="team-two-captain" class="form-select"></select>
+                        </div>
+                        <button id="start-draft-btn" class="btn btn-primary w-100" disabled>Start Draft</button>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Player Info</h4>
+                        <div id="player-info-panel" class="border p-3 rounded bg-light">
+                            <p class="text-center text-muted">Hover over a player to view their profile here.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Draft Panels -->
+                <div id="draft-panels" class="row mt-4 d-none">
+                    <div class="col-md-4">
+                        <h4 id="team-one-name" class="text-center">Team One</h4>
+                        <ul id="team-one" class="list-group team-dropzone"></ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-center">Available Players</h4>
+                        <ul id="available-players" class="list-group"></ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 id="team-two-name" class="text-center">Team Two</h4>
+                        <ul id="team-two" class="list-group team-dropzone"></ul>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <h4 id="team-two-name" class="text-center">Team Two</h4>
-            <ul id="team-two" class="list-group team-dropzone"></ul>
+
+        <!-- Tab 3: Foursomes -->
+        <div class="tab-pane fade" id="foursomes" role="tabpanel">
+            <h3 class="text-center my-3">Foursomes</h3>
+            <div id="foursomes-list" class="row"></div>
+        </div>
+
+        <!-- Tab 4: Courses -->
+        <div class="tab-pane fade" id="courses" role="tabpanel">
+            <h3 class="text-center my-3">Golf Courses</h3>
+            <div id="courses-list" class="row">
+                <!-- Course 1: Bear Trap Dunes -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <img src="https://www.ruarkgolf.com/app/uploads/2018/08/beartrap.jpg" class="card-img-top" alt="Bear Trap Dunes">
+                        <div class="card-body">
+                            <h5 class="card-title">Bear Trap Dunes</h5>
+                            <p class="card-text">Bear Trap Dunes offers 27 holes of championship golf with scenic dunes and impeccable course conditions. A favorite for golfers visiting Delaware.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Course 2: War Admiral -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <img src="https://www.ruarkgolf.com/app/uploads/2018/08/war-admiral.jpg" class="card-img-top" alt="War Admiral">
+                        <div class="card-body">
+                            <h5 class="card-title">War Admiral</h5>
+                            <p class="card-text">This tree-lined course features challenging doglegs and stunning water hazards. Named after the Triple Crown winner, it's a must-play in Ocean City.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Course 3: Man O' War -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <img src="https://www.ruarkgolf.com/app/uploads/2018/08/man-o-war.jpg" class="card-img-top" alt="Man O' War">
+                        <div class="card-body">
+                            <h5 class="card-title">Man O' War</h5>
+                            <p class="card-text">Man O' War boasts expansive fairways and challenging greens. A classic links-style course perfect for skilled golfers.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Course 4: Lighthouse Sound -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <img src="https://www.ruarkgolf.com/app/uploads/2018/08/lighthouse-sound.jpg" class="card-img-top" alt="Lighthouse Sound">
+                        <div class="card-body">
+                            <h5 class="card-title">Lighthouse Sound</h5>
+                            <p class="card-text">With its stunning views of the Assawoman Bay, Lighthouse Sound is known for its beauty and strategic challenges. A gem of the Eastern Shore.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
