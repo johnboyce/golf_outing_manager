@@ -5,6 +5,8 @@ let selectedCaptains = {
     teamTwoCaptain: null
 };
 
+let currentTurn = 'team-one'; // Tracks whose turn it is
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const players = await fetchPlayers();
@@ -95,10 +97,9 @@ function createAvailablePlayerElement(player) {
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
     li.innerHTML = `
         <span>${player.name} (Handicap: ${player.handicap})</span>
-        <div>
-            <button class="btn btn-sm btn-primary me-2" onclick="addPlayerToTeam('${player.id}', 'team-one')">⬅ Add to Team One</button>
-            <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}', 'team-two')">Add to Team Two ➡</button>
-        </div>
+        <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}')">
+            Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
+        </button>
     `;
     li.setAttribute('data-id', player.id);
     return li;
@@ -112,7 +113,7 @@ function createPlayerElement(player) {
     return li;
 }
 
-window.addPlayerToTeam = (playerId, teamId) => {
+window.addPlayerToTeam = (playerId) => {
     const availablePlayersList = document.getElementById('available-players');
     const playerElement = availablePlayersList.querySelector(`[data-id="${playerId}"]`);
     const playerName = playerElement.querySelector('span').textContent;
@@ -120,25 +121,36 @@ window.addPlayerToTeam = (playerId, teamId) => {
     // Remove from available players
     availablePlayersList.removeChild(playerElement);
 
-    // Add to the target team
-    const targetList = document.getElementById(teamId);
+    // Add to the current team
+    const targetTeam = currentTurn;
+    const targetList = document.getElementById(targetTeam);
     const li = document.createElement('li');
     li.className = 'list-group-item';
     li.textContent = playerName;
     targetList.appendChild(li);
 
     // Show move notification
-    showMoveNotification(playerName, teamId);
+    showMoveNotification(playerName, targetTeam);
+
+    // Switch turn
+    currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
+    populateAvailablePlayers(Array.from(availablePlayersList.querySelectorAll('li')).map(li => ({
+        id: li.getAttribute('data-id'),
+        name: li.querySelector('span').textContent.split(' (')[0],
+        handicap: li.querySelector('span').textContent.match(/\(([^)]+)\)/)[1],
+    })));
 };
 
 function showMoveNotification(playerName, targetTeam) {
     const notification = document.createElement('div');
-    notification.className = 'alert alert-success';
+    notification.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+    notification.style.zIndex = '1050';
     notification.innerHTML = `<strong>${playerName}</strong> has been added to <strong>${targetTeam.replace('-', ' ').toUpperCase()}</strong>!`;
+
     document.body.appendChild(notification);
 
-    // Automatically remove after 5 seconds
+    // Automatically remove after 3 seconds
     setTimeout(() => {
         notification.remove();
-    }, 5000);
+    }, 3000);
 }
