@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         populatePlayersTab(allPlayers);
 
         // Populate captain selectors in Draft Tab
-        populateCaptainSelectors(allPlayers);
+        setupPreselectedCaptains();
 
         // Set up event listeners
         setupEventListeners();
@@ -60,97 +60,49 @@ function showPlayerProfile(playerId) {
     const playerInfoPanel = document.getElementById('player-info-panel');
 
     if (player) {
-        playerInfoPanel.innerHTML = `
-            <img src="${player.profileImage}" alt="${player.name}" class="mb-3 rounded">
+        const modal = new bootstrap.Modal(document.getElementById('playerProfileModal'));
+        document.getElementById('profile-modal-body').innerHTML = `
+            <img src="${player.profileImage}" alt="${player.name}" class="img-fluid rounded mb-3">
             <h5>${player.name} (${player.nickname})</h5>
             <p><strong>Handicap:</strong> ${player.handicap}</p>
             <p><strong>Bio:</strong> ${player.bio}</p>
             <p><strong>Prediction:</strong> ${player.prediction}</p>
         `;
+        modal.show();
     }
 }
 
-// Populate Captain Selectors
-function populateCaptainSelectors(players) {
+// Setup Preselected Captains
+function setupPreselectedCaptains() {
     const teamOneSelector = document.getElementById('team-one-captain');
     const teamTwoSelector = document.getElementById('team-two-captain');
 
-    players.forEach(player => {
-        const optionOne = new Option(player.name, player.id);
-        const optionTwo = new Option(player.name, player.id);
-        teamOneSelector.add(optionOne);
-        teamTwoSelector.add(optionTwo);
-    });
+    teamOneSelector.innerHTML = `<option value="john-boyce" selected>John Boyce</option>`;
+    teamTwoSelector.innerHTML = `<option value="jim-boyce" selected>Jim Boyce</option>`;
 }
 
 // Setup Event Listeners
 function setupEventListeners() {
-    const teamOneSelector = document.getElementById('team-one-captain');
-    const teamTwoSelector = document.getElementById('team-two-captain');
     const startDraftBtn = document.getElementById('start-draft-btn');
 
-    // Ensure captains cannot select the same player
-    teamOneSelector.addEventListener('change', () => handleCaptainSelection('team-one-captain', 'team-two-captain'));
-    teamTwoSelector.addEventListener('change', () => handleCaptainSelection('team-two-captain', 'team-one-captain'));
-
-    // Start the draft process
     startDraftBtn.addEventListener('click', startDraft);
-}
-
-// Handle Captain Selection Logic
-function handleCaptainSelection(changedSelectorId, otherSelectorId) {
-    const changedSelector = document.getElementById(changedSelectorId);
-    const otherSelector = document.getElementById(otherSelectorId);
-
-    const selectedId = changedSelector.value;
-
-    // Reset all options in the other selector
-    Array.from(otherSelector.options).forEach(option => (option.disabled = false));
-
-    // Disable the selected captain in the other selector
-    if (selectedId) {
-        const optionToDisable = Array.from(otherSelector.options).find(option => option.value === selectedId);
-        if (optionToDisable) optionToDisable.disabled = true;
-    }
-
-    validateCaptainSelection();
-}
-
-// Validate Captain Selection
-function validateCaptainSelection() {
-    const teamOneId = document.getElementById('team-one-captain').value;
-    const teamTwoId = document.getElementById('team-two-captain').value;
-    const startDraftBtn = document.getElementById('start-draft-btn');
-
-    // Enable Start Draft button only if captains are unique and selected
-    startDraftBtn.disabled = !(teamOneId && teamTwoId && teamOneId !== teamTwoId);
 }
 
 // Start Draft
 function startDraft() {
-    const teamOneSelector = document.getElementById('team-one-captain');
-    const teamTwoSelector = document.getElementById('team-two-captain');
+    selectedCaptains.teamOneCaptain = allPlayers.find(player => player.id === 'john-boyce');
+    selectedCaptains.teamTwoCaptain = allPlayers.find(player => player.id === 'jim-boyce');
 
-    // Identify selected captains
-    selectedCaptains.teamOneCaptain = allPlayers.find(player => player.id === teamOneSelector.value);
-    selectedCaptains.teamTwoCaptain = allPlayers.find(player => player.id === teamTwoSelector.value);
-
-    // Transition to the draft panels
     setupTeams();
 }
 
 // Setup Teams
 function setupTeams() {
     const draftPanels = document.getElementById('draft-panels');
-    const teamOneName = document.getElementById('team-one-name');
-    const teamTwoName = document.getElementById('team-two-name');
+    const commissionDraftBtn = document.getElementById('commission-draft-btn');
 
-    // Update team names
-    teamOneName.textContent = `Team ${selectedCaptains.teamOneCaptain.nickname}`;
-    teamTwoName.textContent = `Team ${selectedCaptains.teamTwoCaptain.nickname}`;
-
-    // Ensure the draft panel is visible
     draftPanels.classList.remove('d-none');
+    commissionDraftBtn.classList.add('d-none');
 
     // Assign captains to their respective teams
     teamOne.push(selectedCaptains.teamOneCaptain);
@@ -171,7 +123,7 @@ function populateAvailablePlayers(players) {
         li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
         li.innerHTML = `
             <div class="d-flex align-items-center">
-                <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="updatePlayerInfo('${player.id}')" onclick="updatePlayerInfo('${player.id}')">
+                <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2">
                 <span>${player.name} (${player.handicap})</span>
             </div>
             <button class="btn btn-sm btn-${currentTurn === 'team-one' ? 'primary' : 'success'}" onclick="addPlayerToTeam('${player.id}')">
@@ -186,20 +138,21 @@ function populateAvailablePlayers(players) {
 function addPlayerToTeam(playerId) {
     const player = allPlayers.find(p => p.id === playerId);
 
-    // Assign the player to the current team
     if (currentTurn === 'team-one') {
         teamOne.push(player);
-        const teamOneList = document.getElementById('team-one');
-        teamOneList.appendChild(createPlayerElement(player));
+        document.getElementById('team-one').appendChild(createPlayerElement(player));
     } else {
         teamTwo.push(player);
-        const teamTwoList = document.getElementById('team-two');
-        teamTwoList.appendChild(createPlayerElement(player));
+        document.getElementById('team-two').appendChild(createPlayerElement(player));
     }
 
-    // Update available players and switch turn
     allPlayers = allPlayers.filter(p => p.id !== playerId);
     populateAvailablePlayers(allPlayers);
+
+    if (allPlayers.length === 0) {
+        document.getElementById('commission-draft-btn').classList.remove('d-none');
+    }
+
     currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
 }
 
@@ -209,37 +162,22 @@ function createPlayerElement(player) {
     li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
     li.innerHTML = `
         <div class="d-flex align-items-center">
-            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="updatePlayerInfo('${player.id}')" onclick="updatePlayerInfo('${player.id}')">
+            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2">
             <span>${player.name} (${player.handicap})</span>
         </div>
     `;
     return li;
 }
 
-// Update Player Info Panel
-function updatePlayerInfo(playerId) {
-    const player = allPlayers.find(p => p.id === playerId);
-    const playerInfoPanel = document.getElementById('player-info-panel');
-
-    if (player) {
-        playerInfoPanel.innerHTML = `
-            <img src="${player.profileImage}" alt="${player.name}">
-            <h5>${player.name} (${player.nickname})</h5>
-            <p><strong>Handicap:</strong> ${player.handicap}</p>
-            <p><strong>Bio:</strong> ${player.bio}</p>
-            <p><strong>Prediction:</strong> ${player.prediction}</p>
-        `;
-    }
-}
-
 // Generate Foursomes
 function generateFoursomes() {
-    const allTeams = [...teamOne, ...teamTwo];
     const foursomesList = document.getElementById('foursomes-list');
     foursomesList.innerHTML = '';
 
-    for (let i = 0; i < allTeams.length; i += 4) {
-        const foursome = allTeams.slice(i, i + 4);
+    const allPlayersInTeams = [...teamOne, ...teamTwo];
+
+    for (let i = 0; i < allPlayersInTeams.length; i += 4) {
+        const foursome = allPlayersInTeams.slice(i, i + 4);
         const col = document.createElement('div');
         col.className = 'col-md-6 mb-4';
         col.innerHTML = `
