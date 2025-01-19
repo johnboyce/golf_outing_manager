@@ -46,11 +46,30 @@ function setupEventListeners() {
     const startDraftBtn = document.getElementById('start-draft-btn');
 
     // Ensure captains cannot select the same player
-    teamOneSelector.addEventListener('change', () => validateCaptainSelection());
-    teamTwoSelector.addEventListener('change', () => validateCaptainSelection());
+    teamOneSelector.addEventListener('change', () => handleCaptainSelection('team-one-captain', 'team-two-captain'));
+    teamTwoSelector.addEventListener('change', () => handleCaptainSelection('team-two-captain', 'team-one-captain'));
 
     // Start the draft process
     startDraftBtn.addEventListener('click', startDraft);
+}
+
+// Handle Captain Selection Logic
+function handleCaptainSelection(changedSelectorId, otherSelectorId) {
+    const changedSelector = document.getElementById(changedSelectorId);
+    const otherSelector = document.getElementById(otherSelectorId);
+
+    const selectedId = changedSelector.value;
+
+    // Reset all options in the other selector
+    Array.from(otherSelector.options).forEach(option => (option.disabled = false));
+
+    // Disable the selected captain in the other selector
+    if (selectedId) {
+        const optionToDisable = Array.from(otherSelector.options).find(option => option.value === selectedId);
+        if (optionToDisable) optionToDisable.disabled = true;
+    }
+
+    validateCaptainSelection();
 }
 
 // Validate Captain Selection
@@ -119,10 +138,10 @@ function populateAvailablePlayers(players) {
         li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
         li.innerHTML = `
             <div class="d-flex align-items-center">
-                <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="updatePlayerInfo('${player.id}')" onclick="updatePlayerInfo('${player.id}')">
+                <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="updatePlayerInfo('${player.id}')">
                 <span>${player.name} (${player.handicap})</span>
             </div>
-            <button class="btn btn-sm btn-${currentTurn === 'team-one' ? 'primary' : 'success'}" onclick="addPlayerToTeam('${player.id}')">
+            <button class="btn btn-sm btn-${currentTurn === 'team-one' ? 'primary' : 'success'}" onclick="addPlayerToTeam('${player.id}', this)">
                 Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
             </button>
         `;
@@ -131,7 +150,7 @@ function populateAvailablePlayers(players) {
 }
 
 // Add Player to Team
-function addPlayerToTeam(playerId) {
+function addPlayerToTeam(playerId, buttonElement) {
     const player = allPlayers.find(p => p.id === playerId);
 
     // Assign the player to the current team
@@ -141,23 +160,13 @@ function addPlayerToTeam(playerId) {
         assignPlayerToTeam('team-two', player);
     }
 
+    // Disable the button after the player is added
+    buttonElement.disabled = true;
+
     // Update available players and switch turn
     allPlayers = allPlayers.filter(p => p.id !== playerId);
     populateAvailablePlayers(allPlayers);
     currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
-}
-
-// Create Player Element
-function createPlayerElement(player) {
-    const li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
-    li.innerHTML = `
-        <div class="d-flex align-items-center">
-            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="updatePlayerInfo('${player.id}')" onclick="updatePlayerInfo('${player.id}')">
-            <span>${player.name} (${player.handicap})</span>
-        </div>
-    `;
-    return li;
 }
 
 // Update Player Info Panel
