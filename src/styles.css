@@ -1,4 +1,4 @@
-/* Background Image */
+/* General Body Styling */
 body {
     background-image: url('https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg');
     background-size: cover;
@@ -10,129 +10,20 @@ body {
     padding: 0;
 }
 
-/* Header styles */
+/* Header */
 header {
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     padding: 20px;
-    text-align: center;
     font-size: 24px;
     font-weight: bold;
     text-transform: uppercase;
-    color: #fff;
 }
 
-/* Container styles */
+/* Container */
 .container {
     background-color: rgba(0, 0, 0, 0.8);
     border-radius: 10px;
     padding: 20px;
-    margin: 20px auto;
-    max-width: 960px;
-}
-
-/* Profile Image */
-.profile-image-sm {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-/* Player Info Panel */
-#player-info-panel {
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-}
-
-/* Team and Available Players Panels */
-.team-dropzone, #available-players {
-    min-height: 200px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-    margin-top: 15px;
-}
-
-.list-group-item {
-    margin-bottom: 5px;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #f4f4f4;
-    color: #333;
-}
-
-/* Buttons */
-.btn {
-    margin-top: 10px;
-}
-
-/* Hover Effects */
-.btn:hover, .profile-image-sm:hover {
-    transform: scale(1.1);
-    transition: transform 0.2s ease-in-out;
-}
-
-#player-info-panel img {
-    max-width: 80px;
-    margin: 10px auto;
-    display: block;
-    border-radius: 50%;
-}
-
-/* Animation: Fade-In */
-/* General Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeOut {
-    from {
-        opacity: 1;
-        transform: scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 5px 2px rgba(0, 255, 0, 0.5);
-    }
-    50% {
-        box-shadow: 0 0 15px 4px rgba(0, 255, 0, 0.8);
-    }
-    100% {
-        box-shadow: 0 0 5px 2px rgba(0, 255, 0, 0.5);
-    }
-}
-
-/* Animation Classes */
-.fade-in {
-    animation: fadeIn 0.5s ease-in-out;
-}
-
-.fade-out {
-    animation: fadeOut 0.5s ease-in-out;
-    animation-fill-mode: forwards;
-}
-
-.pulse {
-    animation: pulse 1.5s infinite ease-in-out;
 }
 
 /* Profile Image */
@@ -148,19 +39,34 @@ header {
     transform: scale(1.1);
 }
 
-/* Player Info Panel Image */
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Info Panel */
+#player-info-panel {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+}
+
 #player-info-panel img {
     max-width: 80px;
     margin: 10px auto;
     display: block;
     border-radius: 50%;
-}
-
-/* Team Dropzone */
-.team-dropzone {
-    transition: background-color 0.3s ease-in-out;
-}
-
-.team-dropzone:hover {
-    background-color: rgba(0, 255, 0, 0.2);
 }

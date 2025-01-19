@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Outing Draft</title>
+    <title>Golf Outing Draft Manager</title>
     <!-- Custom Styles -->
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="styles.css">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Bootstrap CSS -->
@@ -17,10 +17,10 @@
 </header>
 
 <div class="container my-4">
+    <!-- Captain Selection -->
     <div class="row">
-        <!-- Captain Selection -->
         <div class="col-md-6">
-            <h4 class="mb-3">Select Captains</h4>
+            <h4>Select Captains</h4>
             <div class="mb-3">
                 <label for="team-one-captain" class="form-label">Team One Captain</label>
                 <select id="team-one-captain" class="form-select"></select>
@@ -29,47 +29,36 @@
                 <label for="team-two-captain" class="form-label">Team Two Captain</label>
                 <select id="team-two-captain" class="form-select"></select>
             </div>
-            <button id="start-draft-btn" class="btn btn-primary w-100" disabled>
-                <i class="fas fa-play"></i> Start Draft
-            </button>
+            <button id="start-draft-btn" class="btn btn-primary w-100" disabled>Start Draft</button>
         </div>
-
         <!-- Player Info Panel -->
         <div class="col-md-6">
-            <h4 class="mb-3">Player Info</h4>
+            <h4>Player Info</h4>
             <div id="player-info-panel" class="border p-3 rounded bg-light">
-                <p class="text-center text-muted">
-                    Hover over a player to see their profile, or view the last selection here.
-                </p>
+                <p class="text-center text-muted">Hover over a player to view their profile here.</p>
             </div>
         </div>
     </div>
 
     <!-- Draft Panels -->
-    <div id="draft-panels" class="mt-4 d-none">
-        <div class="row">
-            <!-- Team One Panel -->
-            <div class="col-md-4">
-                <h4 id="team-one-name" class="text-center mb-3">Team One</h4>
-                <ul id="team-one" class="list-group"></ul>
-            </div>
-            <!-- Available Players Panel -->
-            <div class="col-md-4">
-                <h4 class="text-center mb-3">Available Players</h4>
-                <ul id="available-players" class="list-group"></ul>
-            </div>
-            <!-- Team Two Panel -->
-            <div class="col-md-4">
-                <h4 id="team-two-name" class="text-center mb-3">Team Two</h4>
-                <ul id="team-two" class="list-group"></ul>
-            </div>
+    <div id="draft-panels" class="row mt-4 d-none">
+        <div class="col-md-4">
+            <h4 id="team-one-name" class="text-center">Team One</h4>
+            <ul id="team-one" class="list-group team-dropzone"></ul>
+        </div>
+        <div class="col-md-4">
+            <h4 class="text-center">Available Players</h4>
+            <ul id="available-players" class="list-group"></ul>
+        </div>
+        <div class="col-md-4">
+            <h4 id="team-two-name" class="text-center">Team Two</h4>
+            <ul id="team-two" class="list-group team-dropzone"></ul>
         </div>
     </div>
 </div>
 
-<!-- Bootstrap JS Bundle -->
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<!-- App Script -->
-<script src="./app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
