@@ -1,4 +1,4 @@
-import { fetchPlayers } from './data.js';
+const API_GATEWAY_URL = "https://4epgafkkhl.execute-api.us-east-1.amazonaws.com";
 
 let selectedCaptains = {
     teamOneCaptain: null,
@@ -40,15 +40,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function fetchPlayersFromAPI() {
-    const apiUrl = '<API-GATEWAY-URL>/players';
+    const apiUrl = `${API_GATEWAY_URL}/players`;
+    console.log('Fetching players from:', apiUrl);
     const response = await fetch(apiUrl);
     if (!response.ok) {
         throw new Error(`Failed to fetch players: ${response.statusText}`);
     }
-    return await response.json();
+    const data = await response.json();
+    console.log('Fetched players:', data);
+    return data;
 }
 
 function populateCaptainSelectors(players) {
+    console.log('Populating captain selectors with players:', players);
     const teamOneSelector = document.getElementById('team-one-captain');
     const teamTwoSelector = document.getElementById('team-two-captain');
 
@@ -59,6 +63,7 @@ function populateCaptainSelectors(players) {
         teamOneSelector.add(optionOne);
         teamTwoSelector.add(optionTwo);
     });
+    console.log('Captain selectors populated successfully.');
 }
 
 function filterCaptainOptions(selectedId, otherSelector) {
@@ -128,6 +133,7 @@ function populateAvailablePlayers(players) {
         const li = createAvailablePlayerElement(player);
         availablePlayersList.appendChild(li);
     });
+    console.log('Available players populated.');
 }
 
 function createAvailablePlayerElement(player) {
@@ -169,27 +175,3 @@ function showPlayerInfo(playerId) {
         <p><strong>Prediction:</strong> ${player.prediction}</p>
     `;
 }
-
-window.addPlayerToTeam = (playerId) => {
-    const availablePlayersList = document.getElementById('available-players');
-    const playerElement = availablePlayersList.querySelector(`[data-id="${playerId}"]`);
-
-    // Remove from available players
-    availablePlayersList.removeChild(playerElement);
-
-    // Add to the current team
-    const targetTeam = currentTurn;
-    const targetList = document.getElementById(targetTeam);
-    const player = allPlayers.find(p => p.id === playerId);
-    const li = createPlayerElement(player);
-    targetList.appendChild(li);
-
-    // Switch turn
-    currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
-    populateAvailablePlayers(Array.from(availablePlayersList.querySelectorAll('li')).map(li => ({
-        id: li.getAttribute('data-id'),
-        name: li.querySelector('span').textContent.split(' (')[0],
-        handicap: li.querySelector('span').textContent.match(/\(([^)]+)\)/)[1],
-        profileImage: li.querySelector('img').src
-    })));
-};
