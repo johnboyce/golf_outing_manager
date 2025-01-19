@@ -4,17 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Golf Outing Draft</title>
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-<header>
-    Golf Outing Draft Manager
+<header class="fade-in">
+    <i class="fas fa-golf-ball fa-lg"></i> Golf Outing Draft Manager
 </header>
-<div class="container">
+
+<div class="container fade-in">
     <!-- Captain Selection Panel -->
     <div class="row">
         <div class="col-md-6">
-            <h4>Select Captains</h4>
+            <h4>Select Captains <i class="fas fa-user-tie"></i></h4>
             <div class="mb-3">
                 <label for="team-one-captain">Team One Captain</label>
                 <select id="team-one-captain" class="form-select form-select-sm"></select>
@@ -23,13 +25,15 @@
                 <label for="team-two-captain">Team Two Captain</label>
                 <select id="team-two-captain" class="form-select form-select-sm"></select>
             </div>
-            <button id="start-draft-btn" class="btn btn-primary" disabled>Start Draft</button>
+            <button id="start-draft-btn" class="btn btn-primary" disabled>
+                <i class="fas fa-play"></i> Start Draft
+            </button>
         </div>
 
         <!-- Player Profile and Last Selection Panel -->
         <div class="col-md-6">
-            <h4>Player Info</h4>
-            <div id="player-info-panel">
+            <h4>Player Info <i class="fas fa-info-circle"></i></h4>
+            <div id="player-info-panel" class="slide-in">
                 <p>Select a player to see their profile or view the last draft pick here.</p>
             </div>
         </div>
@@ -40,19 +44,19 @@
         <div class="row">
             <!-- Team One Panel -->
             <div class="col-md-4">
-                <h4 id="team-one-name">Team One</h4>
+                <h4 id="team-one-name">Team One <i class="fas fa-flag"></i></h4>
                 <ul id="team-one" class="list-group team-dropzone"></ul>
             </div>
 
             <!-- Available Players Panel -->
             <div class="col-md-4">
-                <h4>Available Players</h4>
-                <ul id="available-players" class="list-group"></ul>
+                <h4>Available Players <i class="fas fa-users"></i></h4>
+                <ul id="available-players" class="list-group slide-in"></ul>
             </div>
 
             <!-- Team Two Panel -->
             <div class="col-md-4">
-                <h4 id="team-two-name">Team Two</h4>
+                <h4 id="team-two-name">Team Two <i class="fas fa-flag"></i></h4>
                 <ul id="team-two" class="list-group team-dropzone"></ul>
             </div>
         </div>

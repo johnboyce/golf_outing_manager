@@ -10,7 +10,8 @@ let allPlayers = []; // Store all players for quick access
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        allPlayers = await fetchPlayers();
+        // Fetch players from the API
+        allPlayers = await fetchPlayersFromAPI();
         console.log('Fetched players:', allPlayers);
 
         populateCaptainSelectors(allPlayers);
@@ -37,6 +38,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Error initializing app:', error);
     }
 });
+
+async function fetchPlayersFromAPI() {
+    const apiUrl = '<API-GATEWAY-URL>/players';
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch players: ${response.statusText}`);
+    }
+    return await response.json();
+}
 
 function populateCaptainSelectors(players) {
     const teamOneSelector = document.getElementById('team-one-captain');
@@ -122,7 +132,7 @@ function populateAvailablePlayers(players) {
 
 function createAvailablePlayerElement(player) {
     const li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
     li.innerHTML = `
         <div class="d-flex align-items-center">
             <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2" onmouseover="showPlayerInfo('${player.id}')" />
@@ -138,7 +148,7 @@ function createAvailablePlayerElement(player) {
 
 function createPlayerElement(player) {
     const li = document.createElement('li');
-    li.className = 'list-group-item d-flex align-items-center';
+    li.className = 'list-group-item d-flex align-items-center slide-in';
     li.innerHTML = `
         <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2"/>
         <span>${player.name} (${player.handicap})</span>
@@ -174,9 +184,6 @@ window.addPlayerToTeam = (playerId) => {
     const li = createPlayerElement(player);
     targetList.appendChild(li);
 
-    // Update the last draft selection
-    updateLastDraftSelection(player);
-
     // Switch turn
     currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
     populateAvailablePlayers(Array.from(availablePlayersList.querySelectorAll('li')).map(li => ({
@@ -186,12 +193,3 @@ window.addPlayerToTeam = (playerId) => {
         profileImage: li.querySelector('img').src
     })));
 };
-
-function updateLastDraftSelection(player) {
-    const playerInfoPanel = document.getElementById('player-info-panel');
-    playerInfoPanel.innerHTML = `
-        <h5>Last Draft Selection</h5>
-        <img src="${player.profileImage}" alt="${player.name}" />
-        <p><strong>${player.name}</strong> has been added to <strong>${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}</strong>.</p>
-    `;
-}
