@@ -6,8 +6,13 @@ let allPlayers = []; // Store all players for quick access
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // Fetch players from the API
         allPlayers = await fetchPlayersFromAPI();
+
+        // Populate captain selectors
         populateCaptainSelectors(allPlayers);
+
+        // Set up event listeners for interactivity
         setupEventListeners();
     } catch (error) {
         console.error('Error initializing app:', error);
@@ -36,38 +41,59 @@ function populateCaptainSelectors(players) {
 
 // Setup Event Listeners
 function setupEventListeners() {
-    document.getElementById('team-one-captain').addEventListener('change', () => validateCaptainSelection());
-    document.getElementById('team-two-captain').addEventListener('change', () => validateCaptainSelection());
-    document.getElementById('start-draft-btn').addEventListener('click', startDraft);
+    const teamOneSelector = document.getElementById('team-one-captain');
+    const teamTwoSelector = document.getElementById('team-two-captain');
+    const startDraftBtn = document.getElementById('start-draft-btn');
+
+    // Ensure captains cannot select the same player
+    teamOneSelector.addEventListener('change', () => validateCaptainSelection());
+    teamTwoSelector.addEventListener('change', () => validateCaptainSelection());
+
+    // Start the draft process
+    startDraftBtn.addEventListener('click', startDraft);
 }
 
 // Validate Captain Selection
 function validateCaptainSelection() {
     const teamOneId = document.getElementById('team-one-captain').value;
     const teamTwoId = document.getElementById('team-two-captain').value;
-    document.getElementById('start-draft-btn').disabled = !(teamOneId && teamTwoId && teamOneId !== teamTwoId);
+    const startDraftBtn = document.getElementById('start-draft-btn');
+
+    // Enable Start Draft button only if captains are unique and selected
+    startDraftBtn.disabled = !(teamOneId && teamTwoId && teamOneId !== teamTwoId);
 }
 
 // Start Draft
 function startDraft() {
-    const teamOneId = document.getElementById('team-one-captain').value;
-    const teamTwoId = document.getElementById('team-two-captain').value;
+    const teamOneSelector = document.getElementById('team-one-captain');
+    const teamTwoSelector = document.getElementById('team-two-captain');
 
-    selectedCaptains.teamOneCaptain = allPlayers.find(player => player.id === teamOneId);
-    selectedCaptains.teamTwoCaptain = allPlayers.find(player => player.id === teamTwoId);
+    // Identify selected captains
+    selectedCaptains.teamOneCaptain = allPlayers.find(player => player.id === teamOneSelector.value);
+    selectedCaptains.teamTwoCaptain = allPlayers.find(player => player.id === teamTwoSelector.value);
 
+    // Transition to the draft panels
     setupTeams();
 }
 
 // Setup Teams
 function setupTeams() {
-    document.getElementById('draft-panels').classList.remove('d-none');
-    document.getElementById('team-one-name').textContent = `Team ${selectedCaptains.teamOneCaptain.nickname}`;
-    document.getElementById('team-two-name').textContent = `Team ${selectedCaptains.teamTwoCaptain.nickname}`;
+    const draftPanels = document.getElementById('draft-panels');
+    const teamOneName = document.getElementById('team-one-name');
+    const teamTwoName = document.getElementById('team-two-name');
 
+    // Update team names
+    teamOneName.textContent = `Team ${selectedCaptains.teamOneCaptain.nickname}`;
+    teamTwoName.textContent = `Team ${selectedCaptains.teamTwoCaptain.nickname}`;
+
+    // Ensure the draft panel is visible
+    draftPanels.classList.remove('d-none');
+
+    // Assign captains to their respective teams
     assignPlayerToTeam('team-one', selectedCaptains.teamOneCaptain);
     assignPlayerToTeam('team-two', selectedCaptains.teamTwoCaptain);
 
+    // Populate the available players list
     populateAvailablePlayers(
         allPlayers.filter(player => ![selectedCaptains.teamOneCaptain.id, selectedCaptains.teamTwoCaptain.id].includes(player.id))
     );
@@ -77,6 +103,9 @@ function setupTeams() {
 function assignPlayerToTeam(teamId, player) {
     const teamList = document.getElementById(teamId);
     const playerElement = createPlayerElement(player);
+
+    // Add fade-in animation
+    playerElement.classList.add('fade-in');
     teamList.appendChild(playerElement);
 }
 
@@ -87,13 +116,15 @@ function populateAvailablePlayers(players) {
 
     players.forEach(player => {
         const li = document.createElement('li');
-        li.className = 'list-group-item fade-in';
+        li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
         li.innerHTML = `
-            <div>
-                <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm">
+            <div class="d-flex align-items-center">
+                <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2">
                 <span>${player.name} (${player.handicap})</span>
             </div>
-            <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}')">Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}</button>
+            <button class="btn btn-sm btn-${currentTurn === 'team-one' ? 'primary' : 'success'}" onclick="addPlayerToTeam('${player.id}')">
+                Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
+            </button>
         `;
         availablePlayersList.appendChild(li);
     });
@@ -102,8 +133,29 @@ function populateAvailablePlayers(players) {
 // Add Player to Team
 function addPlayerToTeam(playerId) {
     const player = allPlayers.find(p => p.id === playerId);
-    assignPlayerToTeam(currentTurn, player);
+
+    // Assign the player to the current team
+    if (currentTurn === 'team-one') {
+        assignPlayerToTeam('team-one', player);
+    } else {
+        assignPlayerToTeam('team-two', player);
+    }
+
+    // Update available players and switch turn
     allPlayers = allPlayers.filter(p => p.id !== playerId);
     populateAvailablePlayers(allPlayers);
     currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
+}
+
+// Create Player Element
+function createPlayerElement(player) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
+    li.innerHTML = `
+        <div class="d-flex align-items-center">
+            <img src="${player.profileImage}" alt="${player.name}" class="profile-image-sm me-2">
+            <span>${player.name} (${player.handicap})</span>
+        </div>
+    `;
+    return li;
 }
