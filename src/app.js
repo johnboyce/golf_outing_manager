@@ -92,18 +92,55 @@ function populateAvailablePlayers(players) {
     });
 }
 
+function showPlayerProfile(event, playerId) {
+    const player = getPlayerById(playerId); // Fetch player from stored data
+    const profilePopup = document.createElement('div');
+    profilePopup.className = 'profile-popup';
+    profilePopup.innerHTML = `
+        <img src="${player.profileImage}" alt="${player.name}" class="profile-image" />
+        <h4>${player.name} (${player.nickname})</h4>
+        <p><strong>Bio:</strong> ${player.bio}</p>
+        <p><strong>Prediction:</strong> ${player.prediction}</p>
+    `;
+
+    profilePopup.style.position = 'absolute';
+    profilePopup.style.left = `${event.pageX + 10}px`;
+    profilePopup.style.top = `${event.pageY + 10}px`;
+
+    profilePopup.id = 'player-profile-popup';
+    document.body.appendChild(profilePopup);
+}
+
+function hidePlayerProfile() {
+    const profilePopup = document.getElementById('player-profile-popup');
+    if (profilePopup) {
+        profilePopup.remove();
+    }
+}
+
+function getPlayerById(id) {
+    return allPlayers.find(player => player.id === id); // Replace `allPlayers` with your actual data source
+}
+
+
 function createAvailablePlayerElement(player) {
     const li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
     li.innerHTML = `
         <span>${player.name} (${player.handicap})</span>
-        <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}')">
-            Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
-        </button>
+        <div>
+            <button class="btn btn-sm btn-primary" onclick="addPlayerToTeam('${player.id}')">
+                Add to ${currentTurn === 'team-one' ? 'Team One' : 'Team Two'}
+            </button>
+            <i class="fas fa-info-circle profile-icon" 
+               onmouseover="showPlayerProfile(event, '${player.id}')"
+               onmouseout="hidePlayerProfile(event)"></i>
+        </div>
     `;
     li.setAttribute('data-id', player.id);
     return li;
 }
+
 
 function createPlayerElement(player) {
     const li = document.createElement('li');

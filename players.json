@@ -2,161 +2,181 @@
   {
     "id": "1",
     "name": "John Boyce",
-    "handicap": 10,
     "nickname": "Jawn",
-    "bio": "John Boyce, the fearless strategist on the greens, has a knack for reading the course like a book. Known for his calm demeanor, he's a natural leader who rallies his team with quiet confidence. His favorite post-round ritual is sipping on an Arnold Palmer while analyzing the day’s play.",
-    "prediction": "John will dominate the fairways and inspire his team with consistent play, although his tendency to overthink might cost him a few strokes under pressure."
+    "handicap": 8,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Tiger_Woods_with_a_smile.jpg/640px-Tiger_Woods_with_a_smile.jpg",
+    "bio": "John is a strategic player known for his sharp putting skills. Off the course, he enjoys fine dining and collecting rare golf balls.",
+    "prediction": "John is predicted to lead his team to victory with his consistent performance and clutch shots under pressure."
   },
   {
     "id": "2",
     "name": "Jimmy Boyce",
-    "handicap": 12,
     "nickname": "Duck",
-    "bio": "Jimmy Boyce, affectionately known as 'Duck,' is the life of any golf outing. With an infectious laugh and a killer swing, he’s as entertaining as he is talented. Off the course, he’s the grill master everyone loves.",
-    "prediction": "Jimmy’s power drives will steal the show, but a few errant shots might ruffle his feathers. Expect a blend of brilliance and hilarity."
+    "handicap": 10,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Rory_McIlroy_DSF9827.jpg/640px-Rory_McIlroy_DSF9827.jpg",
+    "bio": "Jimmy, aka 'Duck', is a fearless competitor with a strong drive. When not golfing, he’s often found coaching local youth teams.",
+    "prediction": "Jimmy’s competitive spirit will shine, but he may need to rein in his aggressive plays to avoid penalties."
   },
   {
     "id": "3",
     "name": "Eric Hall",
-    "handicap": 8,
-    "nickname": "Hammer",
-    "bio": "Eric 'Hammer' Hall is the powerhouse of the group, known for his long drives that often leave others in awe. A perfectionist at heart, he spends hours perfecting his short game.",
-    "prediction": "Eric’s drives will give his team an early advantage, though a few risky shots could land him in the rough."
+    "nickname": "Eagle Eye",
+    "handicap": 12,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Dustin_Johnson_August_2015.jpg/640px-Dustin_Johnson_August_2015.jpg",
+    "bio": "Eric is known for his laser-focused shots and incredible composure under pressure.",
+    "prediction": "Expect Eric to be a key player with several game-changing birdies."
   },
   {
     "id": "4",
     "name": "John Snow",
-    "handicap": 15,
-    "nickname": "Frosty",
-    "bio": "John 'Frosty' Snow is a cool and calculated player who thrives under pressure. Known for his signature fade shot, he’s the guy you want on your team when the stakes are high.",
-    "prediction": "John’s steady hand will help his team recover from tricky situations, but a love for fancy shots might add a few unnecessary strokes."
+    "nickname": "Snowman",
+    "handicap": 14,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Bryson_DeChambeau.jpg/640px-Bryson_DeChambeau.jpg",
+    "bio": "John’s analytical approach to golf earns him the nickname 'Snowman,' even though he avoids them on the scorecard.",
+    "prediction": "John’s calculated plays will ensure consistency but may slow down his pace."
   },
   {
     "id": "5",
     "name": "Brian Cregan",
-    "handicap": 11,
-    "nickname": "Bri",
-    "bio": "Brian 'Bri' Cregan has a flair for the dramatic, often pulling off miraculous recovery shots. His charismatic personality makes him a favorite in the clubhouse.",
-    "prediction": "Brian will rally his team with his positivity, though occasional overconfidence could lead to some wild swings."
+    "nickname": "Bunker King",
+    "handicap": 15,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Jon_Rahm_2019.jpg/640px-Jon_Rahm_2019.jpg",
+    "bio": "Brian thrives under pressure, particularly when escaping from bunkers.",
+    "prediction": "Brian’s short game could make or break his performance this outing."
   },
   {
     "id": "6",
     "name": "Andy McDonald",
-    "handicap": 9,
-    "nickname": "Mac",
-    "bio": "Andy 'Mac' McDonald is a tactical genius who meticulously plans every shot. His analytical approach makes him a valuable asset to any team.",
-    "prediction": "Andy’s sharp focus will keep his team on track, though he may need to loosen up to enjoy the game more."
+    "nickname": "Iron Man",
+    "handicap": 13,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Jordan_Spieth.jpg/640px-Jordan_Spieth.jpg",
+    "bio": "Andy’s iron play is the stuff of legend, earning him the nickname 'Iron Man.'",
+    "prediction": "Andy’s precision with his irons will be a game-changer."
   },
   {
     "id": "7",
     "name": "Dan Hamilton",
-    "handicap": 14,
-    "nickname": "Ham",
-    "bio": "Dan 'Ham' Hamilton is the fun-loving joker of the group, always ready with a witty remark. Despite his humor, he takes his golf seriously when it counts.",
-    "prediction": "Dan will keep morale high with his jokes, but his short game might need some extra attention."
+    "nickname": "Big Drive",
+    "handicap": 9,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Justin_Thomas.JPG/640px-Justin_Thomas.JPG",
+    "bio": "Dan’s booming drives often leave his opponents in awe.",
+    "prediction": "Dan’s long game will set up easy birdie opportunities."
   },
   {
     "id": "8",
     "name": "Chris Troyan",
-    "handicap": 16,
-    "nickname": "Troy",
-    "bio": "Chris 'Troy' Troyan is a reliable player who excels in high-pressure situations. His smooth swing and calm demeanor make him a consistent performer.",
-    "prediction": "Chris’s consistency will earn his team valuable points, though he might struggle with longer putts."
+    "nickname": "Putt Master",
+    "handicap": 11,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Rickie_Fowler_%2830603318927%29.jpg/640px-Rickie_Fowler_%2830603318927%29.jpg",
+    "bio": "Chris is renowned for his uncanny ability to sink long putts.",
+    "prediction": "Chris’s putting could single-handedly win his team the outing."
   },
   {
     "id": "9",
     "name": "Brian Skilton",
-    "handicap": 13,
-    "nickname": "Skilz",
-    "bio": "Brian 'Skilz' Skilton is known for his impeccable technique and deep understanding of the game. A true student of golf, he’s always learning and improving.",
-    "prediction": "Brian’s precision will keep his team in contention, but his cautious approach might miss a few daring opportunities."
+    "nickname": "Ace",
+    "handicap": 10,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Phil_Mickelson.jpg/640px-Phil_Mickelson.jpg",
+    "bio": "Brian’s skill with a wedge makes him a dangerous player from 100 yards in.",
+    "prediction": "Expect Brian to card a few eagles with his precision shots."
   },
   {
     "id": "10",
     "name": "Steve Higbee",
-    "handicap": 7,
-    "nickname": "Higs",
-    "bio": "Steve 'Higs' Higbee is a natural athlete with a competitive edge. His ability to adapt to any course condition makes him a formidable opponent.",
-    "prediction": "Steve will shine on the back nine, but his aggressive play might lead to a few risky decisions."
+    "nickname": "Clutch",
+    "handicap": 14,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Cameron_Smith_2021.jpg/640px-Cameron_Smith_2021.jpg",
+    "bio": "Steve has a reputation for delivering clutch performances when the stakes are high.",
+    "prediction": "Steve will likely shine in high-pressure situations, clinching key holes."
   },
   {
     "id": "11",
     "name": "Bill Tuefel",
+    "nickname": "Smooth Swing",
     "handicap": 12,
-    "nickname": "Billy",
-    "bio": "Bill 'Billy' Tuefel is the seasoned veteran of the group, bringing years of experience and wisdom to the game. His calm and steady play is an inspiration to younger players.",
-    "prediction": "Bill will deliver a masterclass in course management, though his conservative style might leave him trailing on long drives."
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Brooks_Koepka_%281%29.jpg/640px-Brooks_Koepka_%281%29.jpg",
+    "bio": "Bill is known for his smooth, effortless swing that delivers consistent accuracy.",
+    "prediction": "Bill’s relaxed style will keep his team on the fairway all day."
   },
   {
     "id": "12",
     "name": "Tony Marandola",
-    "handicap": 10,
-    "nickname": "T-Man",
-    "bio": "Tony 'T-Man' Marandola is a powerhouse off the tee, with drives that often leave others speechless. He’s also known for his hilarious banter on the course.",
-    "prediction": "Tony’s humor will keep his team entertained, but he may need to work on his putting under pressure."
+    "nickname": "Long Shot",
+    "handicap": 13,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Collin_Morikawa_%281%29.jpg/640px-Collin_Morikawa_%281%29.jpg",
+    "bio": "Tony is a wildcard with a talent for risky, high-reward shots.",
+    "prediction": "Tony’s bold plays will either secure victory or bring a few surprises."
   },
   {
     "id": "13",
     "name": "Brian Cusick",
-    "handicap": 8,
-    "nickname": "Cuse",
-    "bio": "Brian 'Cuse' Cusick is a precision player with a penchant for reading greens like a pro. His attention to detail is unmatched.",
-    "prediction": "Brian will sink some clutch putts, but overanalyzing might slow down his game."
+    "nickname": "The Grinder",
+    "handicap": 15,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Adam_Scott_%281%29.jpg/640px-Adam_Scott_%281%29.jpg",
+    "bio": "Brian grinds through every hole with determination, rarely giving up on a shot.",
+    "prediction": "Expect Brian to save critical points with his tenacity."
   },
   {
     "id": "14",
     "name": "Frank O'Neill",
-    "handicap": 15,
-    "nickname": "Frankie",
-    "bio": "Frank 'Frankie' O'Neill is a crowd favorite with his jovial personality and surprising shot-making ability. His laugh is infectious.",
-    "prediction": "Frank will keep his team laughing, though consistency may elude him on long holes."
+    "nickname": "Cool Hand",
+    "handicap": 11,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Xander_Schauffele_%281%29.jpg/640px-Xander_Schauffele_%281%29.jpg",
+    "bio": "Frank keeps his cool under pressure, making him a steady presence on the team.",
+    "prediction": "Frank will provide stability and confidence during the outing."
   },
   {
     "id": "15",
     "name": "Brian McCollum",
-    "handicap": 9,
-    "nickname": "Mack",
-    "bio": "Brian 'Mack' McCollum is a scrappy player who thrives in challenging conditions. No obstacle is too big for him to overcome.",
-    "prediction": "Brian will be a clutch performer on tough lies, though a tendency to experiment might backfire occasionally."
+    "nickname": "Steady Eddy",
+    "handicap": 12,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Patrick_Cantlay_%282%29.jpg/640px-Patrick_Cantlay_%282%29.jpg",
+    "bio": "Brian’s steady game minimizes mistakes and keeps his team in contention.",
+    "prediction": "Brian’s consistency will be the backbone of his team."
   },
   {
     "id": "16",
     "name": "Nick Markley",
-    "handicap": 10,
-    "nickname": "Marko",
-    "bio": "Nick 'Marko' Markley is a steady performer who lets his clubs do the talking. He’s the definition of 'cool under pressure.'",
-    "prediction": "Nick’s reliability will make him a captain’s dream pick, but he might struggle to dazzle on big stages."
+    "nickname": "The Shredder",
+    "handicap": 14,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Viktor_Hovland_%281%29.jpg/640px-Viktor_Hovland_%281%29.jpg",
+    "bio": "Nick shreds through tough courses with ease, using his creativity to navigate hazards.",
+    "prediction": "Nick’s ingenuity will give his team the edge in tricky spots."
   },
   {
     "id": "17",
     "name": "Paul Philson",
-    "handicap": 11,
-    "nickname": "Philly",
-    "bio": "Paul 'Philly' Philson is a wildcard with the potential for greatness. When he’s on, he’s unstoppable.",
-    "prediction": "Paul will provide flashes of brilliance, though consistency could be a challenge on longer holes."
+    "nickname": "Hammer",
+    "handicap": 13,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Scottie_Scheffler_%281%29.jpg/640px-Scottie_Scheffler_%281%29.jpg",
+    "bio": "Paul’s power game hammers the ball off the tee, giving his team an advantage in distance.",
+    "prediction": "Paul’s strength will set up birdie chances on long holes."
   },
   {
     "id": "18",
     "name": "Mark Rowles",
-    "handicap": 14,
-    "nickname": "Rowley",
-    "bio": "Mark 'Rowley' Rowles is a laid-back player who makes the game look easy. His effortless swing is a joy to watch.",
-    "prediction": "Mark will play with grace and poise, though he might lack the urgency needed for high-stakes shots."
+    "nickname": "Pin Seeker",
+    "handicap": 10,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Hideki_Matsuyama_%281%29.jpg/640px-Hideki_Matsuyama_%281%29.jpg",
+    "bio": "Mark’s approach shots often land within a few feet of the pin.",
+    "prediction": "Mark will dominate on par-3 holes with his pin-seeking accuracy."
   },
   {
     "id": "19",
     "name": "Sam Novak",
-    "handicap": 13,
-    "nickname": "Slam",
-    "bio": "Sam 'Slam' Novak is the power hitter of the group, often outdriving his peers by a mile. His go-big-or-go-home attitude is iconic.",
-    "prediction": "Sam will dominate the par-5s, but risky plays could cost him on tight fairways."
+    "nickname": "The Closer",
+    "handicap": 11,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Will_Zalatoris_%281%29.jpg/640px-Will_Zalatoris_%281%29.jpg",
+    "bio": "Sam is known for closing out matches with nerves of steel.",
+    "prediction": "Expect Sam to shine in the final holes of each round."
   },
   {
     "id": "20",
     "name": "Noel Morning",
-    "handicap": 12,
-    "nickname": "EarlyBird",
-    "bio": "Noel 'EarlyBird' Morning is the early riser who brings energy and enthusiasm to every round. He’s the team’s motivational speaker.",
-    "prediction": "Noel will set the tone with a strong start, but maintaining momentum might prove challenging by the back nine."
+    "nickname": "Dawn Patrol",
+    "handicap": 15,
+    "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Tommy_Fleetwood_%281%29.jpg/640px-Tommy_Fleetwood_%281%29.jpg",
+    "bio": "Noel, a morning person, plays best during early rounds with unmatched focus.",
+    "prediction": "Noel will set the pace for his team early in the outing."
   }
 ]
