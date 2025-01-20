@@ -85,46 +85,67 @@ function populatePlayersTab(players) {
 }
 
 // Start Player Profile Rotation
-// Start Player Profile Rotation
 function startProfileRotation() {
     const profileDisplay = document.getElementById('player-profile-display');
-    if (!allPlayers || allPlayers.length === 0 || !profileDisplay) {
-        console.error("No players available for profile rotation."); // Debugging log
+
+    // Check if required DOM element and players are available
+    if (!profileDisplay) {
+        console.error("Player profile display element not found in the DOM.");
+        return;
+    }
+
+    if (!allPlayers || allPlayers.length === 0) {
+        console.error("No players available for profile rotation.");
+        profileDisplay.innerHTML = `
+            <p class="text-muted">No players available to display. Please check the data source.</p>
+        `;
         return;
     }
 
     let currentIndex = 0;
 
+    // Function to update the profile display
     function updateProfile() {
         if (isProfileRotationPaused) return;
 
-        // Ensure currentIndex is valid
-        console.log("Players length : " + allPlayers.length)
+        // Ensure the current index is within bounds
         if (currentIndex >= allPlayers.length) {
-            console.error("Invalid index during profile rotation. Resetting to 0.");
+            console.warn("Current index exceeds available players. Resetting to the beginning.");
             currentIndex = 0;
         }
 
         const player = allPlayers[currentIndex];
-        if (!player) {
-            console.error("Invalid player object during profile rotation:", player); // Debugging log
+
+        // Validate the player object before updating the DOM
+        if (!player || typeof player !== 'object') {
+            console.error(`Invalid player object at index ${currentIndex}:`, player);
+            currentIndex = (currentIndex + 1) % allPlayers.length;
             return;
         }
 
-        // Update UI with player details
-        document.getElementById('profile-image').src = player.profileImage || 'default-profile-image.jpg';
-        document.getElementById('profile-name').textContent = player.name || 'Unknown Player';
-        document.getElementById('profile-nickname').textContent = player.nickname || 'No Nickname';
-        document.getElementById('profile-handicap').textContent = player.handicap || 'N/A';
-        document.getElementById('profile-bio').textContent = player.bio || 'No bio available.';
-        document.getElementById('profile-prediction').textContent = player.prediction || 'No prediction available.';
+        // Update the UI with the player's details
+        profileDisplay.innerHTML = `
+            <img src="${player.profileImage || 'default-profile-image.jpg'}" 
+                 alt="${player.name || 'Unknown Player'}" 
+                 class="img-fluid rounded mb-3" />
+            <h5>${player.name || 'Unknown Player'}</h5>
+            <p><strong>Nickname:</strong> ${player.nickname || 'No Nickname'}</p>
+            <p><strong>Handicap:</strong> ${player.handicap || 'N/A'}</p>
+            <p><strong>Bio:</strong> ${player.bio || 'No bio available.'}</p>
+            <p><strong>Prediction:</strong> ${player.prediction || 'No prediction available.'}</p>
+        `;
 
+        // Move to the next player in the array
         currentIndex = (currentIndex + 1) % allPlayers.length;
     }
 
-    profileRotationInterval = setInterval(updateProfile, 6000); // Rotate every 6 seconds
-    updateProfile(); // Immediately display the first profile
+    // Start rotating profiles every 6 seconds
+    profileRotationInterval = setInterval(updateProfile, 6000);
+
+    // Immediately display the first player's profile
+    updateProfile();
 }
+
 
 // Pause Profile Rotation
 function pauseProfileRotation() {
