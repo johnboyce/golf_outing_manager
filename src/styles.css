@@ -102,3 +102,27 @@ header {
     color: #333; /* Darker text for better visibility */
     background-color: #f9f9f9; /* Light background for contrast */
 }
+
+
+#player-profile-display {
+    background-color: #f9f9f9; /* Light background */
+    color: #333; /* Dark text */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#player-profile-display h5 {
+    color: #000; /* Ensure the header text is darker */
+}
+
+#player-profile-display p {
+    color: #444; /* Slightly lighter than the header but still visible */
+}
+
+#profile-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}

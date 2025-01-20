@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2025 GOLF KUNTZ OUTING DRAFT MANAGER</title>
+    <title>2025 GOLF Kuntz OUTING DRAFT MANAGER</title>
     <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
     <!-- Font Awesome -->
@@ -36,7 +36,7 @@
     <!-- Tabs Content -->
     <div class="tab-content" id="mainTabsContent">
         <!-- Tab 1: Players -->
-        <div class="tab-pane fade" id="players" role="tabpanel">
+        <div class="tab-pane fade show active" id="players" role="tabpanel">
             <h3 class="text-center my-3">Players</h3>
             <div id="player-profile-display" class="text-center border rounded p-4 bg-light">
                 <img id="profile-image" src="" alt="Player Image" class="img-fluid rounded mb-3" style="max-height: 200px;">
@@ -51,7 +51,6 @@
                 <button id="resume-rotation-btn" class="btn btn-success">Resume</button>
             </div>
         </div>
-
 
         <!-- Tab 2: Draft -->
         <div class="tab-pane fade" id="draft" role="tabpanel">
@@ -77,6 +76,7 @@
                         </div>
                     </div>
                 </div>
+                <button id="start-draft-btn" class="btn btn-primary w-100 mt-4" disabled>Start Draft</button>
                 <!-- Notification Panel -->
                 <div id="notification-panel" class="alert alert-info mt-3 d-none">
                     <strong>Update:</strong> <span id="notification-message"></span>
@@ -100,7 +100,6 @@
             </div>
         </div>
 
-
         <!-- Tab 3: Foursomes -->
         <div class="tab-pane fade" id="foursomes" role="tabpanel">
             <h3 class="text-center my-3">Foursomes</h3>
@@ -121,36 +120,22 @@
                         </div>
                     </div>
                 </div>
-                <!-- Course 2: War Admiral -->
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <img src="https://www.ruarkgolf.com/app/uploads/2018/08/war-admiral.jpg" class="card-img-top" alt="War Admiral">
-                        <div class="card-body">
-                            <h5 class="card-title">War Admiral</h5>
-                            <p class="card-text">Set amid lush woodlands and featuring numerous doglegs, War Admiral is known for its challenging layout and meticulously maintained greens. This course is a tribute to the legendary Triple Crown winner and provides an unforgettable experience for players of all skill levels.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Course 3: Man O' War -->
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <img src="https://www.ruarkgolf.com/app/uploads/2018/08/man-o-war.jpg" class="card-img-top" alt="Man O' War">
-                        <div class="card-body">
-                            <h5 class="card-title">Man O' War</h5>
-                            <p class="card-text">Man O' War features expansive fairways and wind-swept greens, offering a links-style golf experience. Its design maximizes the use of natural terrain, providing an exhilarating round for golfers who enjoy classic course challenges.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Course 4: Lighthouse Sound -->
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <img src="https://www.ruarkgolf.com/app/uploads/2018/08/lighthouse-sound.jpg" class="card-img-top" alt="Lighthouse Sound">
-                        <div class="card-body">
-                            <h5 class="card-title">Lighthouse Sound</h5>
-                            <p class="card-text">With breathtaking views of the Assawoman Bay and the Ocean City skyline, Lighthouse Sound is one of the most scenic courses in the region. Its dramatic water holes and strategic design make it a memorable test of golf.</p>
-                        </div>
-                    </div>
-                </div>
+                <!-- Additional courses can be added here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Player Profile Modal -->
+<div class="modal fade" id="playerProfileModal" tabindex="-1" aria-labelledby="playerProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="playerProfileModalLabel">Player Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="profile-modal-body">
+                <!-- Profile content dynamically injected here -->
             </div>
         </div>
     </div>

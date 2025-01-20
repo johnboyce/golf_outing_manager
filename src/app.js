@@ -38,23 +38,25 @@ async function fetchPlayersFromAPI() {
 // Populate Players Tab
 function populatePlayersTab(players) {
     const playersList = document.getElementById('players-list');
-    playersList.innerHTML = ''; // Clear previous content
+    if (playersList) {
+        playersList.innerHTML = ''; // Clear previous content
 
-    players.forEach(player => {
-        const col = document.createElement('div');
-        col.className = 'col-md-4 mb-4';
-        col.innerHTML = `
-            <div class="card">
-                <img src="${player.profileImage}" class="card-img-top" alt="${player.name}">
-                <div class="card-body">
-                    <h5 class="card-title">${player.name} (${player.nickname})</h5>
-                    <p class="card-text"><strong>Handicap:</strong> ${player.handicap}</p>
-                    <button class="btn btn-primary btn-sm" onclick="showPlayerProfile('${player.id}')">View Profile</button>
+        players.forEach(player => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-4';
+            col.innerHTML = `
+                <div class="card">
+                    <img src="${player.profileImage}" class="card-img-top" alt="${player.name}">
+                    <div class="card-body">
+                        <h5 class="card-title">${player.name} (${player.nickname})</h5>
+                        <p class="card-text"><strong>Handicap:</strong> ${player.handicap}</p>
+                        <button class="btn btn-primary btn-sm" onclick="showPlayerProfile('${player.id}')">View Profile</button>
+                    </div>
                 </div>
-            </div>
-        `;
-        playersList.appendChild(col);
-    });
+            `;
+            playersList.appendChild(col);
+        });
+    }
 }
 
 // Show Player Profile
@@ -128,12 +130,9 @@ function validateCaptainSelection() {
         if (option) option.disabled = true;
     }
 
-    // Enable Start Draft button only if valid selections exist
-    document.getElementById('start-draft-btn').disabled = !(
-        selectedTeamOne &&
-        selectedTeamTwo &&
-        selectedTeamOne !== selectedTeamTwo
-    );
+    // Enable "Start Draft" button only if valid selections exist
+    const startDraftBtn = document.getElementById('start-draft-btn');
+    startDraftBtn.disabled = !(selectedTeamOne && selectedTeamTwo && selectedTeamOne !== selectedTeamTwo);
 }
 
 // Start Draft
@@ -141,25 +140,20 @@ function startDraft() {
     selectedCaptains.teamOneCaptain = allPlayers.find(player => player.id === document.getElementById('team-one-captain').value);
     selectedCaptains.teamTwoCaptain = allPlayers.find(player => player.id === document.getElementById('team-two-captain').value);
 
-    setupTeams();
-}
+    // Hide captain selection and show draft panels
+    document.getElementById('draft-content').classList.add('d-none');
+    document.getElementById('draft-panels').classList.remove('d-none');
 
-// Setup Teams
-function setupTeams() {
-    const draftPanels = document.getElementById('draft-panels');
-    const commissionDraftBtn = document.getElementById('commission-draft-btn');
+    // Initialize teams with their captains
+    teamOne = [selectedCaptains.teamOneCaptain];
+    teamTwo = [selectedCaptains.teamTwoCaptain];
 
-    draftPanels.classList.remove('d-none');
-    commissionDraftBtn.classList.add('d-none');
-
-    // Assign captains to their respective teams
-    teamOne.push(selectedCaptains.teamOneCaptain);
-    teamTwo.push(selectedCaptains.teamTwoCaptain);
-
+    // Populate the available players
     populateAvailablePlayers(
         allPlayers.filter(player => ![selectedCaptains.teamOneCaptain.id, selectedCaptains.teamTwoCaptain.id].includes(player.id))
     );
 }
+document.getElementById('start-draft-btn').addEventListener('click', startDraft);
 
 // Populate Available Players
 function populateAvailablePlayers(players) {
@@ -298,73 +292,4 @@ function populateTeamList(teamId, teamPlayers) {
     teamPlayers.forEach(player => {
         teamList.appendChild(createPlayerElement(player));
     });
-}
-
-let rotationIndex = 0;
-let rotationInterval = null;
-
-// Start Rotating Player Profiles
-function startProfileRotation() {
-    if (rotationInterval) clearInterval(rotationInterval); // Clear any existing interval
-
-    rotationInterval = setInterval(() => {
-        showPlayerProfileForRotation(allPlayers[rotationIndex]);
-
-        // Increment index and loop back to the start
-        rotationIndex = (rotationIndex + 1) % allPlayers.length;
-    }, 6000); // Show each player for 6 seconds
-}
-
-// Show Player Profile for Rotation
-function showPlayerProfileForRotation(player) {
-    if (!player) return;
-
-    document.getElementById('profile-image').src = player.profileImage;
-    document.getElementById('profile-name').textContent = player.name;
-    document.getElementById('profile-nickname').textContent = player.nickname;
-    document.getElementById('profile-handicap').textContent = player.handicap;
-    document.getElementById('profile-bio').textContent = player.bio;
-    document.getElementById('profile-prediction').textContent = player.prediction;
-}
-
-// Pause Profile Rotation
-function pauseProfileRotation() {
-    if (rotationInterval) {
-        clearInterval(rotationInterval);
-        rotationInterval = null;
-    }
-}
-
-// Resume Profile Rotation
-function resumeProfileRotation() {
-    if (!rotationInterval) startProfileRotation();
-}
-
-// Add Event Listeners for Pause and Resume
-function setupRotationControls() {
-    document.getElementById('pause-rotation-btn').addEventListener('click', pauseProfileRotation);
-    document.getElementById('resume-rotation-btn').addEventListener('click', resumeProfileRotation);
-}
-
-// Initialize Profile Rotation on DOM Load
-document.addEventListener('DOMContentLoaded', () => {
-    setupRotationControls();
-
-    // Start rotation after players are fetched
-    document.addEventListener('playersFetched', () => {
-        startProfileRotation();
-    });
-});
-
-// Emit a custom event after players are fetched
-async function fetchPlayersFromAPI() {
-    const response = await fetch(`${API_GATEWAY_URL}/players`);
-    if (!response.ok) throw new Error(`Failed to fetch players: ${response.statusText}`);
-    const players = await response.json();
-
-    // Emit custom event for rotation start
-    const event = new Event('playersFetched');
-    document.dispatchEvent(event);
-
-    return players;
 }
