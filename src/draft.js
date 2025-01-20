@@ -191,6 +191,63 @@ function setupDraftTabEventListeners() {
     }
 }
 
+function updateDraftUI(players, teamOne, teamTwo, currentTurn) {
+    const availablePlayersList = document.getElementById('available-players');
+    const teamOneList = document.getElementById('team-one');
+    const teamTwoList = document.getElementById('team-two');
+    const draftTurnIndicator = document.getElementById('draft-turn-indicator');
+
+    if (!availablePlayersList || !teamOneList || !teamTwoList || !draftTurnIndicator) {
+        console.error("Draft UI elements not found.");
+        return;
+    }
+
+    // Clear the lists
+    availablePlayersList.innerHTML = '';
+    teamOneList.innerHTML = '';
+    teamTwoList.innerHTML = '';
+
+    // Populate available players
+    players.forEach(player => {
+        if (!teamOne.includes(player) && !teamTwo.includes(player)) {
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+            listItem.innerHTML = `
+                ${player.name} (${player.handicap})
+                <button class="btn btn-sm ${
+                currentTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary'
+            }" onclick="assignPlayerToTeam('${player.id}', '${currentTurn}')">
+                    Add to ${currentTurn === 'teamOne' ? 'Team One' : 'Team Two'}
+                </button>
+            `;
+            availablePlayersList.appendChild(listItem);
+        }
+    });
+
+    // Populate Team One
+    teamOne.forEach(player => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.textContent = `${player.name} (${player.handicap})`;
+        teamOneList.appendChild(listItem);
+    });
+
+    // Populate Team Two
+    teamTwo.forEach(player => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.textContent = `${player.name} (${player.handicap})`;
+        teamTwoList.appendChild(listItem);
+    });
+
+    // Update draft turn indicator
+    draftTurnIndicator.innerHTML = `
+        <div class="alert alert-info">
+            It's ${currentTurn === 'teamOne' ? 'Team One' : 'Team Two'}'s turn to draft!
+        </div>
+    `;
+}
+
 
 // Event Listeners for Commissioning the Draft
 document.getElementById('commission-draft-btn').addEventListener('click', generateFoursomes);
