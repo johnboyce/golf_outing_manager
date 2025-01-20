@@ -99,7 +99,7 @@ function startProfileRotation() {
         if (isProfileRotationPaused) return;
 
         // Ensure currentIndex is valid
-        console.log("Players length : " + allPlayers.lengthx)
+        console.log("Players length : " + allPlayers.length)
         if (currentIndex >= allPlayers.length) {
             console.error("Invalid index during profile rotation. Resetting to 0.");
             currentIndex = 0;
