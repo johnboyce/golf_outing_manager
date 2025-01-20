@@ -111,6 +111,22 @@ function assignPlayerToTeam(playerId, team) {
     }
 }
 
+// Initialize Draft Tab
+function initializeDraftTab() {
+    console.log('Initializing Draft Tab...');
+    fetchPlayersForDraft();
+
+    const startDraftButton = document.getElementById('start-draft-btn');
+    const startOverButton = document.getElementById('start-over-btn');
+
+    if (startDraftButton) {
+        startDraftButton.addEventListener('click', startDraft);
+    }
+    if (startOverButton) {
+        startOverButton.addEventListener('click', resetDraft);
+    }
+}
+
 // Start Draft
 function startDraft() {
     console.log('Draft started!');
@@ -128,18 +144,3 @@ function resetDraft() {
     document.getElementById('start-draft-btn').classList.remove('d-none');
     document.getElementById('start-over-btn').classList.add('d-none');
 }
-
-// Initialize Draft Tab
-document.addEventListener('DOMContentLoaded', () => {
-    fetchPlayersForDraft();
-
-    const startDraftButton = document.getElementById('start-draft-btn');
-    const startOverButton = document.getElementById('start-over-btn');
-
-    if (startDraftButton) {
-        startDraftButton.addEventListener('click', startDraft);
-    }
-    if (startOverButton) {
-        startOverButton.addEventListener('click', resetDraft);
-    }
-});

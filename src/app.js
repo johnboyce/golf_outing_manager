@@ -55,7 +55,6 @@ function loadTabContent(tabId, contentUrl, scriptUrl) {
         });
 }
 
-
 // Load JavaScript File Dynamically
 function loadScript(scriptUrl) {
     const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
