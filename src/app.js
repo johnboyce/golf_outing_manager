@@ -40,6 +40,10 @@ async function fetchPlayersFromAPI() {
         if (!response.ok) throw new Error(`Failed to fetch players: ${response.statusText}`);
         const players = await response.json();
         console.log("Fetched players:", players); // Debugging log
+        if (!Array.isArray(players) || players.length === 0) {
+            console.error("Fetched players array is empty or invalid."); // Debugging log
+            return [];
+        }
         return players;
     } catch (error) {
         console.error("Error fetching players:", error);
@@ -80,6 +84,7 @@ function populatePlayersTab(players) {
 }
 
 // Start Player Profile Rotation
+// Start Player Profile Rotation
 function startProfileRotation() {
     const profileDisplay = document.getElementById('player-profile-display');
     if (!allPlayers || allPlayers.length === 0 || !profileDisplay) {
@@ -92,12 +97,19 @@ function startProfileRotation() {
     function updateProfile() {
         if (isProfileRotationPaused) return;
 
+        // Ensure currentIndex is valid
+        if (currentIndex >= allPlayers.length) {
+            console.error("Invalid index during profile rotation. Resetting to 0.");
+            currentIndex = 0;
+        }
+
         const player = allPlayers[currentIndex];
         if (!player) {
             console.error("Invalid player object during profile rotation:", player); // Debugging log
             return;
         }
 
+        // Update UI with player details
         document.getElementById('profile-image').src = player.profileImage || 'default-profile-image.jpg';
         document.getElementById('profile-name').textContent = player.name || 'Unknown Player';
         document.getElementById('profile-nickname').textContent = player.nickname || 'No Nickname';
