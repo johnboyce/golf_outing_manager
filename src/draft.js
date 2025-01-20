@@ -167,5 +167,30 @@ function generateFoursomes() {
     }
 }
 
+// Event Listeners for Draft Tab
+function setupDraftTabEventListeners() {
+    const teamOneSelector = document.getElementById('team-one-captain');
+    const teamTwoSelector = document.getElementById('team-two-captain');
+    const startDraftBtn = document.getElementById('start-draft-btn');
+    const commissionDraftBtn = document.getElementById('commission-draft-btn');
+
+    // Validate captains when selections change
+    if (teamOneSelector && teamTwoSelector) {
+        teamOneSelector.addEventListener('change', validateCaptainSelection);
+        teamTwoSelector.addEventListener('change', validateCaptainSelection);
+    }
+
+    // Start draft when button is clicked
+    if (startDraftBtn) {
+        startDraftBtn.addEventListener('click', startDraft);
+    }
+
+    // Commission draft when button is clicked
+    if (commissionDraftBtn) {
+        commissionDraftBtn.addEventListener('click', generateFoursomes);
+    }
+}
+
+
 // Event Listeners for Commissioning the Draft
 document.getElementById('commission-draft-btn').addEventListener('click', generateFoursomes);
