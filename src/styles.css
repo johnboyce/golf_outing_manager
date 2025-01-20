@@ -98,3 +98,7 @@ header {
     display: block;
     border-radius: 50%;
 }
+#courses-list .card-body {
+    color: #333; /* Darker text for better visibility */
+    background-color: #f9f9f9; /* Light background for contrast */
+}
