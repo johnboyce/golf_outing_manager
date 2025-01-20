@@ -34,6 +34,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Setup Event Listeners
+function setupEventListeners() {
+    // Captain selection changes
+    document.getElementById('team-one-captain').addEventListener('change', validateCaptainSelection);
+    document.getElementById('team-two-captain').addEventListener('change', validateCaptainSelection);
+
+    // Start draft button
+    const startDraftBtn = document.getElementById('start-draft-btn');
+    if (startDraftBtn) {
+        startDraftBtn.addEventListener('click', startDraft);
+    }
+
+    // Pause/Resume Profile Rotation
+    const pauseRotationBtn = document.getElementById('pause-rotation-btn');
+    if (pauseRotationBtn) {
+        pauseRotationBtn.addEventListener('click', pauseProfileRotation);
+    }
+
+    const resumeRotationBtn = document.getElementById('resume-rotation-btn');
+    if (resumeRotationBtn) {
+        resumeRotationBtn.addEventListener('click', resumeProfileRotation);
+    }
+
+    // Commission Draft Button
+    const commissionDraftBtn = document.getElementById('commission-draft-btn');
+    if (commissionDraftBtn) {
+        commissionDraftBtn.addEventListener('click', generateFoursomes);
+    }
+}
+
 // Fetch Players from API
 async function fetchPlayersFromAPI() {
     try {
