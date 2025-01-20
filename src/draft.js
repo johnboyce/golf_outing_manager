@@ -1,5 +1,5 @@
 // Global Variables for Draft
-const API_GATEWAY_URL = "https://4epgafkkhl.execute-api.us-east-1.amazonaws.com";
+const API_GATEWAY_URL_DRAFT = "https://4epgafkkhl.execute-api.us-east-1.amazonaws.com";
 
 let allPlayers = [];
 let teamOne = [];
@@ -8,7 +8,7 @@ let currentTurn = 'teamOne';
 
 // Fetch Players and Initialize Draft
 function fetchPlayers() {
-    fetch(`${API_GATEWAY_URL}/players`)
+    fetch(`${API_GATEWAY_URL_DRAFT}/players`)
         .then(response => response.json())
         .then(data => {
             initializeDraft(data);
