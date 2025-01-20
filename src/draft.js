@@ -8,6 +8,10 @@ let currentDraftTurn = 'teamOne';
 let draftStarted = false;
 let teamOneCaptain = null;
 let teamTwoCaptain = null;
+let teamLogos = {
+    teamOne: 'https://duckduckgo.com/?q=golf%20logo&iax=images&ia=images&iai=https://static.vecteezy.com/system/resources/previews/002/767/038/large_2x/golf-logo-icon-stock-illustration-free-vector.jpg',
+    teamTwo: 'https://duckduckgo.com/?q=golf%20logo&iax=images&ia=images&iai=http://www.clipartbest.com/cliparts/7Ta/odz/7TaodzqBc.jpg',
+};
 
 // Fetch Players for Draft
 function fetchPlayersForDraft() {
@@ -72,6 +76,7 @@ function startDraft() {
 
     document.getElementById('start-draft-btn').classList.add('d-none');
     document.getElementById('start-over-btn').classList.remove('d-none');
+    document.getElementById('commission-draft-btn').classList.add('d-none');
 
     updateDraftUI();
 }
@@ -93,6 +98,7 @@ function assignPlayerToTeam(playerId, team) {
 
     updateDraftUI();
 
+    // Enable Commission Draft button when all players are drafted
     if (teamOne.length + teamTwo.length === allPlayers.length + 2) {
         document.getElementById('commission-draft-btn').classList.remove('d-none');
     }
@@ -113,6 +119,7 @@ function resetDraft() {
     document.getElementById('start-draft-btn').disabled = true;
     document.getElementById('start-draft-btn').classList.remove('d-none');
     document.getElementById('start-over-btn').classList.add('d-none');
+    document.getElementById('commission-draft-btn').classList.add('d-none');
 
     document.getElementById('draft-turn-indicator').innerHTML = '';
 }
@@ -145,6 +152,51 @@ function updateDraftUI() {
     }
 }
 
+// Commission Draft
+function commissionDraft() {
+    console.log('Committing draft and creating foursomes...');
+
+    const foursomes = [];
+    const totalPlayers = Math.max(teamOne.length, teamTwo.length);
+    for (let i = 0; i < totalPlayers; i++) {
+        const group = [];
+        if (teamOne[i]) group.push({ ...teamOne[i], team: 'Team One' });
+        if (teamTwo[i]) group.push({ ...teamTwo[i], team: 'Team Two' });
+        foursomes.push(group);
+    }
+
+    updateFoursomesTab(foursomes);
+}
+
+// Update Foursomes Tab
+function updateFoursomesTab(foursomes) {
+    const foursomesContainer = document.getElementById('foursomes-container');
+    foursomesContainer.innerHTML = '';
+
+    foursomes.forEach((group, index) => {
+        const groupElement = document.createElement('div');
+        groupElement.className = 'foursome-group';
+
+        const header = document.createElement('h4');
+        header.textContent = `Foursome ${index + 1}`;
+        groupElement.appendChild(header);
+
+        group.forEach(player => {
+            const playerElement = document.createElement('div');
+            playerElement.className = 'foursome-player';
+            playerElement.innerHTML = `
+                <img src="${player.team === 'Team One' ? teamLogos.teamOne : teamLogos.teamTwo}" alt="${player.team} Logo" style="width: 50px; height: 50px; margin-right: 10px;">
+                <span>${player.name} (${player.handicap})</span>
+            `;
+            groupElement.appendChild(playerElement);
+        });
+
+        foursomesContainer.appendChild(groupElement);
+    });
+
+    console.log('Foursomes created:', foursomes);
+}
+
 // Initialize Draft Tab
 function initializeDraftTab() {
     console.log('Initializing Draft Tab...');
@@ -152,7 +204,9 @@ function initializeDraftTab() {
 
     const startDraftButton = document.getElementById('start-draft-btn');
     const startOverButton = document.getElementById('start-over-btn');
+    const commissionDraftButton = document.getElementById('commission-draft-btn');
 
     if (startDraftButton) startDraftButton.addEventListener('click', startDraft);
     if (startOverButton) startOverButton.addEventListener('click', resetDraft);
+    if (commissionDraftButton) commissionDraftButton.addEventListener('click', commissionDraft);
 }
