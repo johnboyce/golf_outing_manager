@@ -8,10 +8,6 @@ let currentDraftTurn = 'teamOne';
 let draftStarted = false;
 let teamOneCaptain = null;
 let teamTwoCaptain = null;
-const teamLogos = {
-    teamOne: 'https://www.pngkey.com/png/full/946-9467891_golf-ball-on-tee-png.png',
-    teamTwo: 'https://svgsilh.com/png-512/2027506-009688.png',
-};
 
 // Initialize Draft Tab
 function initializeDraftTab() {
@@ -150,6 +146,11 @@ function updateDraftUI() {
     teamOneList.innerHTML = '';
     teamTwoList.innerHTML = '';
 
+    const teamOneHeader = document.getElementById('team-one-header');
+    const teamTwoHeader = document.getElementById('team-two-header');
+    teamOneHeader.querySelector('h3').textContent = teamOneCaptain ? `Team ${teamOneCaptain.nickname}` : 'Team One';
+    teamTwoHeader.querySelector('h3').textContent = teamTwoCaptain ? `Team ${teamTwoCaptain.nickname}` : 'Team Two';
+
     allPlayers.forEach(player => {
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -223,9 +224,9 @@ function updateFoursomesTab(foursomes) {
             const playerElement = document.createElement('div');
             playerElement.className = 'foursome-player';
             playerElement.innerHTML = `
-                <img src="${player.team === 'Team One' ? teamLogos.teamOne : teamLogos.teamTwo}" 
-                    alt="${player.team} Logo" 
-                    style="width: 50px; height: 50px; margin-right: 10px;">
+                <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
+                     alt="${player.team} Logo" 
+                     style="width: 50px; height: 50px; margin-right: 10px;">
                 <span>${player.name} (${player.handicap})</span>
             `;
             groupElement.appendChild(playerElement);
@@ -236,3 +237,4 @@ function updateFoursomesTab(foursomes) {
 
     console.log('Foursomes created:', foursomes);
 }
+

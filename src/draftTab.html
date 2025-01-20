@@ -1,38 +1,52 @@
-<div id="draft-tab">
-    <div class="container mt-4">
-        <h2>Draft</h2>
-        <div class="row">
-            <!-- Captain Selectors -->
-            <div class="col-md-6">
-                <label for="team-one-captain-selector">Select Team One Captain</label>
-                <select id="team-one-captain-selector" class="form-control"></select>
+<div id="draft-tab" class="tab-content">
+    <h2>Draft</h2>
+
+    <!-- Captain Selection -->
+    <div class="captain-selection">
+        <h3>Select Captains</h3>
+        <div class="selectors">
+            <div>
+                <label for="team-one-captain-selector">Team One Captain</label>
+                <select id="team-one-captain-selector" class="form-select"></select>
             </div>
-            <div class="col-md-6">
-                <label for="team-two-captain-selector">Select Team Two Captain</label>
-                <select id="team-two-captain-selector" class="form-control"></select>
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col-md-12 text-center">
-                <button id="start-draft-btn" class="btn btn-primary" disabled>Start Draft</button>
-                <button id="start-over-btn" class="btn btn-danger d-none">Start Over</button>
-                <button id="commission-draft-btn" class="btn btn-danger d-none">Commission Draft</button>
+            <div>
+                <label for="team-two-captain-selector">Team Two Captain</label>
+                <select id="team-two-captain-selector" class="form-select"></select>
             </div>
         </div>
-        <div id="draft-turn-indicator" class="mt-3"></div>
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <h4>Team One</h4>
-                <ul id="team-one" class="list-group"></ul>
+        <button id="start-draft-btn" class="btn btn-primary" disabled>Start Draft</button>
+        <button id="start-over-btn" class="btn btn-danger d-none">Start Over</button>
+        <button id="commission-draft-btn" class="btn btn-success d-none">Commission Draft</button>
+    </div>
+
+    <!-- Team Logos and Draft Sections -->
+    <div class="draft-section">
+        <div class="team-column">
+            <!-- Team One Header with Logo -->
+            <div id="team-one-header" class="team-header">
+                <img src="https://www.pngkey.com/png/full/946-9467891_golf-ball-on-tee-png.png"
+                     alt="Team One Logo"
+                     style="width: 100px; height: 100px;">
+                <h3>Team One</h3>
             </div>
-            <div class="col-md-4">
-                <h4>Available Players</h4>
-                <ul id="available-players" class="list-group"></ul>
+            <ul id="team-one" class="list-group team-list"></ul>
+        </div>
+
+        <div class="available-players-column">
+            <h3>Available Players</h3>
+            <ul id="available-players" class="list-group"></ul>
+            <div id="draft-turn-indicator" class="mt-3"></div>
+        </div>
+
+        <div class="team-column">
+            <!-- Team Two Header with Logo -->
+            <div id="team-two-header" class="team-header">
+                <img src="https://svgsilh.com/png-512/2027506-009688.png"
+                     alt="Team Two Logo"
+                     style="width: 100px; height: 100px;">
+                <h3>Team Two</h3>
             </div>
-            <div class="col-md-4">
-                <h4>Team Two</h4>
-                <ul id="team-two" class="list-group"></ul>
-            </div>
+            <ul id="team-two" class="list-group team-list"></ul>
         </div>
     </div>
 </div>
