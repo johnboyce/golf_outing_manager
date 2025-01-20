@@ -5,15 +5,15 @@ let currentTurn = 'team-one'; // Tracks whose turn it is
 let allPlayers = []; // Store all players for quick access
 let teamOne = [];
 let teamTwo = [];
+let currentIndex = 0; // Global index for profile rotation
 let profileRotationInterval = null; // Interval for rotating profiles
-let isProfileRotationPaused = false; // Tracks the pause state of rotation
+let isProfileRotationPaused = false; // Tracks if profile rotation is paused
 
 // On DOM Loaded
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Fetch players from API
         allPlayers = await fetchPlayersFromAPI();
-        console.log(allPlayers);
 
         // Populate Players Tab
         populatePlayersTab(allPlayers);
@@ -41,10 +41,6 @@ async function fetchPlayersFromAPI() {
         if (!response.ok) throw new Error(`Failed to fetch players: ${response.statusText}`);
         const players = await response.json();
         console.log("Fetched players:", players); // Debugging log
-        if (!Array.isArray(players) || players.length === 0) {
-            console.error("Fetched players array is empty or invalid."); // Debugging log
-            return [];
-        }
         return players;
     } catch (error) {
         console.error("Error fetching players:", error);
@@ -52,27 +48,13 @@ async function fetchPlayersFromAPI() {
     }
 }
 
-// Setup Event Listeners
-function setupEventListeners() {
-    document.getElementById('team-one-captain').addEventListener('change', validateCaptainSelection);
-    document.getElementById('team-two-captain').addEventListener('change', validateCaptainSelection);
-    document.getElementById('start-draft-btn').addEventListener('click', startDraft);
-
-    // Pause/Resume Player Profile Rotation
-    document.getElementById('pause-rotation-btn').addEventListener('click', pauseProfileRotation);
-    document.getElementById('resume-rotation-btn').addEventListener('click', resumeProfileRotation);
-
-    // Commission Draft Button
-    const commissionDraftBtn = document.getElementById('commission-draft-btn');
-    if (commissionDraftBtn) {
-        commissionDraftBtn.addEventListener('click', generateFoursomes);
-    }
-}
-
 // Populate Players Tab
 function populatePlayersTab(players) {
     const profileDisplay = document.getElementById('player-profile-display');
-    if (!profileDisplay) return;
+    if (!profileDisplay) {
+        console.error("Player profile display element not found.");
+        return;
+    }
 
     profileDisplay.innerHTML = `
         <img src="" alt="" id="profile-image" class="img-fluid rounded mb-3" />
@@ -84,11 +66,10 @@ function populatePlayersTab(players) {
     `;
 }
 
-// Start Player Profile Rotation
-function startProfileRotation() {
+// Update Player Profile (Global Function)
+function updateProfile() {
     const profileDisplay = document.getElementById('player-profile-display');
 
-    // Check if required DOM element and players are available
     if (!profileDisplay) {
         console.error("Player profile display element not found in the DOM.");
         return;
@@ -102,50 +83,42 @@ function startProfileRotation() {
         return;
     }
 
-    let currentIndex = 0;
-
-    // Function to update the profile display
-    function updateProfile() {
-        if (isProfileRotationPaused) return;
-
-        // Ensure the current index is within bounds
-        if (currentIndex >= allPlayers.length) {
-            console.warn("Current index exceeds available players. Resetting to the beginning.");
-            currentIndex = 0;
-        }
-
-        const player = allPlayers[currentIndex];
-
-        // Validate the player object before updating the DOM
-        if (!player || typeof player !== 'object') {
-            console.error(`Invalid player object at index ${currentIndex}:`, player);
-            currentIndex = (currentIndex + 1) % allPlayers.length;
-            return;
-        }
-
-        // Update the UI with the player's details
-        profileDisplay.innerHTML = `
-            <img src="${player.profileImage || 'default-profile-image.jpg'}" 
-                 alt="${player.name || 'Unknown Player'}" 
-                 class="img-fluid rounded mb-3" />
-            <h5>${player.name || 'Unknown Player'}</h5>
-            <p><strong>Nickname:</strong> ${player.nickname || 'No Nickname'}</p>
-            <p><strong>Handicap:</strong> ${player.handicap || 'N/A'}</p>
-            <p><strong>Bio:</strong> ${player.bio || 'No bio available.'}</p>
-            <p><strong>Prediction:</strong> ${player.prediction || 'No prediction available.'}</p>
-        `;
-
-        // Move to the next player in the array
-        currentIndex = (currentIndex + 1) % allPlayers.length;
+    if (currentIndex >= allPlayers.length) {
+        console.warn("Current index exceeds available players. Resetting to 0.");
+        currentIndex = 0;
     }
 
-    // Start rotating profiles every 6 seconds
-    profileRotationInterval = setInterval(updateProfile, 6000);
+    const player = allPlayers[currentIndex];
+    if (!player || typeof player !== 'object') {
+        console.error(`Invalid player object at index ${currentIndex}:`, player);
+        currentIndex = (currentIndex + 1) % allPlayers.length;
+        return;
+    }
 
-    // Immediately display the first player's profile
-    updateProfile();
+    profileDisplay.innerHTML = `
+        <img src="${player.profileImage || 'default-profile-image.jpg'}" 
+             alt="${player.name || 'Unknown Player'}" 
+             class="img-fluid rounded mb-3" />
+        <h5>${player.name || 'Unknown Player'}</h5>
+        <p><strong>Nickname:</strong> ${player.nickname || 'No Nickname'}</p>
+        <p><strong>Handicap:</strong> ${player.handicap || 'N/A'}</p>
+        <p><strong>Bio:</strong> ${player.bio || 'No bio available.'}</p>
+        <p><strong>Prediction:</strong> ${player.prediction || 'No prediction available.'}</p>
+    `;
+
+    currentIndex = (currentIndex + 1) % allPlayers.length;
 }
 
+// Start Player Profile Rotation
+function startProfileRotation() {
+    if (profileRotationInterval) clearInterval(profileRotationInterval);
+
+    profileRotationInterval = setInterval(() => {
+        if (!isProfileRotationPaused) updateProfile();
+    }, 6000);
+
+    updateProfile(); // Immediately display the first profile
+}
 
 // Pause Profile Rotation
 function pauseProfileRotation() {
@@ -315,7 +288,7 @@ function generateFoursomes() {
     }
 }
 
-// Start Polling
+// Start Polling for Real-Time Updates
 function startPolling() {
     setInterval(async () => {
         try {
