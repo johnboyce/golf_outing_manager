@@ -2,7 +2,8 @@ const API_GATEWAY_URL = "https://4epgafkkhl.execute-api.us-east-1.amazonaws.com"
 
 let selectedCaptains = { teamOneCaptain: null, teamTwoCaptain: null };
 let currentTurn = 'team-one'; // Tracks whose turn it is
-let allPlayers = []; // Store all players for quick access
+let allPlayers = []; // Original unmodified players
+let availablePlayers = []; // Players available for drafting or other manipulations
 let teamOne = [];
 let teamTwo = [];
 let currentIndex = 0; // Global index for profile rotation
@@ -70,6 +71,8 @@ async function fetchPlayersFromAPI() {
         const response = await fetch(`${API_GATEWAY_URL}/players`);
         if (!response.ok) throw new Error(`Failed to fetch players: ${response.statusText}`);
         const players = await response.json();
+        allPlayers = players; // Store original data
+        availablePlayers = [...players];
         console.log("Fetched players:", players); // Debugging log
         return players;
     } catch (error) {
@@ -143,11 +146,16 @@ function updateProfile() {
 function startProfileRotation() {
     if (profileRotationInterval) clearInterval(profileRotationInterval);
 
+    // Start the profile rotation interval
     profileRotationInterval = setInterval(() => {
-        if (!isProfileRotationPaused) updateProfile();
+        if (!isProfileRotationPaused) {
+            console.log("Rotating profile to next player..."); // Debugging log
+            updateProfile();
+        }
     }, 6000);
 
-    updateProfile(); // Immediately display the first profile
+    // Immediately display the first profile
+    updateProfile();
 }
 
 // Pause Profile Rotation
@@ -260,7 +268,7 @@ function populateAvailablePlayers(players) {
 
 // Add Player to Team
 function addPlayerToTeam(playerId) {
-    const player = allPlayers.find(p => p.id === playerId);
+    const player = availablePlayers.find(p => p.id === playerId);
 
     if (currentTurn === 'team-one') {
         teamOne.push(player);
@@ -270,10 +278,11 @@ function addPlayerToTeam(playerId) {
         document.getElementById('team-two').appendChild(createPlayerElement(player));
     }
 
-    allPlayers = allPlayers.filter(p => p.id !== playerId);
-    populateAvailablePlayers(allPlayers);
+    // Update available players
+    availablePlayers = availablePlayers.filter(p => p.id !== playerId);
+    populateAvailablePlayers(availablePlayers);
 
-    if (allPlayers.length === 0) {
+    if (availablePlayers.length === 0) {
         document.getElementById('commission-draft-btn').classList.remove('d-none');
     }
 
