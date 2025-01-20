@@ -5,6 +5,8 @@ let currentTurn = 'team-one'; // Tracks whose turn it is
 let allPlayers = []; // Store all players for quick access
 let teamOne = [];
 let teamTwo = [];
+let profileRotationInterval = null; // Interval for rotating profiles
+let isProfileRotationPaused = false; // Tracks the pause state of rotation
 
 // On DOM Loaded
 document.addEventListener('DOMContentLoaded', async () => {
@@ -23,6 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Start polling for draft updates
         startPolling();
+
+        // Start player profile rotation
+        startProfileRotation();
     } catch (error) {
         console.error('Error initializing app:', error);
     }
@@ -54,43 +59,55 @@ function setupEventListeners() {
 
 // Populate Players Tab
 function populatePlayersTab(players) {
-    const playersList = document.getElementById('players-list');
-    if (playersList) {
-        playersList.innerHTML = ''; // Clear previous content
+    const profileDisplay = document.getElementById('player-profile-display');
+    if (!profileDisplay) return;
 
-        players.forEach(player => {
-            const col = document.createElement('div');
-            col.className = 'col-md-4 mb-4';
-            col.innerHTML = `
-                <div class="card">
-                    <img src="${player.profileImage}" class="card-img-top" alt="${player.name}">
-                    <div class="card-body">
-                        <h5 class="card-title">${player.name} (${player.nickname})</h5>
-                        <p class="card-text"><strong>Handicap:</strong> ${player.handicap}</p>
-                        <button class="btn btn-primary btn-sm" onclick="showPlayerProfile('${player.id}')">View Profile</button>
-                    </div>
-                </div>
-            `;
-            playersList.appendChild(col);
-        });
-    }
+    profileDisplay.innerHTML = `
+        <img src="" alt="" id="profile-image" class="img-fluid rounded mb-3" />
+        <h5 id="profile-name"></h5>
+        <p><strong>Nickname:</strong> <span id="profile-nickname"></span></p>
+        <p><strong>Handicap:</strong> <span id="profile-handicap"></span></p>
+        <p><strong>Bio:</strong> <span id="profile-bio"></span></p>
+        <p><strong>Prediction:</strong> <span id="profile-prediction"></span></p>
+    `;
 }
 
-// Show Player Profile
-function showPlayerProfile(playerId) {
-    const player = allPlayers.find(p => p.id === playerId);
+// Start Player Profile Rotation
+function startProfileRotation() {
+    const profileDisplay = document.getElementById('player-profile-display');
+    if (!allPlayers || allPlayers.length === 0 || !profileDisplay) return;
 
-    if (player) {
-        const modal = new bootstrap.Modal(document.getElementById('playerProfileModal'));
-        document.getElementById('profile-modal-body').innerHTML = `
-            <img src="${player.profileImage}" alt="${player.name}" class="img-fluid rounded mb-3">
-            <h5>${player.name} (${player.nickname})</h5>
-            <p><strong>Handicap:</strong> ${player.handicap}</p>
-            <p><strong>Bio:</strong> ${player.bio}</p>
-            <p><strong>Prediction:</strong> ${player.prediction}</p>
-        `;
-        modal.show();
+    let currentIndex = 0;
+
+    function updateProfile() {
+        if (isProfileRotationPaused) return;
+        const player = allPlayers[currentIndex];
+        document.getElementById('profile-image').src = player.profileImage;
+        document.getElementById('profile-name').textContent = player.name;
+        document.getElementById('profile-nickname').textContent = player.nickname;
+        document.getElementById('profile-handicap').textContent = player.handicap;
+        document.getElementById('profile-bio').textContent = player.bio;
+        document.getElementById('profile-prediction').textContent = player.prediction;
+
+        currentIndex = (currentIndex + 1) % allPlayers.length;
     }
+
+    profileRotationInterval = setInterval(updateProfile, 6000); // Rotate every 6 seconds
+    updateProfile(); // Immediately display the first profile
+}
+
+// Pause Profile Rotation
+function pauseProfileRotation() {
+    isProfileRotationPaused = true;
+    document.getElementById('pause-rotation-btn').disabled = true;
+    document.getElementById('resume-rotation-btn').disabled = false;
+}
+
+// Resume Profile Rotation
+function resumeProfileRotation() {
+    isProfileRotationPaused = false;
+    document.getElementById('resume-rotation-btn').disabled = true;
+    document.getElementById('pause-rotation-btn').disabled = false;
 }
 
 // Populate Captain Selectors
@@ -98,7 +115,6 @@ function populateCaptainSelectors(players) {
     const teamOneSelector = document.getElementById('team-one-captain');
     const teamTwoSelector = document.getElementById('team-two-captain');
 
-    // Clear existing options
     teamOneSelector.innerHTML = '';
     teamTwoSelector.innerHTML = '';
 
@@ -106,11 +122,11 @@ function populateCaptainSelectors(players) {
         const optionOne = new Option(player.name, player.id);
         const optionTwo = new Option(player.name, player.id);
 
-        // Preselect John Boyce for Team One and Jim Boyce for Team Two
         if (player.name === 'John Boyce') {
             optionOne.selected = true;
             selectedCaptains.teamOneCaptain = player;
         }
+
         if (player.name === 'Jim Boyce') {
             optionTwo.selected = true;
             selectedCaptains.teamTwoCaptain = player;
@@ -120,7 +136,6 @@ function populateCaptainSelectors(players) {
         teamTwoSelector.add(optionTwo);
     });
 
-    // Validate selections to disable overlapping choices
     validateCaptainSelection();
 }
 
@@ -128,14 +143,13 @@ function populateCaptainSelectors(players) {
 function validateCaptainSelection() {
     const teamOneSelector = document.getElementById('team-one-captain');
     const teamTwoSelector = document.getElementById('team-two-captain');
+
     const selectedTeamOne = teamOneSelector.value;
     const selectedTeamTwo = teamTwoSelector.value;
 
-    // Reset disabled options
-    Array.from(teamOneSelector.options).forEach(opt => (opt.disabled = false));
-    Array.from(teamTwoSelector.options).forEach(opt => (opt.disabled = false));
+    Array.from(teamOneSelector.options).forEach(option => option.disabled = false);
+    Array.from(teamTwoSelector.options).forEach(option => option.disabled = false);
 
-    // Disable already selected captain in the other selector
     if (selectedTeamOne) {
         const option = Array.from(teamTwoSelector.options).find(opt => opt.value === selectedTeamOne);
         if (option) option.disabled = true;
@@ -146,7 +160,6 @@ function validateCaptainSelection() {
         if (option) option.disabled = true;
     }
 
-    // Enable "Start Draft" button only if valid selections exist
     const startDraftBtn = document.getElementById('start-draft-btn');
     startDraftBtn.disabled = !(selectedTeamOne && selectedTeamTwo && selectedTeamOne !== selectedTeamTwo);
 }
@@ -156,18 +169,18 @@ function startDraft() {
     selectedCaptains.teamOneCaptain = allPlayers.find(player => player.id === document.getElementById('team-one-captain').value);
     selectedCaptains.teamTwoCaptain = allPlayers.find(player => player.id === document.getElementById('team-two-captain').value);
 
-    // Hide captain selection and show draft panels
     document.getElementById('draft-content').classList.add('d-none');
     document.getElementById('draft-panels').classList.remove('d-none');
 
-    // Initialize teams with their captains
     teamOne = [selectedCaptains.teamOneCaptain];
     teamTwo = [selectedCaptains.teamTwoCaptain];
 
-    // Populate the available players
-    populateAvailablePlayers(
-        allPlayers.filter(player => ![selectedCaptains.teamOneCaptain.id, selectedCaptains.teamTwoCaptain.id].includes(player.id))
+    const availablePlayers = allPlayers.filter(player =>
+        player.id !== selectedCaptains.teamOneCaptain.id &&
+        player.id !== selectedCaptains.teamTwoCaptain.id
     );
+
+    populateAvailablePlayers(availablePlayers);
 }
 
 // Populate Available Players
@@ -213,7 +226,7 @@ function addPlayerToTeam(playerId) {
     currentTurn = currentTurn === 'team-one' ? 'team-two' : 'team-one';
 }
 
-// Create Player Element for Draft Panels
+// Create Player Element
 function createPlayerElement(player) {
     const li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center fade-in';
@@ -251,7 +264,7 @@ function generateFoursomes() {
     }
 }
 
-// Polling for real-time updates
+// Start Polling
 function startPolling() {
     setInterval(async () => {
         try {
@@ -270,19 +283,14 @@ function startPolling() {
 function updateDraftState(state) {
     if (!state) return;
 
-    // Update teams
     teamOne = state.teamOne || [];
     teamTwo = state.teamTwo || [];
     allPlayers = state.availablePlayers || [];
 
-    // Populate available players
     populateAvailablePlayers(allPlayers);
-
-    // Populate team lists
     populateTeamList('team-one', teamOne);
     populateTeamList('team-two', teamTwo);
 
-    // Show notification
     showNotification('Draft state updated.');
 }
 
