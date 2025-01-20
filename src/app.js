@@ -35,9 +35,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Fetch Players from API
 async function fetchPlayersFromAPI() {
-    const response = await fetch(`${API_GATEWAY_URL}/players`);
-    if (!response.ok) throw new Error(`Failed to fetch players: ${response.statusText}`);
-    return await response.json();
+    try {
+        const response = await fetch(`${API_GATEWAY_URL}/players`);
+        if (!response.ok) throw new Error(`Failed to fetch players: ${response.statusText}`);
+        const players = await response.json();
+        console.log("Fetched players:", players); // Debugging log
+        return players;
+    } catch (error) {
+        console.error("Error fetching players:", error);
+        return []; // Return an empty array to avoid undefined issues
+    }
 }
 
 // Setup Event Listeners
@@ -75,19 +82,28 @@ function populatePlayersTab(players) {
 // Start Player Profile Rotation
 function startProfileRotation() {
     const profileDisplay = document.getElementById('player-profile-display');
-    if (!allPlayers || allPlayers.length === 0 || !profileDisplay) return;
+    if (!allPlayers || allPlayers.length === 0 || !profileDisplay) {
+        console.error("No players available for profile rotation."); // Debugging log
+        return;
+    }
 
     let currentIndex = 0;
 
     function updateProfile() {
         if (isProfileRotationPaused) return;
+
         const player = allPlayers[currentIndex];
-        document.getElementById('profile-image').src = player.profileImage;
-        document.getElementById('profile-name').textContent = player.name;
-        document.getElementById('profile-nickname').textContent = player.nickname;
-        document.getElementById('profile-handicap').textContent = player.handicap;
-        document.getElementById('profile-bio').textContent = player.bio;
-        document.getElementById('profile-prediction').textContent = player.prediction;
+        if (!player) {
+            console.error("Invalid player object during profile rotation:", player); // Debugging log
+            return;
+        }
+
+        document.getElementById('profile-image').src = player.profileImage || 'default-profile-image.jpg';
+        document.getElementById('profile-name').textContent = player.name || 'Unknown Player';
+        document.getElementById('profile-nickname').textContent = player.nickname || 'No Nickname';
+        document.getElementById('profile-handicap').textContent = player.handicap || 'N/A';
+        document.getElementById('profile-bio').textContent = player.bio || 'No bio available.';
+        document.getElementById('profile-prediction').textContent = player.prediction || 'No prediction available.';
 
         currentIndex = (currentIndex + 1) % allPlayers.length;
     }
