@@ -46,12 +46,15 @@ function loadTabContent(tabId, contentUrl, scriptUrl) {
 
             // Load the corresponding JavaScript file
             loadScript(scriptUrl);
+            // Ensure the required elements are ready for the draft tab
+            if (tabId === 'draft') initializeDraftTab();
         })
         .catch(error => {
             console.error(error);
             tabsContent.innerHTML = `<div class="text-danger">Error loading content for ${tabId}.</div>`;
         });
 }
+
 
 // Load JavaScript File Dynamically
 function loadScript(scriptUrl) {
