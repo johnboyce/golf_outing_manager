@@ -12,11 +12,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Fetch players from API
         allPlayers = await fetchPlayersFromAPI();
 
+        // Populate captain selectors in Draft Tab with preselection
+        populateCaptainSelectors(allPlayers);
+
         // Populate Players Tab
         populatePlayersTab(allPlayers);
-
-        // Populate captain selectors in Draft Tab
-        setupPreselectedCaptains();
 
         // Set up event listeners
         setupEventListeners();
@@ -24,6 +24,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Error initializing app:', error);
     }
 });
+
+function populateCaptainSelectors(players) {
+    const teamOneSelector = document.getElementById('team-one-captain');
+    const teamTwoSelector = document.getElementById('team-two-captain');
+
+    // Clear existing options
+    teamOneSelector.innerHTML = '';
+    teamTwoSelector.innerHTML = '';
+
+    players.forEach(player => {
+        // Create options for both selectors
+        const optionOne = new Option(player.name, player.id);
+        const optionTwo = new Option(player.name, player.id);
+
+        // Preselect John Boyce for Team One and Jim Boyce for Team Two
+        if (player.name === 'John Boyce') {
+            optionOne.selected = true;
+            selectedCaptains.teamOneCaptain = player;
+        }
+        if (player.name === 'Jim Boyce') {
+            optionTwo.selected = true;
+            selectedCaptains.teamTwoCaptain = player;
+        }
+
+        // Add options to selectors
+        teamOneSelector.add(optionOne);
+        teamTwoSelector.add(optionTwo);
+    });
+
+    // Validate selections to disable overlapping choices
+    validateCaptainSelection();
+}
+
 
 // Fetch Players from API
 async function fetchPlayersFromAPI() {
@@ -276,10 +309,11 @@ function validateCaptainSelection() {
         if (option) option.disabled = true;
     }
 
-    // Enable start draft button only if selections are valid
+    // Enable "Start Draft" button only if valid selections exist
     document.getElementById('start-draft-btn').disabled = !(
         selectedTeamOne &&
         selectedTeamTwo &&
         selectedTeamOne !== selectedTeamTwo
     );
 }
+
