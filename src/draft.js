@@ -1,3 +1,5 @@
+document.addEventListener('DOMContentLoaded', initializeDraftTab);
+
 // Global Variables for Draft
 let allPlayers = [];
 let teamOne = [];
@@ -50,7 +52,6 @@ function populateCaptainSelectors(players) {
     teamOneSelector.addEventListener('change', validateCaptainSelection);
     teamTwoSelector.addEventListener('change', validateCaptainSelection);
 
-    // Disable Start Draft button until captains are selected
     startDraftButton.disabled = true;
 
     function validateCaptainSelection() {
@@ -82,44 +83,17 @@ function startDraft() {
         return;
     }
 
-    // Populate captains into their respective teams
     teamOne = [teamOneCaptain];
     teamTwo = [teamTwoCaptain];
 
-    // Remove captains from available players
     allPlayers = allPlayers.filter(
         player => player.id !== teamOneCaptain.id && player.id !== teamTwoCaptain.id
     );
 
-    // Hide Start Draft button and show Start Over button
     document.getElementById('start-draft-btn').classList.add('d-none');
     document.getElementById('start-over-btn').classList.remove('d-none');
 
-    // Update UI
     updateDraftUI(allPlayers, teamOne, teamTwo, currentDraftTurn);
-}
-
-// Assign Player to Team
-function assignPlayerToTeam(playerId, team) {
-    const player = allPlayers.find(p => p.id === playerId);
-    if (!player) {
-        console.error('Player not found:', playerId);
-        return;
-    }
-
-    if (team === 'teamOne') {
-        teamOne.push(player);
-        currentDraftTurn = 'teamTwo';
-    } else if (team === 'teamTwo') {
-        teamTwo.push(player);
-        currentDraftTurn = 'teamOne';
-    }
-
-    updateDraftUI(allPlayers, teamOne, teamTwo, currentDraftTurn);
-
-    if (teamOne.length + teamTwo.length === allPlayers.length + 2) {
-        document.getElementById('commission-draft-btn').classList.remove('d-none');
-    }
 }
 
 // Reset Draft
@@ -153,7 +127,6 @@ function updateDraftUI(players, teamOne, teamTwo, currentDraftTurn) {
     teamOneList.innerHTML = '';
     teamTwoList.innerHTML = '';
 
-    // Populate available players
     players.forEach(player => {
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -168,7 +141,6 @@ function updateDraftUI(players, teamOne, teamTwo, currentDraftTurn) {
         availablePlayersList.appendChild(listItem);
     });
 
-    // Populate Team One
     teamOne.forEach(player => {
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item';
@@ -176,7 +148,6 @@ function updateDraftUI(players, teamOne, teamTwo, currentDraftTurn) {
         teamOneList.appendChild(listItem);
     });
 
-    // Populate Team Two
     teamTwo.forEach(player => {
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item';
@@ -184,7 +155,6 @@ function updateDraftUI(players, teamOne, teamTwo, currentDraftTurn) {
         teamTwoList.appendChild(listItem);
     });
 
-    // Show Turn Indicator
     if (draftStarted) {
         const currentTeamNickname =
             currentDraftTurn === 'teamOne'
