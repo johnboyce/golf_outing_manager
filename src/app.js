@@ -299,3 +299,72 @@ function populateTeamList(teamId, teamPlayers) {
         teamList.appendChild(createPlayerElement(player));
     });
 }
+
+let rotationIndex = 0;
+let rotationInterval = null;
+
+// Start Rotating Player Profiles
+function startProfileRotation() {
+    if (rotationInterval) clearInterval(rotationInterval); // Clear any existing interval
+
+    rotationInterval = setInterval(() => {
+        showPlayerProfileForRotation(allPlayers[rotationIndex]);
+
+        // Increment index and loop back to the start
+        rotationIndex = (rotationIndex + 1) % allPlayers.length;
+    }, 6000); // Show each player for 6 seconds
+}
+
+// Show Player Profile for Rotation
+function showPlayerProfileForRotation(player) {
+    if (!player) return;
+
+    document.getElementById('profile-image').src = player.profileImage;
+    document.getElementById('profile-name').textContent = player.name;
+    document.getElementById('profile-nickname').textContent = player.nickname;
+    document.getElementById('profile-handicap').textContent = player.handicap;
+    document.getElementById('profile-bio').textContent = player.bio;
+    document.getElementById('profile-prediction').textContent = player.prediction;
+}
+
+// Pause Profile Rotation
+function pauseProfileRotation() {
+    if (rotationInterval) {
+        clearInterval(rotationInterval);
+        rotationInterval = null;
+    }
+}
+
+// Resume Profile Rotation
+function resumeProfileRotation() {
+    if (!rotationInterval) startProfileRotation();
+}
+
+// Add Event Listeners for Pause and Resume
+function setupRotationControls() {
+    document.getElementById('pause-rotation-btn').addEventListener('click', pauseProfileRotation);
+    document.getElementById('resume-rotation-btn').addEventListener('click', resumeProfileRotation);
+}
+
+// Initialize Profile Rotation on DOM Load
+document.addEventListener('DOMContentLoaded', () => {
+    setupRotationControls();
+
+    // Start rotation after players are fetched
+    document.addEventListener('playersFetched', () => {
+        startProfileRotation();
+    });
+});
+
+// Emit a custom event after players are fetched
+async function fetchPlayersFromAPI() {
+    const response = await fetch(`${API_GATEWAY_URL}/players`);
+    if (!response.ok) throw new Error(`Failed to fetch players: ${response.statusText}`);
+    const players = await response.json();
+
+    // Emit custom event for rotation start
+    const event = new Event('playersFetched');
+    document.dispatchEvent(event);
+
+    return players;
+}
