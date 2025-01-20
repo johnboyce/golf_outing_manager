@@ -47,6 +47,7 @@ function updateDraftUI(players, teamOne, teamTwo, currentTurn) {
     teamOneList.innerHTML = '';
     teamTwoList.innerHTML = '';
 
+    // Populate available players
     players.forEach(player => {
         if (!teamOne.includes(player) && !teamTwo.includes(player)) {
             const listItem = document.createElement('li');
@@ -63,6 +64,7 @@ function updateDraftUI(players, teamOne, teamTwo, currentTurn) {
         }
     });
 
+    // Populate Team One
     teamOne.forEach(player => {
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item';
@@ -70,6 +72,7 @@ function updateDraftUI(players, teamOne, teamTwo, currentTurn) {
         teamOneList.appendChild(listItem);
     });
 
+    // Populate Team Two
     teamTwo.forEach(player => {
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item';
@@ -77,6 +80,7 @@ function updateDraftUI(players, teamOne, teamTwo, currentTurn) {
         teamTwoList.appendChild(listItem);
     });
 
+    // Update draft turn indicator
     draftTurnIndicator.innerHTML = `
         <div class="alert alert-info">
             It's ${currentTurn === 'teamOne' ? 'Team One' : 'Team Two'}'s turn to draft!
@@ -107,15 +111,35 @@ function assignPlayerToTeam(playerId, team) {
     }
 }
 
+// Start Draft
+function startDraft() {
+    console.log('Draft started!');
+    document.getElementById('start-draft-btn').classList.add('d-none');
+    document.getElementById('start-over-btn').classList.remove('d-none');
+    updateDraftUI(allPlayers, teamOne, teamTwo, currentTurn);
+}
+
+// Reset Draft
+function resetDraft() {
+    console.log('Resetting draft...');
+    teamOne = [];
+    teamTwo = [];
+    initializeDraft(allPlayers);
+    document.getElementById('start-draft-btn').classList.remove('d-none');
+    document.getElementById('start-over-btn').classList.add('d-none');
+}
+
 // Initialize Draft Tab
 document.addEventListener('DOMContentLoaded', () => {
     fetchPlayersForDraft();
 
     const startDraftButton = document.getElementById('start-draft-btn');
+    const startOverButton = document.getElementById('start-over-btn');
+
     if (startDraftButton) {
-        startDraftButton.addEventListener('click', () => {
-            updateDraftUI(allPlayers, teamOne, teamTwo, currentTurn);
-            startDraftButton.disabled = true;
-        });
+        startDraftButton.addEventListener('click', startDraft);
+    }
+    if (startOverButton) {
+        startOverButton.addEventListener('click', resetDraft);
     }
 });
