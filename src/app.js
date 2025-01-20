@@ -12,51 +12,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Fetch players from API
         allPlayers = await fetchPlayersFromAPI();
 
-        // Populate captain selectors in Draft Tab with preselection
-        populateCaptainSelectors(allPlayers);
-
         // Populate Players Tab
         populatePlayersTab(allPlayers);
 
+        // Populate captain selectors in Draft Tab
+        populateCaptainSelectors(allPlayers);
+
         // Set up event listeners
         setupEventListeners();
+
+        // Start polling for draft updates
+        startPolling();
     } catch (error) {
         console.error('Error initializing app:', error);
     }
 });
-
-function populateCaptainSelectors(players) {
-    const teamOneSelector = document.getElementById('team-one-captain');
-    const teamTwoSelector = document.getElementById('team-two-captain');
-
-    // Clear existing options
-    teamOneSelector.innerHTML = '';
-    teamTwoSelector.innerHTML = '';
-
-    players.forEach(player => {
-        // Create options for both selectors
-        const optionOne = new Option(player.name, player.id);
-        const optionTwo = new Option(player.name, player.id);
-
-        // Preselect John Boyce for Team One and Jim Boyce for Team Two
-        if (player.name === 'John Boyce') {
-            optionOne.selected = true;
-            selectedCaptains.teamOneCaptain = player;
-        }
-        if (player.name === 'Jim Boyce') {
-            optionTwo.selected = true;
-            selectedCaptains.teamTwoCaptain = player;
-        }
-
-        // Add options to selectors
-        teamOneSelector.add(optionOne);
-        teamTwoSelector.add(optionTwo);
-    });
-
-    // Validate selections to disable overlapping choices
-    validateCaptainSelection();
-}
-
 
 // Fetch Players from API
 async function fetchPlayersFromAPI() {
@@ -105,26 +75,71 @@ function showPlayerProfile(playerId) {
     }
 }
 
-// Setup Preselected Captains
-function setupPreselectedCaptains() {
+// Populate Captain Selectors
+function populateCaptainSelectors(players) {
     const teamOneSelector = document.getElementById('team-one-captain');
     const teamTwoSelector = document.getElementById('team-two-captain');
 
-    teamOneSelector.innerHTML = `<option value="john-boyce" selected>John Boyce</option>`;
-    teamTwoSelector.innerHTML = `<option value="jim-boyce" selected>Jim Boyce</option>`;
+    // Clear existing options
+    teamOneSelector.innerHTML = '';
+    teamTwoSelector.innerHTML = '';
+
+    players.forEach(player => {
+        const optionOne = new Option(player.name, player.id);
+        const optionTwo = new Option(player.name, player.id);
+
+        // Preselect John Boyce for Team One and Jim Boyce for Team Two
+        if (player.name === 'John Boyce') {
+            optionOne.selected = true;
+            selectedCaptains.teamOneCaptain = player;
+        }
+        if (player.name === 'Jim Boyce') {
+            optionTwo.selected = true;
+            selectedCaptains.teamTwoCaptain = player;
+        }
+
+        teamOneSelector.add(optionOne);
+        teamTwoSelector.add(optionTwo);
+    });
+
+    // Validate selections to disable overlapping choices
+    validateCaptainSelection();
 }
 
-// Setup Event Listeners
-function setupEventListeners() {
-    const startDraftBtn = document.getElementById('start-draft-btn');
+// Validate Captain Selection
+function validateCaptainSelection() {
+    const teamOneSelector = document.getElementById('team-one-captain');
+    const teamTwoSelector = document.getElementById('team-two-captain');
+    const selectedTeamOne = teamOneSelector.value;
+    const selectedTeamTwo = teamTwoSelector.value;
 
-    startDraftBtn.addEventListener('click', startDraft);
+    // Reset disabled options
+    Array.from(teamOneSelector.options).forEach(opt => (opt.disabled = false));
+    Array.from(teamTwoSelector.options).forEach(opt => (opt.disabled = false));
+
+    // Disable already selected captain in the other selector
+    if (selectedTeamOne) {
+        const option = Array.from(teamTwoSelector.options).find(opt => opt.value === selectedTeamOne);
+        if (option) option.disabled = true;
+    }
+
+    if (selectedTeamTwo) {
+        const option = Array.from(teamOneSelector.options).find(opt => opt.value === selectedTeamTwo);
+        if (option) option.disabled = true;
+    }
+
+    // Enable Start Draft button only if valid selections exist
+    document.getElementById('start-draft-btn').disabled = !(
+        selectedTeamOne &&
+        selectedTeamTwo &&
+        selectedTeamOne !== selectedTeamTwo
+    );
 }
 
 // Start Draft
 function startDraft() {
-    selectedCaptains.teamOneCaptain = allPlayers.find(player => player.id === 'john-boyce');
-    selectedCaptains.teamTwoCaptain = allPlayers.find(player => player.id === 'jim-boyce');
+    selectedCaptains.teamOneCaptain = allPlayers.find(player => player.id === document.getElementById('team-one-captain').value);
+    selectedCaptains.teamTwoCaptain = allPlayers.find(player => player.id === document.getElementById('team-two-captain').value);
 
     setupTeams();
 }
@@ -226,21 +241,6 @@ function generateFoursomes() {
         foursomesList.appendChild(col);
     }
 }
-let notificationTimer = null;
-
-// Function to show notifications
-function showNotification(message) {
-    const notificationPanel = document.getElementById('notification-panel');
-    const notificationMessage = document.getElementById('notification-message');
-
-    notificationMessage.textContent = message;
-    notificationPanel.classList.remove('d-none');
-
-    clearTimeout(notificationTimer);
-    notificationTimer = setTimeout(() => {
-        notificationPanel.classList.add('d-none');
-    }, 5000); // Hide after 5 seconds
-}
 
 // Polling for real-time updates
 function startPolling() {
@@ -277,6 +277,19 @@ function updateDraftState(state) {
     showNotification('Draft state updated.');
 }
 
+// Show notifications
+function showNotification(message) {
+    const notificationPanel = document.getElementById('notification-panel');
+    const notificationMessage = document.getElementById('notification-message');
+
+    notificationMessage.textContent = message;
+    notificationPanel.classList.remove('d-none');
+
+    setTimeout(() => {
+        notificationPanel.classList.add('d-none');
+    }, 5000); // Hide after 5 seconds
+}
+
 // Populate team list
 function populateTeamList(teamId, teamPlayers) {
     const teamList = document.getElementById(teamId);
@@ -286,34 +299,3 @@ function populateTeamList(teamId, teamPlayers) {
         teamList.appendChild(createPlayerElement(player));
     });
 }
-
-// Ensure valid captain selection
-function validateCaptainSelection() {
-    const teamOneSelector = document.getElementById('team-one-captain');
-    const teamTwoSelector = document.getElementById('team-two-captain');
-    const selectedTeamOne = teamOneSelector.value;
-    const selectedTeamTwo = teamTwoSelector.value;
-
-    // Reset disabled options
-    Array.from(teamOneSelector.options).forEach(opt => (opt.disabled = false));
-    Array.from(teamTwoSelector.options).forEach(opt => (opt.disabled = false));
-
-    // Disable already selected captain in the other selector
-    if (selectedTeamOne) {
-        const option = Array.from(teamTwoSelector.options).find(opt => opt.value === selectedTeamOne);
-        if (option) option.disabled = true;
-    }
-
-    if (selectedTeamTwo) {
-        const option = Array.from(teamOneSelector.options).find(opt => opt.value === selectedTeamTwo);
-        if (option) option.disabled = true;
-    }
-
-    // Enable "Start Draft" button only if valid selections exist
-    document.getElementById('start-draft-btn').disabled = !(
-        selectedTeamOne &&
-        selectedTeamTwo &&
-        selectedTeamOne !== selectedTeamTwo
-    );
-}
-
