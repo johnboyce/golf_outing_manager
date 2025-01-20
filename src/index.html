@@ -6,11 +6,10 @@
     <title>2025 GOLF Kuntz OUTING DRAFT MANAGER</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
-    <script defer src="app.js"></script>
-    <script defer src="playersTab.js"></script>
-    <script defer src="draft.js"></script>
+    <link rel="stylesheet" href="./styles.css">
+    <script defer src="./app.js"></script>
+    <script defer src="./playersTab.js"></script>
+    <script defer src="./draft.js"></script>
 </head>
 <body>
 <div class="container mt-4">
@@ -23,122 +22,32 @@
     <!-- Tabs Navigation -->
     <ul class="nav nav-tabs" id="tabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="players-tab" data-bs-toggle="tab" data-bs-target="#players" type="button" role="tab">
+            <button class="nav-link active" id="players-tab" data-bs-toggle="tab" type="button">
                 <i class="fas fa-users"></i> Players
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="draft-tab" data-bs-toggle="tab" data-bs-target="#draft" type="button" role="tab">
+            <button class="nav-link" id="draft-tab" data-bs-toggle="tab" type="button">
                 <i class="fas fa-hand-paper"></i> Draft
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="foursomes-tab" data-bs-toggle="tab" data-bs-target="#foursomes" type="button" role="tab">
+            <button class="nav-link" id="foursomes-tab" data-bs-toggle="tab" type="button">
                 <i class="fas fa-users-cog"></i> Foursomes
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses" type="button" role="tab">
+            <button class="nav-link" id="courses-tab" data-bs-toggle="tab" type="button">
                 <i class="fas fa-map-marker-alt"></i> Courses
             </button>
         </li>
     </ul>
 
     <!-- Tabs Content -->
-    <div class="tab-content mt-3" id="tabs-content">
-        <!-- Players Tab -->
-        <div class="tab-pane fade show active" id="players" role="tabpanel">
-            <div id="player-profile-display" class="text-center"></div>
-            <div class="text-center mt-3">
-                <button id="pause-rotation-btn" class="btn btn-warning">
-                    <i class="fas fa-pause"></i> Pause Rotation
-                </button>
-                <button id="resume-rotation-btn" class="btn btn-success" disabled>
-                    <i class="fas fa-play"></i> Resume Rotation
-                </button>
-            </div>
-        </div>
-
-        <!-- Draft Tab -->
-        <div class="tab-pane fade" id="draft" role="tabpanel">
-            <div id="draft-content">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Team One Captain</h5>
-                        <select id="team-one-captain" class="form-select"></select>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Team Two Captain</h5>
-                        <select id="team-two-captain" class="form-select"></select>
-                    </div>
-                </div>
-                <div class="text-center mt-3">
-                    <button id="start-draft-btn" class="btn btn-primary" disabled>
-                        <i class="fas fa-play-circle"></i> Start Draft
-                    </button>
-                </div>
-            </div>
-
-            <div id="draft-panels" class="d-none mt-3">
-                <div class="row">
-                    <div class="col-md-4">
-                        <h5><i class="fas fa-flag"></i> Team One</h5>
-                        <ul id="team-one" class="list-group"></ul>
-                    </div>
-                    <div class="col-md-4">
-                        <h5><i class="fas fa-users"></i> Available Players</h5>
-                        <ul id="available-players" class="list-group"></ul>
-                    </div>
-                    <div class="col-md-4">
-                        <h5><i class="fas fa-flag-checkered"></i> Team Two</h5>
-                        <ul id="team-two" class="list-group"></ul>
-                    </div>
-                </div>
-                <div class="text-center mt-3">
-                    <button id="commission-draft-btn" class="btn btn-success d-none">
-                        <i class="fas fa-check"></i> Commission Draft
-                    </button>
-                </div>
-            </div>
-            <div id="draft-turn-indicator" class="text-center mt-3"></div>
-        </div>
-
-        <!-- Foursomes Tab -->
-        <div class="tab-pane fade" id="foursomes" role="tabpanel">
-            <div id="foursomes-list" class="row"></div>
-        </div>
-
-        <!-- Courses Tab -->
-        <div class="tab-pane fade" id="courses" role="tabpanel">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5><i class="fas fa-golf-ball"></i> Bear Trap Dunes</h5>
-                    <img src="https://www.beartrapdunes.com/wp-content/uploads/sites/8962/2023/06/home-main-1.jpg" alt="Bear Trap Dunes" class="img-fluid rounded mb-3">
-                    <p>A spectacular course featuring coastal views and challenging dunes. Perfect for golfers of all skill levels.</p>
-                </div>
-                <div class="col-md-6">
-                    <h5><i class="fas fa-golf-club"></i> War Admiral</h5>
-                    <img src="https://www.pamsgolfoc.com/wp-content/uploads/2020/01/waradmiral-1.jpg" alt="War Admiral" class="img-fluid rounded mb-3">
-                    <p>Inspired by the famous thoroughbred, this course offers a mix of strategy and precision with its unique design.</p>
-                </div>
-                <div class="col-md-6 mt-4">
-                    <h5><i class="fas fa-water"></i> Man O' War</h5>
-                    <img src="https://www.ruarkgolf.com/app/uploads/2018/08/MOW-30-1024x576.jpg" alt="Man O' War" class="img-fluid rounded mb-3">
-                    <p>A thrilling challenge for golfers, with picturesque views and water hazards adding to its allure.</p>
-                </div>
-                <div class="col-md-6 mt-4">
-                    <h5><i class="fas fa-lightbulb"></i> Lighthouse Sound</h5>
-                    <img src="https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg" alt="Lighthouse Sound" class="img-fluid rounded mb-3">
-                    <p>Known for its incredible views of the bay and a distinctive setup that challenges even the best golfers.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="tab-content mt-3" id="tabs-content"></div>
 </div>
 
-<!-- Notification Panel -->
-<div id="notification-panel" class="notification-panel d-none">
-    <i class="fas fa-info-circle"></i> <span id="notification-message"></span>
-</div>
+<!-- Include Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
