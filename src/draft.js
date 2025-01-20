@@ -2,7 +2,10 @@
 let allPlayers = [];
 let teamOne = [];
 let teamTwo = [];
-let currentTurn = 'teamOne';
+let currentDraftTurn = 'teamOne';
+let draftStarted = false;
+let teamOneCaptain = null;
+let teamTwoCaptain = null;
 
 // Fetch Players for Draft
 function fetchPlayersForDraft() {
@@ -25,19 +28,19 @@ function fetchPlayersForDraft() {
 function initializeDraft(players) {
     allPlayers = players;
 
-    const captainOne = allPlayers.find(player => player.name === 'John Boyce');
-    const captainTwo = allPlayers.find(player => player.name === 'Jim Boyce');
+    teamOneCaptain = allPlayers.find(player => player.name === 'John Boyce');
+    teamTwoCaptain = allPlayers.find(player => player.name === 'Jim Boyce');
 
-    if (captainOne) teamOne.push(captainOne);
-    if (captainTwo) teamTwo.push(captainTwo);
+    if (teamOneCaptain) teamOne.push(teamOneCaptain);
+    if (teamTwoCaptain) teamTwo.push(teamTwoCaptain);
 
-    allPlayers = allPlayers.filter(player => player !== captainOne && player !== captainTwo);
+    allPlayers = allPlayers.filter(player => player !== teamOneCaptain && player !== teamTwoCaptain);
 
-    updateDraftUI(allPlayers, teamOne, teamTwo, currentTurn);
+    updateDraftUI(allPlayers, teamOne, teamTwo, currentDraftTurn);
 }
 
 // Update Draft UI
-function updateDraftUI(players, teamOne, teamTwo, currentTurn) {
+function updateDraftUI(players, teamOne, teamTwo, currentDraftTurn) {
     const availablePlayersList = document.getElementById('available-players');
     const teamOneList = document.getElementById('team-one');
     const teamTwoList = document.getElementById('team-two');
@@ -55,9 +58,9 @@ function updateDraftUI(players, teamOne, teamTwo, currentTurn) {
             listItem.innerHTML = `
                 ${player.name} (${player.handicap})
                 <button class="btn btn-sm ${
-                currentTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary'
-            }" onclick="assignPlayerToTeam('${player.id}', '${currentTurn}')">
-                    Add to ${currentTurn === 'teamOne' ? 'Team One' : 'Team Two'}
+                currentDraftTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary'
+            }" onclick="assignPlayerToTeam('${player.id}', '${currentDraftTurn}')">
+                    Add to ${currentDraftTurn === 'teamOne' ? 'Team One' : 'Team Two'}
                 </button>
             `;
             availablePlayersList.appendChild(listItem);
@@ -80,12 +83,21 @@ function updateDraftUI(players, teamOne, teamTwo, currentTurn) {
         teamTwoList.appendChild(listItem);
     });
 
-    // Update draft turn indicator
-    draftTurnIndicator.innerHTML = `
-        <div class="alert alert-info">
-            It's ${currentTurn === 'teamOne' ? 'Team One' : 'Team Two'}'s turn to draft!
-        </div>
-    `;
+    // Show Turn Indicator Only After Draft Starts
+    if (draftStarted) {
+        const currentTeamNickname =
+            currentDraftTurn === 'teamOne'
+                ? teamOneCaptain?.nickname || 'Team One'
+                : teamTwoCaptain?.nickname || 'Team Two';
+
+        draftTurnIndicator.innerHTML = `
+            <div class="alert alert-info">
+                It's ${currentTeamNickname}'s turn to draft!
+            </div>
+        `;
+    } else {
+        draftTurnIndicator.innerHTML = '';
+    }
 }
 
 // Assign Player to Team
@@ -98,17 +110,37 @@ function assignPlayerToTeam(playerId, team) {
 
     if (team === 'teamOne') {
         teamOne.push(player);
-        currentTurn = 'teamTwo';
+        currentDraftTurn = 'teamTwo';
     } else if (team === 'teamTwo') {
         teamTwo.push(player);
-        currentTurn = 'teamOne';
+        currentDraftTurn = 'teamOne';
     }
 
-    updateDraftUI(allPlayers, teamOne, teamTwo, currentTurn);
+    updateDraftUI(allPlayers, teamOne, teamTwo, currentDraftTurn);
 
     if (teamOne.length + teamTwo.length === allPlayers.length + 2) {
         document.getElementById('commission-draft-btn').classList.remove('d-none');
     }
+}
+
+// Start Draft
+function startDraft() {
+    console.log('Draft started!');
+    draftStarted = true;
+    document.getElementById('start-draft-btn').classList.add('d-none');
+    document.getElementById('start-over-btn').classList.remove('d-none');
+    updateDraftUI(allPlayers, teamOne, teamTwo, currentDraftTurn);
+}
+
+// Reset Draft
+function resetDraft() {
+    console.log('Resetting draft...');
+    draftStarted = false;
+    teamOne = [];
+    teamTwo = [];
+    initializeDraft(allPlayers);
+    document.getElementById('start-draft-btn').classList.remove('d-none');
+    document.getElementById('start-over-btn').classList.add('d-none');
 }
 
 // Initialize Draft Tab
@@ -127,20 +159,5 @@ function initializeDraftTab() {
     }
 }
 
-// Start Draft
-function startDraft() {
-    console.log('Draft started!');
-    document.getElementById('start-draft-btn').classList.add('d-none');
-    document.getElementById('start-over-btn').classList.remove('d-none');
-    updateDraftUI(allPlayers, teamOne, teamTwo, currentTurn);
-}
-
-// Reset Draft
-function resetDraft() {
-    console.log('Resetting draft...');
-    teamOne = [];
-    teamTwo = [];
-    initializeDraft(allPlayers);
-    document.getElementById('start-draft-btn').classList.remove('d-none');
-    document.getElementById('start-over-btn').classList.add('d-none');
-}
+// Expose initializeDraftTab to the global scope (needed by app.js)
+window.initializeDraftTab = initializeDraftTab;
