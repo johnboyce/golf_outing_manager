@@ -96,6 +96,29 @@ function startDraft() {
     updateDraftUI(allPlayers, teamOne, teamTwo, currentDraftTurn);
 }
 
+// Assign Player to Team
+function assignPlayerToTeam(playerId, team) {
+    const player = allPlayers.find(p => p.id === playerId);
+    if (!player) {
+        console.error('Player not found:', playerId);
+        return;
+    }
+
+    if (team === 'teamOne') {
+        teamOne.push(player);
+        currentDraftTurn = 'teamTwo';
+    } else if (team === 'teamTwo') {
+        teamTwo.push(player);
+        currentDraftTurn = 'teamOne';
+    }
+
+    updateDraftUI(allPlayers, teamOne, teamTwo, currentDraftTurn);
+
+    if (teamOne.length + teamTwo.length === allPlayers.length + 2) {
+        document.getElementById('commission-draft-btn').classList.remove('d-none');
+    }
+}
+
 // Reset Draft
 function resetDraft() {
     console.log('Resetting draft...');
