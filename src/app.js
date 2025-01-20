@@ -93,6 +93,37 @@ function showPlayerProfile(playerId) {
     }
 }
 
+// Populate Captain Selectors
+function populateCaptainSelectors(players) {
+    const teamOneSelector = document.getElementById('team-one-captain');
+    const teamTwoSelector = document.getElementById('team-two-captain');
+
+    // Clear existing options
+    teamOneSelector.innerHTML = '';
+    teamTwoSelector.innerHTML = '';
+
+    players.forEach(player => {
+        const optionOne = new Option(player.name, player.id);
+        const optionTwo = new Option(player.name, player.id);
+
+        // Preselect John Boyce for Team One and Jim Boyce for Team Two
+        if (player.name === 'John Boyce') {
+            optionOne.selected = true;
+            selectedCaptains.teamOneCaptain = player;
+        }
+        if (player.name === 'Jim Boyce') {
+            optionTwo.selected = true;
+            selectedCaptains.teamTwoCaptain = player;
+        }
+
+        teamOneSelector.add(optionOne);
+        teamTwoSelector.add(optionTwo);
+    });
+
+    // Validate selections to disable overlapping choices
+    validateCaptainSelection();
+}
+
 // Validate Captain Selection
 function validateCaptainSelection() {
     const teamOneSelector = document.getElementById('team-one-captain');
@@ -195,7 +226,32 @@ function createPlayerElement(player) {
     return li;
 }
 
-// Start Polling
+// Generate Foursomes
+function generateFoursomes() {
+    const foursomesList = document.getElementById('foursomes-list');
+    foursomesList.innerHTML = '';
+
+    const allPlayersInTeams = [...teamOne, ...teamTwo];
+
+    for (let i = 0; i < allPlayersInTeams.length; i += 4) {
+        const foursome = allPlayersInTeams.slice(i, i + 4);
+        const col = document.createElement('div');
+        col.className = 'col-md-6 mb-4';
+        col.innerHTML = `
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Foursome ${Math.floor(i / 4) + 1}</h5>
+                    <ul>
+                        ${foursome.map(player => `<li>${player.name}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+        foursomesList.appendChild(col);
+    }
+}
+
+// Polling for real-time updates
 function startPolling() {
     setInterval(async () => {
         try {
@@ -208,4 +264,47 @@ function startPolling() {
             console.error('Error fetching draft state:', error);
         }
     }, 3000); // Poll every 3 seconds
+}
+
+// Update Draft State
+function updateDraftState(state) {
+    if (!state) return;
+
+    // Update teams
+    teamOne = state.teamOne || [];
+    teamTwo = state.teamTwo || [];
+    allPlayers = state.availablePlayers || [];
+
+    // Populate available players
+    populateAvailablePlayers(allPlayers);
+
+    // Populate team lists
+    populateTeamList('team-one', teamOne);
+    populateTeamList('team-two', teamTwo);
+
+    // Show notification
+    showNotification('Draft state updated.');
+}
+
+// Show Notification
+function showNotification(message) {
+    const notificationPanel = document.getElementById('notification-panel');
+    const notificationMessage = document.getElementById('notification-message');
+
+    notificationMessage.textContent = message;
+    notificationPanel.classList.remove('d-none');
+
+    setTimeout(() => {
+        notificationPanel.classList.add('d-none');
+    }, 5000); // Hide after 5 seconds
+}
+
+// Populate Team List
+function populateTeamList(teamId, teamPlayers) {
+    const teamList = document.getElementById(teamId);
+    teamList.innerHTML = ''; // Clear existing content
+
+    teamPlayers.forEach(player => {
+        teamList.appendChild(createPlayerElement(player));
+    });
 }
