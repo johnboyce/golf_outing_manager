@@ -15,24 +15,24 @@ function initializeTabs() {
     const coursesTab = document.getElementById('courses-tab');
 
     if (playersTab) {
-        playersTab.addEventListener('click', () => loadTabContent('players', 'playersTab.html'));
+        playersTab.addEventListener('click', () => loadTabContent('players', 'playersTab.html', 'playersTab.js'));
     }
     if (draftTab) {
-        draftTab.addEventListener('click', () => loadTabContent('draft', 'draftTab.html'));
+        draftTab.addEventListener('click', () => loadTabContent('draft', 'draftTab.html', 'draft.js'));
     }
     if (foursomesTab) {
-        foursomesTab.addEventListener('click', () => loadTabContent('foursomes', 'foursomesTab.html'));
+        foursomesTab.addEventListener('click', () => loadTabContent('foursomes', 'foursomesTab.html', 'foursomes.js'));
     }
     if (coursesTab) {
-        coursesTab.addEventListener('click', () => loadTabContent('courses', 'coursesTab.html'));
+        coursesTab.addEventListener('click', () => loadTabContent('courses', 'coursesTab.html', 'courses.js'));
     }
 
     // Load default tab
-    loadTabContent('players', 'playersTab.html');
+    loadTabContent('players', 'playersTab.html', 'playersTab.js');
 }
 
-// Load Tab Content Dynamically
-function loadTabContent(tabId, contentUrl) {
+// Load Tab Content and JavaScript Dynamically
+function loadTabContent(tabId, contentUrl, scriptUrl) {
     const tabsContent = document.getElementById('tabs-content');
     tabsContent.innerHTML = '<div class="text-center">Loading...</div>';
 
@@ -44,11 +44,8 @@ function loadTabContent(tabId, contentUrl) {
         .then(html => {
             tabsContent.innerHTML = html;
 
-            // Reinitialize scripts for the specific tab
-            if (tabId === 'players') initializePlayersTab();
-            if (tabId === 'draft') initializeDraftTab();
-            if (tabId === 'foursomes') initializeFoursomesTab();
-            if (tabId === 'courses') initializeCoursesTab();
+            // Load the corresponding JavaScript file
+            loadScript(scriptUrl);
         })
         .catch(error => {
             console.error(error);
@@ -56,49 +53,24 @@ function loadTabContent(tabId, contentUrl) {
         });
 }
 
-// Event Listeners
+// Load JavaScript File Dynamically
+function loadScript(scriptUrl) {
+    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
+    if (existingScript) {
+        console.log(`Script ${scriptUrl} already loaded.`);
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.src = scriptUrl;
+    script.type = 'text/javascript';
+    script.onload = () => console.log(`Loaded ${scriptUrl}`);
+    script.onerror = () => console.error(`Failed to load ${scriptUrl}`);
+    document.body.appendChild(script);
+}
+
+// Global Event Listeners
 function setupEventListeners() {
     console.log('Setting up global event listeners...');
     // Add any global event listeners if needed
-}
-
-// Players Tab Initialization
-function initializePlayersTab() {
-    console.log('Initializing Players Tab...');
-    fetchPlayers();
-}
-
-// Draft Tab Initialization
-function initializeDraftTab() {
-    console.log('Initializing Draft Tab...');
-    fetchPlayersForDraft();
-}
-
-// Foursomes Tab Initialization
-function initializeFoursomesTab() {
-    console.log('Initializing Foursomes Tab...');
-    // Placeholder for foursomes tab initialization
-}
-
-// Courses Tab Initialization
-function initializeCoursesTab() {
-    console.log('Initializing Courses Tab...');
-    // Placeholder for courses tab initialization
-}
-
-// Fetch Players for Draft
-function fetchPlayersForDraft() {
-    console.log('Fetching players for draft...');
-    fetch(`${API_GATEWAY_URL}/players`)
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch players for draft');
-            return response.json();
-        })
-        .then(players => {
-            console.log('Players fetched for draft:', players);
-            initializeDraft(players);
-        })
-        .catch(error => {
-            console.error('Error fetching players for draft:', error);
-        });
 }
