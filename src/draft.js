@@ -24,7 +24,7 @@ function initializeDraftTab() {
 // Fetch Players for Draft
 function fetchPlayersForDraft() {
     console.log('Fetching players for Draft Tab...');
-    $.get(`${API_GATEWAY_URL}/players`)
+    $.getJSON(`${API_GATEWAY_URL}/players`)
         .done(response => {
             console.log("Fetching players for draft:" + response);
             // Ensure response is an array
@@ -36,8 +36,8 @@ function fetchPlayersForDraft() {
                 displayErrorMessage();
             }
         })
-        .fail(error => {
-            console.error('Error fetching players for draft:', error);
+        .fail((jqXHR, textStatus, errorThrown) => {
+            console.error(`Error fetching players: ${textStatus}`, errorThrown);
             displayErrorMessage();
         });
 }

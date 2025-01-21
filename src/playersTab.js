@@ -15,7 +15,7 @@ function initializePlayersTab() {
 // Fetch Players for Players Tab
 function fetchPlayersForPlayersTab() {
     console.log('Fetching players for Players Tab...');
-    $.get(`${API_GATEWAY_URL}/players`)
+    $.getJSON(`${API_GATEWAY_URL}/players`)
         .done(players => {
             // Log the response
             console.log(JSON.stringify(players, null, 2));
@@ -35,8 +35,8 @@ function fetchPlayersForPlayersTab() {
                 displayErrorMessage();
             }
         })
-        .fail(error => {
-            console.error('Error fetching players:', error);
+        .fail((jqXHR, textStatus, errorThrown) => {
+            console.error(`Error fetching players: ${textStatus}`, errorThrown);
             displayErrorMessage();
         });
 }

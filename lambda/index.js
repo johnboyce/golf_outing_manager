@@ -32,6 +32,7 @@ exports.handler = async (event) => {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 message: 'Internal server error',
@@ -50,6 +51,7 @@ const listPlayers = async () => {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify(data.Items),
         };
@@ -73,6 +75,7 @@ const getPlayer = async (playerId) => {
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                     'Access-Control-Allow-Headers': 'Content-Type',
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ message: 'Player not found' }),
             };
@@ -84,6 +87,7 @@ const getPlayer = async (playerId) => {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify(data.Item),
         };
@@ -106,6 +110,7 @@ const addPlayer = async (playerData) => {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({ message: 'Player added successfully' }),
         };
