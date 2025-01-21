@@ -26,6 +26,7 @@ function fetchPlayersForDraft() {
     console.log('Fetching players for Draft Tab...');
     $.get(`${API_GATEWAY_URL}/players`)
         .done(response => {
+            console.log("Fetching players for draft:" + response);
             // Ensure response is an array
             if (Array.isArray(response)) {
                 allPlayers = response;
@@ -90,6 +91,10 @@ function updateDraftUI() {
 
     const $teamOneHeader = $('#team-one-header h3').text(`Team ${teamOneCaptain.nickname}`);
     const $teamTwoHeader = $('#team-two-header h3').text(`Team ${teamTwoCaptain.nickname}`);
+
+    // Additional operations on the headers (if needed)
+    $teamOneHeader.css('color', 'blue');
+    $teamTwoHeader.css('color', 'red');
 
     allPlayers.forEach(player => {
         const buttonClass = currentDraftTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary';

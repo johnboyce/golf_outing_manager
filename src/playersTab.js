@@ -17,15 +17,22 @@ function fetchPlayersForPlayersTab() {
     console.log('Fetching players for Players Tab...');
     $.get(`${API_GATEWAY_URL}/players`)
         .done(players => {
-            console.log("Players is :" + players);
-            if (Array.isArray(players) && players.length > 0) {
-                playerProfiles = players;
-                console.log('Players fetched successfully:', players);
-                displayPlayerProfile(playerProfiles[currentProfileIndex]);
-                startProfileRotation();
+            // Log the response
+            console.log(JSON.stringify(players, null, 2));
+
+            if (Array.isArray(players)) {
+                if (players.length > 0) {
+                    playerProfiles = players;
+                    console.log('Players fetched successfully:', playerProfiles);
+                    displayPlayerProfile(playerProfiles[currentProfileIndex]);
+                    startProfileRotation();
+                } else {
+                    console.warn('No players available.');
+                    displayNoPlayersMessage();
+                }
             } else {
-                console.warn('No players available.');
-                displayNoPlayersMessage();
+                console.error('Unexpected API response format:', players);
+                displayErrorMessage();
             }
         })
         .fail(error => {
