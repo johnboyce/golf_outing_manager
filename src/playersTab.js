@@ -19,6 +19,11 @@ function fetchPlayersForPlayersTab() {
         .done(players => {
             // Log the response
             console.log(JSON.stringify(players, null, 2));
+            console.log('Raw API response:', players);
+
+            // Debug the type of the response
+            console.log('Type of players:', typeof players);
+            console.log('Is players an array?', Array.isArray(players));
 
             if (Array.isArray(players)) {
                 if (players.length > 0) {
@@ -29,6 +34,21 @@ function fetchPlayersForPlayersTab() {
                 } else {
                     console.warn('No players available.');
                     displayNoPlayersMessage();
+                }
+            } else if (typeof players === 'string') {
+                try {
+                    const parsedPlayers = JSON.parse(players);
+                    if (Array.isArray(parsedPlayers)) {
+                        console.log('Parsed players array:', parsedPlayers);
+                        playerProfiles = players;
+                        console.log('Players fetched successfully:', playerProfiles);
+                        displayPlayerProfile(playerProfiles[currentProfileIndex]);
+                        startProfileRotation();
+                    } else {
+                        console.error('Parsed response is not an array:', parsedPlayers);
+                    }
+                } catch (error) {
+                    console.error('Error parsing string response as JSON:', error);
                 }
             } else {
                 console.error('Unexpected API response format:', players);
