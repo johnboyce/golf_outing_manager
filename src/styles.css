@@ -126,3 +126,69 @@ header {
     border-radius: 5px;
     margin-bottom: 15px;
 }
+/* General Layout */
+.draft-section {
+    display: flex;
+    align-items: flex-start; /* Aligns columns to the top */
+    gap: 2rem; /* Adds space between columns */
+}
+
+/* Team Columns */
+.team-column {
+    flex: 1; /* Equal width for all columns */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    min-width: 250px; /* Ensures columns don't shrink too much */
+    max-height: 70vh; /* Prevents overflowing vertically */
+    overflow-y: auto; /* Adds scrolling for long lists */
+}
+
+/* Team Header Styling */
+.team-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.team-logo {
+    width: 75px;
+    height: 75px;
+    object-fit: contain;
+}
+
+/* List Styling */
+.list-group {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+/* Available Players */
+.available-players-column {
+    flex-grow: 1;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #e9f7ff;
+    min-width: 250px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Buttons */
+button {
+    min-width: 120px;
+}

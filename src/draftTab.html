@@ -1,10 +1,10 @@
 <div id="draft-tab" class="tab-content">
-    <h2>Draft</h2>
+    <h2 class="text-center">Draft</h2>
 
     <!-- Captain Selection -->
-    <div class="captain-selection">
-        <h3>Select Captains</h3>
-        <div class="selectors">
+    <div class="captain-selection mb-4">
+        <h3 class="text-center">Select Captains</h3>
+        <div class="selectors d-flex justify-content-center gap-3">
             <div>
                 <label for="team-one-captain-selector">Team One Captain</label>
                 <select id="team-one-captain-selector" class="form-select"></select>
@@ -14,36 +14,39 @@
                 <select id="team-two-captain-selector" class="form-select"></select>
             </div>
         </div>
-        <button id="start-draft-btn" class="btn btn-primary" disabled>Start Draft</button>
-        <button id="start-over-btn" class="btn btn-danger d-none">Start Over</button>
-        <button id="commission-draft-btn" class="btn btn-success d-none">Commission Draft</button>
+        <div class="text-center mt-3">
+            <button id="start-draft-btn" class="btn btn-primary" disabled>Start Draft</button>
+            <button id="start-over-btn" class="btn btn-danger d-none">Start Over</button>
+            <button id="commission-draft-btn" class="btn btn-success d-none">Commission Draft</button>
+        </div>
     </div>
 
     <!-- Team Logos and Draft Sections -->
-    <div class="draft-section">
-        <div class="team-column">
-            <!-- Team One Header with Logo -->
-            <div id="team-one-header" class="team-header">
+    <div class="draft-section d-flex justify-content-between gap-4">
+        <!-- Team One Column -->
+        <div class="team-column flex-grow-1">
+            <div id="team-one-header" class="team-header text-center mb-3">
                 <img src="https://www.pngkey.com/png/full/946-9467891_golf-ball-on-tee-png.png"
                      alt="Team One Logo"
-                     style="width: 100px; height: 100px;">
+                     class="team-logo">
                 <h3>Team One</h3>
             </div>
             <ul id="team-one" class="list-group team-list"></ul>
         </div>
 
-        <div class="available-players-column">
-            <h3>Available Players</h3>
+        <!-- Available Players Column -->
+        <div class="available-players-column flex-grow-1">
+            <h3 class="text-center">Available Players</h3>
             <ul id="available-players" class="list-group"></ul>
-            <div id="draft-turn-indicator" class="mt-3"></div>
+            <div id="draft-turn-indicator" class="mt-3 text-center"></div>
         </div>
 
-        <div class="team-column">
-            <!-- Team Two Header with Logo -->
-            <div id="team-two-header" class="team-header">
+        <!-- Team Two Column -->
+        <div class="team-column flex-grow-1">
+            <div id="team-two-header" class="team-header text-center mb-3">
                 <img src="https://svgsilh.com/png-512/2027506-009688.png"
                      alt="Team Two Logo"
-                     style="width: 100px; height: 100px;">
+                     class="team-logo">
                 <h3>Team Two</h3>
             </div>
             <ul id="team-two" class="list-group team-list"></ul>
