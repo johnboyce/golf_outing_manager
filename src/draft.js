@@ -170,7 +170,7 @@ function resetDraft() {
 // Commission Draft
 function commissionDraft() {
     console.log('Committing draft and creating foursomes...');
-
+    savedFoursomes = []; // Reset saved foursomes
     const foursomes = [];
     const totalPlayers = Math.max(teamOne.length, teamTwo.length);
 
