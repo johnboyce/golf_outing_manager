@@ -17,6 +17,7 @@ function fetchPlayersForPlayersTab() {
     console.log('Fetching players for Players Tab...');
     $.get(`${API_GATEWAY_URL}/players`)
         .done(players => {
+            console.log("Players is :" + players);
             if (Array.isArray(players) && players.length > 0) {
                 playerProfiles = players;
                 console.log('Players fetched successfully:', players);
