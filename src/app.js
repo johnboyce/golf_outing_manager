@@ -15,13 +15,11 @@ $(document).ready(() => {
 function initializeTabs() {
     console.log('Setting up tab navigation...');
     $('#players-tab').on('click', () => loadTabContent('players', 'playersTab.html', 'playersTab.js'));
-    //$('#draft-tab').on('click', () => loadTabContent('draft', 'draftTab.html', 'draft.js'));
-    //$('#foursomes-tab').on('click', () => loadTabContent('foursomes', 'foursomesTab.html', 'foursomes.js'));
+    $('#draft-tab').on('click', () => loadTabContent('draft', 'draftTab.html', 'draft.js'));
+    $('#foursomes-tab').on('click', () => loadTabContent('foursomes', 'foursomesTab.html', 'foursomes.js'));
     $('#courses-tab').on('click', () => loadTabContent('courses', 'coursesTab.html', 'courses.js'));
 
     // Load the default tab (Players Tab)
-    loadTabContent('draft', 'draftTab.html', 'draft.js');
-    loadTabContent('foursomes', 'fousomesTab.html', 'foursomesTab.js');
     loadTabContent('players', 'playersTab.html', 'playersTab.js');
 }
 
