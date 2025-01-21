@@ -21,7 +21,21 @@ function fetchPlayersForPlayersTab() {
             console.log(JSON.stringify(players, null, 2));
             console.log('Raw API response:', players);
 
-            if (typeof players === 'string') {
+            // Debug the type of the response
+            console.log('Type of players:', typeof players);
+            console.log('Is players an array?', Array.isArray(players));
+
+            if (Array.isArray(players)) {
+                if (players.length > 0) {
+                    playerProfiles = players;
+                    console.log('Players fetched successfully:', playerProfiles);
+                    displayPlayerProfile(playerProfiles[currentProfileIndex]);
+                    startProfileRotation();
+                } else {
+                    console.warn('No players available.');
+                    displayNoPlayersMessage();
+                }
+            } else if (typeof players === 'string') {
                 try {
                     const parsedPlayers = JSON.parse(players);
                     if (Array.isArray(parsedPlayers)) {
