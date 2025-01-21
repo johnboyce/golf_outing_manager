@@ -188,7 +188,15 @@ header {
     overflow-y: auto;
 }
 
-/* Buttons */
 button {
     min-width: 120px;
+    margin: 5px;
+}
+
+.captain-selection .btn {
+    margin: 5px 10px;
+}
+
+.draft-section {
+    margin-top: 20px;
 }

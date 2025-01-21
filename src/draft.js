@@ -1,6 +1,8 @@
-document.addEventListener('DOMContentLoaded', initializeDraftTab);
+$(document).ready(() => {
+    initializeDraftTab();
+});
 
-// Global Variables for Draft
+// Global Variables
 let allPlayers = [];
 let teamOne = [];
 let teamTwo = [];
@@ -14,97 +16,81 @@ function initializeDraftTab() {
     console.log('Initializing Draft Tab...');
     fetchPlayersForDraft();
 
-    const startDraftButton = document.getElementById('start-draft-btn');
-    const startOverButton = document.getElementById('start-over-btn');
-    const commissionDraftButton = document.getElementById('commission-draft-btn');
-
-    if (startDraftButton) startDraftButton.addEventListener('click', startDraft);
-    if (startOverButton) startOverButton.addEventListener('click', resetDraft);
-    if (commissionDraftButton) commissionDraftButton.addEventListener('click', commissionDraft);
+    $('#start-draft-btn').on('click', startDraft);
+    $('#start-over-btn').on('click', resetDraft);
+    $('#commission-draft-btn').on('click', commissionDraft);
 }
 
-// Fetch Players for Draft
+// Fetch Players
 function fetchPlayersForDraft() {
-    console.log('Fetching players for Draft Tab...');
-    fetch(`${API_GATEWAY_URL}/players`)
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch players');
-            return response.json();
-        })
-        .then(players => {
-            console.log('Players fetched for draft:', players);
+    $.get(`${API_GATEWAY_URL}/players`)
+        .done(players => {
             allPlayers = players;
             populateCaptainSelectors(players);
         })
-        .catch(error => console.error('Error fetching players for draft:', error));
+        .fail(error => console.error('Error fetching players:', error));
 }
 
 // Populate Captain Selectors
 function populateCaptainSelectors(players) {
-    const teamOneSelector = document.getElementById('team-one-captain-selector');
-    const teamTwoSelector = document.getElementById('team-two-captain-selector');
-    const startDraftButton = document.getElementById('start-draft-btn');
-
-    if (!teamOneSelector || !teamTwoSelector) {
-        console.error('Captain selectors not found in the DOM.');
-        return;
-    }
-
-    teamOneSelector.innerHTML = '<option value="">Select Captain</option>';
-    teamTwoSelector.innerHTML = '<option value="">Select Captain</option>';
+    const $teamOneSelector = $('#team-one-captain-selector').html('<option value="">Select Captain</option>');
+    const $teamTwoSelector = $('#team-two-captain-selector').html('<option value="">Select Captain</option>');
+    const $startDraftButton = $('#start-draft-btn').prop('disabled', true);
 
     players.forEach(player => {
-        const option = document.createElement('option');
-        option.value = player.id;
-        option.textContent = `${player.name} (${player.nickname || 'No nickname'})`;
-
-        teamOneSelector.appendChild(option.cloneNode(true));
-        teamTwoSelector.appendChild(option.cloneNode(true));
+        const option = `<option value="${player.id}">${player.name} (${player.nickname || 'No nickname'})</option>`;
+        $teamOneSelector.append(option);
+        $teamTwoSelector.append(option);
     });
 
     const validateCaptainSelection = () => {
-        teamOneCaptain = players.find(player => player.id === teamOneSelector.value);
-        teamTwoCaptain = players.find(player => player.id === teamTwoSelector.value);
-
-        startDraftButton.disabled = !(teamOneCaptain && teamTwoCaptain && teamOneCaptain.id !== teamTwoCaptain.id);
+        teamOneCaptain = players.find(player => player.id === $teamOneSelector.val());
+        teamTwoCaptain = players.find(player => player.id === $teamTwoSelector.val());
+        $startDraftButton.prop('disabled', !(teamOneCaptain && teamTwoCaptain && teamOneCaptain.id !== teamTwoCaptain.id));
     };
 
-    teamOneSelector.addEventListener('change', validateCaptainSelection);
-    teamTwoSelector.addEventListener('change', validateCaptainSelection);
-
-    startDraftButton.disabled = true;
+    $teamOneSelector.on('change', validateCaptainSelection);
+    $teamTwoSelector.on('change', validateCaptainSelection);
 }
 
 // Start Draft
 function startDraft() {
-    console.log('Draft started!');
     draftStarted = true;
-
-    if (!teamOneCaptain || !teamTwoCaptain) {
-        console.error('Captains not selected. Cannot start draft.');
-        return;
-    }
-
     teamOne = [teamOneCaptain];
     teamTwo = [teamTwoCaptain];
     allPlayers = allPlayers.filter(player => player.id !== teamOneCaptain.id && player.id !== teamTwoCaptain.id);
 
-    document.getElementById('start-draft-btn').classList.add('d-none');
-    document.getElementById('start-over-btn').classList.remove('d-none');
-    document.getElementById('commission-draft-btn').classList.add('d-none');
-
+    $('#start-draft-btn').addClass('d-none');
+    $('#start-over-btn').removeClass('d-none');
     updateDraftUI();
+}
+
+// Update Draft UI
+function updateDraftUI() {
+    $('#available-players').empty();
+    $('#team-one').empty();
+    $('#team-two').empty();
+
+    allPlayers.forEach(player => {
+        const buttonClass = currentDraftTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary';
+        $('#available-players').append(`
+            <li class="list-group-item">
+                ${player.name} (${player.handicap})
+                <button class="btn ${buttonClass}" onclick="assignPlayerToTeam('${player.id}', '${currentDraftTurn}')">
+                    Add to ${currentDraftTurn === 'teamOne' ? 'Team One' : 'Team Two'}
+                </button>
+            </li>
+        `);
+    });
+
+    $('#team-one-header h3').text(`Team ${teamOneCaptain.nickname}`);
+    $('#team-two-header h3').text(`Team ${teamTwoCaptain.nickname}`);
 }
 
 // Assign Player to Team
 function assignPlayerToTeam(playerId, team) {
-    const playerIndex = allPlayers.findIndex(player => player.id === playerId);
-    if (playerIndex === -1) {
-        console.error('Player not found:', playerId);
-        return;
-    }
-
-    const player = allPlayers.splice(playerIndex, 1)[0];
+    const player = allPlayers.find(p => p.id === playerId);
+    if (!player) return;
 
     if (team === 'teamOne') {
         teamOne.push(player);
@@ -114,30 +100,26 @@ function assignPlayerToTeam(playerId, team) {
         currentDraftTurn = 'teamOne';
     }
 
+    allPlayers = allPlayers.filter(p => p.id !== playerId);
     updateDraftUI();
+}
 
-    if (allPlayers.length === 0) {
-        document.getElementById('commission-draft-btn').classList.remove('d-none');
-        document.getElementById('draft-turn-indicator').innerHTML =
-            '<div class="alert alert-success">All players have been assigned!</div>';
-    }
+// Reset Draft
+function resetDraft() {
+    draftStarted = false;
+    allPlayers = [...teamOne, ...teamTwo, ...allPlayers];
+    teamOne = [];
+    teamTwo = [];
+    teamOneCaptain = null;
+    teamTwoCaptain = null;
+    populateCaptainSelectors(allPlayers);
+
+    $('#start-draft-btn').removeClass('d-none');
+    $('#start-over-btn').addClass('d-none');
 }
 
 // Commission Draft
 function commissionDraft() {
-    console.log('Committing draft and creating foursomes...');
-
-    const foursomes = [];
-    const totalPlayers = Math.max(teamOne.length, teamTwo.length);
-
-    for (let i = 0; i < totalPlayers; i++) {
-        const group = [];
-        if (teamOne[i]) group.push({ ...teamOne[i], team: 'Team One' });
-        if (teamTwo[i]) group.push({ ...teamTwo[i], team: 'Team Two' });
-        foursomes.push(group);
-    }
-
-    updateFoursomesTab(foursomes);
+    console.log('Committing draft...');
+    // Logic for commission
 }
-
-// The rest of the functions remain unchanged

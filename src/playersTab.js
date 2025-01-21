@@ -1,85 +1,83 @@
-(function () {
-    let currentProfileIndex = 0;
-    let profileRotationInterval = null;
+$(document).ready(() => {
+    initializePlayersTab();
+});
 
-    // Start Profile Rotation
-    function startProfileRotation(players) {
-        const profilePanel = document.getElementById('player-profile-display');
+let playerProfiles = [];
+let currentProfileIndex = 0;
+let profileRotationInterval;
 
-        if (!players || players.length === 0) {
-            console.error('No players available for profile rotation.');
-            profilePanel.innerHTML = `<div class="text-danger">No players available.</div>`;
-            return;
-        }
+// Initialize Players Tab
+function initializePlayersTab() {
+    console.log('Initializing Players Tab...');
+    fetchPlayersForPlayersTab();
 
-        const updateProfile = () => {
-            const player = players[currentProfileIndex];
-            if (!player) {
-                console.error('Invalid player object during profile rotation:', player);
-                return;
+    $('#pause-rotation-btn').on('click', pauseProfileRotation);
+    $('#resume-rotation-btn').on('click', resumeProfileRotation);
+}
+
+// Fetch Players for Players Tab
+function fetchPlayersForPlayersTab() {
+    console.log('Fetching players for Players Tab...');
+    $.get(`${API_GATEWAY_URL}/players`)
+        .done(players => {
+            playerProfiles = players;
+            if (playerProfiles.length > 0) {
+                displayPlayerProfile(playerProfiles[currentProfileIndex]);
+                startProfileRotation();
+            } else {
+                displayNoPlayersMessage();
             }
-            profilePanel.innerHTML = `
-                <h3>${player.name} (${player.handicap})</h3>
-                <img src="${player.profileImage}" alt="${player.name}" class="img-fluid rounded mb-2" style="max-width: 150px;">
-                <p>${player.bio}</p>
-                <p><strong>Prediction:</strong> ${player.prediction}</p>
-            `;
-            currentProfileIndex = (currentProfileIndex + 1) % players.length;
-        };
+        })
+        .fail(error => {
+            console.error('Error fetching players:', error);
+            displayErrorMessage();
+        });
+}
 
-        updateProfile();
-        profileRotationInterval = setInterval(updateProfile, 6000);
+// Display Player Profile
+function displayPlayerProfile(player) {
+    const $profileDisplay = $('#player-profile-display');
+    if (!player) {
+        console.error('Invalid player object during profile display:', player);
+        return;
     }
 
-    // Pause Profile Rotation
-    function pauseProfileRotation() {
-        clearInterval(profileRotationInterval);
-        profileRotationInterval = null;
-    }
+    const profileHtml = `
+        <h4>${player.name} (${player.nickname})</h4>
+        <img src="${player.profileImage}" alt="Profile Image" style="width: 100px; height: 100px;">
+        <p>${player.bio}</p>
+        <p><strong>Prediction:</strong> ${player.prediction}</p>
+    `;
 
-    // Resume Profile Rotation
-    function resumeProfileRotation(players) {
-        if (!profileRotationInterval) {
-            startProfileRotation(players);
-        }
-    }
+    $profileDisplay.html(profileHtml);
+}
 
-    // Fetch Players for Profile Rotation
-    function fetchPlayers() {
-        console.log('Fetching players for Players Tab...');
-        fetch(`${API_GATEWAY_URL}/players`)
-            .then(response => {
-                if (!response.ok) throw new Error('Failed to fetch players');
-                return response.json();
-            })
-            .then(players => {
-                console.log('Players fetched:', players);
-                startProfileRotation(players);
-            })
-            .catch(error => {
-                console.error('Error fetching players:', error);
-            });
-    }
+// Display No Players Message
+function displayNoPlayersMessage() {
+    $('#player-profile-display').html('<p class="text-danger">No players available.</p>');
+}
 
-    // Initialize Players Tab
-    document.addEventListener('DOMContentLoaded', () => {
-        fetchPlayers();
+// Display Error Message
+function displayErrorMessage() {
+    $('#player-profile-display').html('<p class="text-danger">Error loading players.</p>');
+}
 
-        const pauseButton = document.getElementById('pause-rotation-btn');
-        const resumeButton = document.getElementById('resume-rotation-btn');
+// Profile Rotation
+function startProfileRotation() {
+    profileRotationInterval = setInterval(() => {
+        currentProfileIndex = (currentProfileIndex + 1) % playerProfiles.length;
+        displayPlayerProfile(playerProfiles[currentProfileIndex]);
+    }, 6000);
+}
 
-        if (pauseButton && resumeButton) {
-            pauseButton.addEventListener('click', () => {
-                pauseProfileRotation();
-                pauseButton.disabled = true;
-                resumeButton.disabled = false;
-            });
+function pauseProfileRotation() {
+    clearInterval(profileRotationInterval);
+    $('#pause-rotation-btn').prop('disabled', true);
+    $('#resume-rotation-btn').prop('disabled', false);
+}
 
-            resumeButton.addEventListener('click', () => {
-                resumeProfileRotation();
-                pauseButton.disabled = false;
-                resumeButton.disabled = true;
-            });
-        }
-    });
-})();
+function resumeProfileRotation() {
+    startProfileRotation();
+    $('#pause-rotation-btn').prop('disabled', false);
+    $('#resume-rotation-btn').prop('disabled', true);
+}
