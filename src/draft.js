@@ -212,42 +212,33 @@ function assignPlayerToTeam(playerId, team) {
 
 
 function generateFoursomes() {
-    console.log('Generating foursomes...');
     const draftData = StateManager.get('draftData');
-    const allPlayers = [
-        ...draftData.teamOne.players,
-        ...draftData.teamTwo.players,
-    ];
-
-    // Shuffle players for random assignment
+    const courses = StateManager.get('courses');
+    const allPlayers = [...draftData.teamOne.players, ...draftData.teamTwo.players];
     const shuffledPlayers = shuffleArray(allPlayers);
 
-    // Initialize groups for each course
-    const groups = {
-        'Bear Trap Dunes': [],
-        'War Admiral': [],
-        'Man O War': [],
-        'Lighthouse Sound': [],
-    };
+    const playersPerCourse = Math.ceil(allPlayers.length / courses.length);
+    const foursomes = {};
 
-    const playersPerGroup = Math.ceil(allPlayers.length / 4);
+    courses.forEach((course, index) => {
+        const start = index * playersPerCourse;
+        const end = start + playersPerCourse;
 
-    // Distribute players among courses
-    Object.keys(groups).forEach((course, index) => {
-        groups[course] = shuffledPlayers
-            .slice(index * playersPerGroup, (index + 1) * playersPerGroup)
-            .map(player => ({
-                ...player,
-                group: index + 1,
-            }));
+        const coursePlayers = shuffledPlayers.slice(start, end);
+        const groupedPlayers = [];
+
+        while (coursePlayers.length > 0) {
+            groupedPlayers.push(coursePlayers.splice(0, 4)); // Group players into foursomes of 4
+        }
+
+        foursomes[course.name] = groupedPlayers;
     });
 
-    // Update draft data with the generated groups
-    draftData.foursomes = groups;
-    StateManager.set('draftData', draftData);
-
-    console.log('Foursomes generated:', groups);
+    draftData.foursomes = foursomes;
+    StateManager.updateDraftData(draftData);
+    console.log('Generated Foursomes:', foursomes);
 }
+
 
 // Utility to shuffle an array
 function shuffleArray(array) {

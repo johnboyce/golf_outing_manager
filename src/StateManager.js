@@ -1,82 +1,29 @@
-const StateManager = (() => {
-    // Private State
-    let state = {
-        draftData: {
-            teamOne: {
-                captain: null,
-                players: [],
-            },
-            teamTwo: {
-                captain: null,
-                players: [],
-            },
-            currentDraftTurn: 'teamOne', // Default turn starts with Team One
-            draftStarted: false,
-            foursomes: {},
-        },
-        playerProfiles: [], // Contains all players fetched from the API
-    };
-
-    // Utility for deep merging objects
-    function deepMerge(target, source) {
-        for (const key in source) {
-            if (source[key] && typeof source[key] === 'object') {
-                if (!target[key]) {
-                    target[key] = {};
-                }
-                deepMerge(target[key], source[key]);
-            } else {
-                target[key] = source[key];
-            }
-        }
-        return target;
+const courses = [
+    {
+        name: "Bear Trap Dunes",
+        description: "A spectacular course featuring coastal views and challenging dunes. Perfect for golfers of all skill levels.",
+        image: "https://www.beartrapdunes.com/wp-content/uploads/sites/8962/2023/06/home-main-1.jpg",
+        icon: "fas fa-golf-ball"
+    },
+    {
+        name: "War Admiral",
+        description: "Inspired by the famous thoroughbred, this course offers a mix of strategy and precision with its unique design.",
+        image: "https://www.pamsgolfoc.com/wp-content/uploads/2020/01/waradmiral-1.jpg",
+        icon: "fas fa-golf-club"
+    },
+    {
+        name: "Man O' War",
+        description: "A thrilling challenge for golfers, with picturesque views and water hazards adding to its allure.",
+        image: "https://www.ruarkgolf.com/app/uploads/2018/08/MOW-30-1024x576.jpg",
+        icon: "fas fa-horse-head"
+    },
+    {
+        name: "Lighthouse Sound",
+        description: "Known for its incredible views of the bay and a distinctive setup that challenges even the best golfers.",
+        image: "https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg",
+        icon: "fas fa-lightbulb"
     }
+];
 
-    return {
-        // Get State
-        get: (key) => {
-            if (key in state) {
-                return JSON.parse(JSON.stringify(state[key])); // Return a deep copy to avoid direct mutation
-            }
-            console.warn(`Key "${key}" does not exist in state.`);
-            return undefined;
-        },
-
-        // Set State
-        set: (key, value) => {
-            if (key in state) {
-                state[key] = JSON.parse(JSON.stringify(value)); // Deep copy to ensure immutability
-                console.log(`State updated for key "${key}":`, state[key]);
-            } else {
-                console.warn(`Key "${key}" does not exist in state.`);
-            }
-        },
-
-        // Update State (merge new data into existing state)
-        updateDraftData: (newData) => {
-            state.draftData = deepMerge(state.draftData, newData);
-            console.log('Draft data updated:', state.draftData);
-        },
-
-        // Reset State
-        reset: () => {
-            state = {
-                draftData: {
-                    teamOne: {
-                        captain: null,
-                        players: [],
-                    },
-                    teamTwo: {
-                        captain: null,
-                        players: [],
-                    },
-                    currentDraftTurn: 'teamOne',
-                    draftStarted: false,
-                    foursomes: {},
-                },
-                playerProfiles: [],
-            };
-            console.log('State reset to initial values.');
-        },
-    };
-})();
+// Store this in StateManager
+StateManager.set('courses', courses);
