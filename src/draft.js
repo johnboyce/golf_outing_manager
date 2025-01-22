@@ -2,30 +2,6 @@ $(document).ready(() => {
     initializeDraftTab();
 });
 
-// Global Variables for Draft
-let allPlayers = [];
-const draftData = {
-    teamOne: {
-        captain: null,
-        name: 'Team One',
-        players: [],
-    },
-    teamTwo: {
-        captain: null,
-        name: 'Team Two',
-        players: [],
-    },
-    foursomes: {
-        bearTrapDunes: [],
-        warAdmiral: [],
-        manOWar: [],
-        lighthouseSound: [],
-    },
-};
-let currentDraftTurn = 'teamOne';
-let draftStarted = false;
-
-
 // Initialize Draft Tab
 function initializeDraftTab() {
     console.log('Initializing Draft Tab...');
@@ -40,14 +16,14 @@ function initializeDraftTab() {
 function fetchPlayersForDraft() {
     console.log('Fetching players for Draft Tab...');
     $.getJSON(`${API_GATEWAY_URL}/players`)
-        .done(response => {
-            console.log("Fetching players for draft:" + response);
-            // Ensure response is an array
-            if (Array.isArray(response)) {
-                allPlayers = response;
-                populateCaptainSelectors(response);
+        .done(players => {
+            console.log('Players fetched:', players);
+
+            if (Array.isArray(players)) {
+                StateManager.set('playerProfiles', players);
+                populateCaptainSelectors(players);
             } else {
-                console.error('Unexpected API response format:', response);
+                console.error('Unexpected response format:', players);
                 displayErrorMessage();
             }
         })
@@ -59,10 +35,10 @@ function fetchPlayersForDraft() {
 
 // Display Error Message
 function displayErrorMessage() {
-    const $availablePlayers = $('#available-players');
-    $availablePlayers.html('<p class="text-danger">An error occurred while loading players for the draft. Please try again later.</p>');
+    $('#available-players').html('<p class="text-danger">An error occurred while loading players. Please try again.</p>');
 }
 
+// Populate Captain Selectors
 function populateCaptainSelectors(players) {
     const $teamOneSelector = $('#team-one-captain-selector');
     const $teamTwoSelector = $('#team-two-captain-selector');
@@ -78,9 +54,8 @@ function populateCaptainSelectors(players) {
     });
 
     const validateCaptainSelection = () => {
-        const allPlayers = StateManager.get('allPlayers');
-        const teamOneCaptain = allPlayers.find(player => player.id === $teamOneSelector.val());
-        const teamTwoCaptain = allPlayers.find(player => player.id === $teamTwoSelector.val());
+        const teamOneCaptain = players.find(player => player.id === $teamOneSelector.val());
+        const teamTwoCaptain = players.find(player => player.id === $teamTwoSelector.val());
 
         StateManager.updateDraftData({
             teamOne: { ...StateManager.get('draftData').teamOne, captain: teamOneCaptain },
@@ -96,11 +71,11 @@ function populateCaptainSelectors(players) {
     $startDraftButton.prop('disabled', true);
 }
 
-
-
+// Start Draft
 function startDraft() {
     console.log('Starting draft...');
-    draftStarted = true;
+    const draftData = StateManager.get('draftData');
+    const allPlayers = StateManager.get('playerProfiles');
 
     if (!draftData.teamOne.captain || !draftData.teamTwo.captain) {
         console.error('Captains not selected. Cannot start draft.');
@@ -110,9 +85,12 @@ function startDraft() {
     draftData.teamOne.players = [draftData.teamOne.captain];
     draftData.teamTwo.players = [draftData.teamTwo.captain];
 
-    allPlayers = allPlayers.filter(player =>
-        player.id !== draftData.teamOne.captain.id && player.id !== draftData.teamTwo.captain.id
+    const availablePlayers = allPlayers.filter(
+        player => player.id !== draftData.teamOne.captain.id && player.id !== draftData.teamTwo.captain.id
     );
+
+    StateManager.set('playerProfiles', availablePlayers);
+    StateManager.updateDraftData({ draftStarted: true });
 
     $('#start-draft-btn').addClass('d-none');
     $('#start-over-btn').removeClass('d-none');
@@ -121,46 +99,45 @@ function startDraft() {
     updateDraftUI();
 }
 
-
 // Update Draft UI
 function updateDraftUI() {
+    const draftData = StateManager.get('draftData');
+    const availablePlayers = StateManager.get('playerProfiles');
+
     const $availablePlayersList = $('#available-players').empty();
     const $teamOneList = $('#team-one').empty();
     const $teamTwoList = $('#team-two').empty();
 
-    const $teamOneHeader = $('#team-one-header h3').text(`Team ${teamOneCaptain.nickname}`);
-    const $teamTwoHeader = $('#team-two-header h3').text(`Team ${teamTwoCaptain.nickname}`);
+    $('#team-one-header h3').text(`Team ${draftData.teamOne.captain?.nickname || 'One'}`);
+    $('#team-two-header h3').text(`Team ${draftData.teamTwo.captain?.nickname || 'Two'}`);
 
-    // Additional operations on the headers (if needed)
-    $teamOneHeader.css('color', 'blue');
-    $teamTwoHeader.css('color', 'red');
-
-    allPlayers.forEach(player => {
-        const buttonClass = currentDraftTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary';
+    availablePlayers.forEach(player => {
+        const currentTurn = draftData.currentDraftTurn;
+        const buttonClass = currentTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary';
         const listItem = `
             <li class="list-group-item">
                 ${player.name} (${player.handicap})
-                <button class="btn ${buttonClass}" onclick="assignPlayerToTeam('${player.id}', '${currentDraftTurn}')">
-                    Add to ${currentDraftTurn === 'teamOne' ? 'Team One' : 'Team Two'}
+                <button class="btn ${buttonClass}" onclick="assignPlayerToTeam('${player.id}', '${currentTurn}')">
+                    Add to ${currentTurn === 'teamOne' ? 'Team One' : 'Team Two'}
                 </button>
             </li>
         `;
         $availablePlayersList.append(listItem);
     });
 
-    teamOne.forEach(player => {
+    draftData.teamOne.players.forEach(player => {
         $teamOneList.append(`<li class="list-group-item">${player.name} (${player.handicap})</li>`);
     });
 
-    teamTwo.forEach(player => {
+    draftData.teamTwo.players.forEach(player => {
         $teamTwoList.append(`<li class="list-group-item">${player.name} (${player.handicap})</li>`);
     });
 
-    if (draftStarted) {
+    if (draftData.draftStarted) {
         const currentTeamNickname =
-            currentDraftTurn === 'teamOne'
-                ? teamOneCaptain?.nickname || 'Team One'
-                : teamTwoCaptain?.nickname || 'Team Two';
+            draftData.currentDraftTurn === 'teamOne'
+                ? draftData.teamOne.captain?.nickname || 'Team One'
+                : draftData.teamTwo.captain?.nickname || 'Team Two';
 
         $('#draft-turn-indicator').html(`<div class="alert alert-info">It's ${currentTeamNickname}'s turn to draft!</div>`);
     } else {
@@ -168,109 +145,24 @@ function updateDraftUI() {
     }
 }
 
+// Assign Player to Team
 function assignPlayerToTeam(playerId, team) {
+    const draftData = StateManager.get('draftData');
+    const allPlayers = StateManager.get('playerProfiles');
     const playerIndex = allPlayers.findIndex(player => player.id === playerId);
-    if (playerIndex === -1) return console.error('Player not found:', playerId);
+
+    if (playerIndex === -1) {
+        console.error('Player not found:', playerId);
+        return;
+    }
 
     const player = allPlayers.splice(playerIndex, 1)[0];
+    draftData[team].players.push(player);
 
-    if (team === 'teamOne') {
-        draftData.teamOne.players.push(player);
-        currentDraftTurn = 'teamTwo';
-    } else {
-        draftData.teamTwo.players.push(player);
-        currentDraftTurn = 'teamOne';
-    }
+    draftData.currentDraftTurn = team === 'teamOne' ? 'teamTwo' : 'teamOne';
+
+    StateManager.set('playerProfiles', allPlayers);
+    StateManager.set('draftData', draftData);
 
     updateDraftUI();
-
-    if (draftData.teamOne.players.length + draftData.teamTwo.players.length === allPlayers.length + 2) {
-        $('#commission-draft-btn').removeClass('d-none');
-    }
 }
-
-
-// Reset Draft
-function resetDraft() {
-    console.log('Resetting draft...');
-    StateManager.reset();
-    populateCaptainSelectors(StateManager.get('allPlayers'));
-
-    $('#start-draft-btn').prop('disabled', true).removeClass('d-none');
-    $('#start-over-btn, #commission-draft-btn').addClass('d-none');
-    $('#draft-turn-indicator').empty();
-    updateDraftUI();
-}
-
-// Commission Draft
-function commissionDraft() {
-    console.log('Commissioning draft...');
-    generateFoursomes();
-    updateFoursomesTab();
-    $('#start-draft-btn, #start-over-btn').addClass('d-none');
-    $('#commission-draft-btn').prop('disabled', true).text('Draft Commissioned');
-}
-
-
-
-// Update Foursomes Tab
-function updateFoursomesTab(foursomes) {
-    const $foursomesContainer = $('#foursomes-container').html('');
-
-    foursomes.forEach((group, index) => {
-        const groupElement = $('<div class="foursome-group mb-3"></div>');
-
-        groupElement.append(`<h4>Foursome ${index + 1}</h4>`);
-
-        group.forEach(player => {
-            const playerHtml = `
-                <div class="foursome-player d-flex align-items-center">
-                    <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
-                         alt="${player.team} Logo" 
-                         style="width: 50px; height: 50px; margin-right: 10px;">
-                    <span>${player.name} (${player.handicap})</span>
-                </div>
-            `;
-            groupElement.append(playerHtml);
-        });
-
-        $foursomesContainer.append(groupElement);
-    });
-
-    console.log('Foursomes updated:', foursomes);
-}
-
-function generateFoursomes() {
-    const allPlayers = [
-        ...StateManager.get('draftData').teamOne.players,
-        ...StateManager.get('draftData').teamTwo.players,
-    ];
-    const shuffledPlayers = shuffleArray(allPlayers);
-
-    const groups = {
-        bearTrapDunes: [],
-        warAdmiral: [],
-        manOWar: [],
-        lighthouseSound: [],
-    };
-
-    const playersPerGame = Math.ceil(allPlayers.length / 4);
-
-    Object.keys(groups).forEach((course, index) => {
-        groups[course] = shuffledPlayers.slice(index * playersPerGame, (index + 1) * playersPerGame).map((player, i) => ({
-            ...player,
-            group: i + 1,
-        }));
-    });
-
-    StateManager.updateDraftData({ foursomes: groups });
-}
-
-// Utility to shuffle an array
-function shuffleArray(array) {
-    return array
-        .map(value => ({ value, sort: Math.random() }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ value }) => value);
-}
-

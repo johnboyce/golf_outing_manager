@@ -1,57 +1,82 @@
-const StateManager = (function () {
-    // Private state
+const StateManager = (() => {
+    // Private State
     let state = {
         draftData: {
             teamOne: {
                 captain: null,
-                name: 'Team One',
                 players: [],
             },
             teamTwo: {
                 captain: null,
-                name: 'Team Two',
                 players: [],
             },
-            foursomes: {
-                bearTrapDunes: [],
-                warAdmiral: [],
-                manOWar: [],
-                lighthouseSound: [],
-            },
+            currentDraftTurn: 'teamOne', // Default turn starts with Team One
+            draftStarted: false,
+            foursomes: {},
         },
-        allPlayers: [],
+        playerProfiles: [], // Contains all players fetched from the API
     };
 
-    // Public API
-    return {
-        get(key) {
-            return state[key];
-        },
-        set(key, value) {
-            if (key in state) {
-                state[key] = value;
+    // Utility for deep merging objects
+    function deepMerge(target, source) {
+        for (const key in source) {
+            if (source[key] && typeof source[key] === 'object') {
+                if (!target[key]) {
+                    target[key] = {};
+                }
+                deepMerge(target[key], source[key]);
             } else {
-                console.error(`Key "${key}" does not exist in state.`);
+                target[key] = source[key];
+            }
+        }
+        return target;
+    }
+
+    return {
+        // Get State
+        get: (key) => {
+            if (key in state) {
+                return JSON.parse(JSON.stringify(state[key])); // Return a deep copy to avoid direct mutation
+            }
+            console.warn(`Key "${key}" does not exist in state.`);
+            return undefined;
+        },
+
+        // Set State
+        set: (key, value) => {
+            if (key in state) {
+                state[key] = JSON.parse(JSON.stringify(value)); // Deep copy to ensure immutability
+                console.log(`State updated for key "${key}":`, state[key]);
+            } else {
+                console.warn(`Key "${key}" does not exist in state.`);
             }
         },
-        updateDraftData(updates) {
-            state.draftData = { ...state.draftData, ...updates };
+
+        // Update State (merge new data into existing state)
+        updateDraftData: (newData) => {
+            state.draftData = deepMerge(state.draftData, newData);
+            console.log('Draft data updated:', state.draftData);
         },
-        reset() {
+
+        // Reset State
+        reset: () => {
             state = {
                 draftData: {
-                    teamOne: { captain: null, name: 'Team One', players: [] },
-                    teamTwo: { captain: null, name: 'Team Two', players: [] },
-                    foursomes: {
-                        bearTrapDunes: [],
-                        warAdmiral: [],
-                        manOWar: [],
-                        lighthouseSound: [],
+                    teamOne: {
+                        captain: null,
+                        players: [],
                     },
+                    teamTwo: {
+                        captain: null,
+                        players: [],
+                    },
+                    currentDraftTurn: 'teamOne',
+                    draftStarted: false,
+                    foursomes: {},
                 },
-                allPlayers: [],
+                playerProfiles: [],
             };
-            console.log('State has been reset.');
+            console.log('State reset to initial values.');
         },
     };
 })();
