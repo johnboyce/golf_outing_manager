@@ -1,17 +1,11 @@
 function updateFoursomesTab() {
-    console.log('Updating foursomes tab...');
-    const courses = draftData.foursomes;
+    const foursomes = StateManager.get('draftData').foursomes;
 
-    if (!courses || !Object.keys(courses).length) {
-        console.warn('No foursomes available.');
-        return;
-    }
-
-    Object.keys(courses).forEach(course => {
+    Object.keys(foursomes).forEach(course => {
         const courseContainer = $(`#${course} .foursome-list`);
         courseContainer.empty();
 
-        courses[course].forEach((player, index) => {
+        foursomes[course].forEach(player => {
             const playerElement = `
                 <div class="foursome-item">
                     <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
@@ -23,6 +17,4 @@ function updateFoursomesTab() {
             courseContainer.append(playerElement);
         });
     });
-
-    console.log('Foursomes tab updated.');
 }

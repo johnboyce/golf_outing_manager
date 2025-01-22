@@ -4,7 +4,7 @@ $(document).ready(() => {
 
 // Global Variables for Draft
 let allPlayers = [];
-let draftData = {
+const draftData = {
     teamOne: {
         captain: null,
         name: 'Team One',
@@ -63,7 +63,6 @@ function displayErrorMessage() {
     $availablePlayers.html('<p class="text-danger">An error occurred while loading players for the draft. Please try again later.</p>');
 }
 
-// Populate Captain Selectors
 function populateCaptainSelectors(players) {
     const $teamOneSelector = $('#team-one-captain-selector');
     const $teamTwoSelector = $('#team-two-captain-selector');
@@ -78,20 +77,25 @@ function populateCaptainSelectors(players) {
         $teamTwoSelector.append(option);
     });
 
-    function validateCaptainSelection() {
-        draftData.teamOne.captain = players.find(player => player.id === $teamOneSelector.val());
-        draftData.teamTwo.captain = players.find(player => player.id === $teamTwoSelector.val());
+    const validateCaptainSelection = () => {
+        const allPlayers = StateManager.get('allPlayers');
+        const teamOneCaptain = allPlayers.find(player => player.id === $teamOneSelector.val());
+        const teamTwoCaptain = allPlayers.find(player => player.id === $teamTwoSelector.val());
 
-        draftData.teamOne.name = draftData.teamOne.captain ? `Team ${draftData.teamOne.captain.nickname}` : 'Team One';
-        draftData.teamTwo.name = draftData.teamTwo.captain ? `Team ${draftData.teamTwo.captain.nickname}` : 'Team Two';
+        StateManager.updateDraftData({
+            teamOne: { ...StateManager.get('draftData').teamOne, captain: teamOneCaptain },
+            teamTwo: { ...StateManager.get('draftData').teamTwo, captain: teamTwoCaptain },
+        });
 
-        $startDraftButton.prop('disabled', !(draftData.teamOne.captain && draftData.teamTwo.captain && draftData.teamOne.captain.id !== draftData.teamTwo.captain.id));
-    }
+        $startDraftButton.prop('disabled', !(teamOneCaptain && teamTwoCaptain && teamOneCaptain.id !== teamTwoCaptain.id));
+    };
 
     $teamOneSelector.on('change', validateCaptainSelection);
     $teamTwoSelector.on('change', validateCaptainSelection);
+
     $startDraftButton.prop('disabled', true);
 }
+
 
 
 function startDraft() {
@@ -188,18 +192,14 @@ function assignPlayerToTeam(playerId, team) {
 
 // Reset Draft
 function resetDraft() {
-    draftStarted = false;
-    allPlayers = [...teamOne, ...teamTwo, ...allPlayers];
-    teamOne = [];
-    teamTwo = [];
-    teamOneCaptain = null;
-    teamTwoCaptain = null;
-    populateCaptainSelectors(allPlayers);
+    console.log('Resetting draft...');
+    StateManager.reset();
+    populateCaptainSelectors(StateManager.get('allPlayers'));
 
-    $('#start-draft-btn').removeClass('d-none').prop('disabled', true);
-    $('#start-over-btn').addClass('d-none');
-    $('#commission-draft-btn').addClass('d-none');
-    $('#draft-turn-indicator').html('');
+    $('#start-draft-btn').prop('disabled', true).removeClass('d-none');
+    $('#start-over-btn, #commission-draft-btn').addClass('d-none');
+    $('#draft-turn-indicator').empty();
+    updateDraftUI();
 }
 
 // Commission Draft
@@ -241,8 +241,10 @@ function updateFoursomesTab(foursomes) {
 }
 
 function generateFoursomes() {
-    console.log('Generating foursomes...');
-    const allPlayers = [...draftData.teamOne.players, ...draftData.teamTwo.players];
+    const allPlayers = [
+        ...StateManager.get('draftData').teamOne.players,
+        ...StateManager.get('draftData').teamTwo.players,
+    ];
     const shuffledPlayers = shuffleArray(allPlayers);
 
     const groups = {
@@ -261,9 +263,7 @@ function generateFoursomes() {
         }));
     });
 
-    draftData.foursomes = groups;
-
-    console.log('Foursomes generated:', draftData.foursomes);
+    StateManager.updateDraftData({ foursomes: groups });
 }
 
 // Utility to shuffle an array
