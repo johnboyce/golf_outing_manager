@@ -145,24 +145,14 @@ function updateDraftUI() {
     }
 }
 
-// Assign Player to Team
-function assignPlayerToTeam(playerId, team) {
-    const draftData = StateManager.get('draftData');
-    const allPlayers = StateManager.get('playerProfiles');
-    const playerIndex = allPlayers.findIndex(player => player.id === playerId);
+// Reset Draft
+function resetDraft() {
+    console.log('Resetting draft...');
+    StateManager.reset();
+    populateCaptainSelectors(StateManager.get('playerProfiles'));
 
-    if (playerIndex === -1) {
-        console.error('Player not found:', playerId);
-        return;
-    }
-
-    const player = allPlayers.splice(playerIndex, 1)[0];
-    draftData[team].players.push(player);
-
-    draftData.currentDraftTurn = team === 'teamOne' ? 'teamTwo' : 'teamOne';
-
-    StateManager.set('playerProfiles', allPlayers);
-    StateManager.set('draftData', draftData);
-
+    $('#start-draft-btn').prop('disabled', true).removeClass('d-none');
+    $('#start-over-btn, #commission-draft-btn').addClass('d-none');
+    $('#draft-turn-indicator').empty();
     updateDraftUI();
 }
