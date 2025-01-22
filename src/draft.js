@@ -156,3 +156,131 @@ function resetDraft() {
     $('#draft-turn-indicator').empty();
     updateDraftUI();
 }
+
+function commissionDraft() {
+    console.log('Commissioning draft...');
+    const draftData = StateManager.get('draftData');
+
+    // Generate Foursomes
+    generateFoursomes();
+
+    // Update the UI in the Foursomes tab
+    updateFoursomesTab();
+
+    // Disable the Commission Draft button
+    $('#commission-draft-btn').prop('disabled', true).text('Draft Commissioned');
+
+    // Log final draft data
+    console.log('Draft data finalized:', draftData);
+}
+
+function assignPlayerToTeam(playerId, team) {
+    const draftData = StateManager.get('draftData');
+    const allPlayers = StateManager.get('playerProfiles');
+    const playerIndex = allPlayers.findIndex(player => player.id === playerId);
+
+    if (playerIndex === -1) {
+        console.error('Player not found:', playerId);
+        return;
+    }
+
+    // Remove player from available players and add to the selected team
+    const player = allPlayers.splice(playerIndex, 1)[0];
+    draftData[team].players.push(player);
+
+    // Switch draft turn to the other team
+    draftData.currentDraftTurn = team === 'teamOne' ? 'teamTwo' : 'teamOne';
+
+    // Update state with the changes
+    StateManager.set('playerProfiles', allPlayers);
+    StateManager.set('draftData', draftData);
+
+    // Enable Commission Draft button if all players are drafted
+    if (allPlayers.length === 0) {
+        $('#commission-draft-btn').removeClass('d-none');
+        $('#draft-turn-indicator').html('<div class="alert alert-success">All players have been drafted!</div>');
+    }
+
+    // Update the draft UI
+    updateDraftUI();
+}
+
+function generateFoursomes() {
+    console.log('Generating foursomes...');
+    const draftData = StateManager.get('draftData');
+    const allPlayers = [
+        ...draftData.teamOne.players,
+        ...draftData.teamTwo.players,
+    ];
+
+    // Shuffle players for random assignment
+    const shuffledPlayers = shuffleArray(allPlayers);
+
+    // Initialize groups for each course
+    const groups = {
+        'Bear Trap Dunes': [],
+        'War Admiral': [],
+        'Man O War': [],
+        'Lighthouse Sound': [],
+    };
+
+    const playersPerGroup = Math.ceil(allPlayers.length / 4);
+
+    // Distribute players among courses
+    Object.keys(groups).forEach((course, index) => {
+        groups[course] = shuffledPlayers
+            .slice(index * playersPerGroup, (index + 1) * playersPerGroup)
+            .map(player => ({
+                ...player,
+                group: index + 1,
+            }));
+    });
+
+    // Update draft data with the generated groups
+    draftData.foursomes = groups;
+    StateManager.set('draftData', draftData);
+
+    console.log('Foursomes generated:', groups);
+}
+
+function updateFoursomesTab() {
+    console.log('Updating Foursomes Tab...');
+    const draftData = StateManager.get('draftData');
+    const foursomes = draftData.foursomes;
+    const $foursomesContainer = $('#foursomes-container').html('');
+
+    if (!foursomes) {
+        $foursomesContainer.html('<p class="text-danger">No foursomes to display.</p>');
+        return;
+    }
+
+    // Render each course and its groups
+    Object.entries(foursomes).forEach(([course, groups]) => {
+        const courseElement = $('<div class="mb-4"></div>');
+        courseElement.append(`<h3>${course}</h3>`);
+
+        groups.forEach((group, index) => {
+            const groupElement = $('<div class="foursome-group mb-3"></div>');
+
+            groupElement.append(`<h4>Foursome ${index + 1}</h4>`);
+
+            group.forEach(player => {
+                const playerHtml = `
+                    <div class="foursome-player d-flex align-items-center">
+                        <img src="${player.team}" === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
+                             alt="${player.team} Logo" 
+                             style="width: 50px; height: 50px; margin-right: 10px;">
+                        <span>${player.name} (${player.handicap})</span>
+                    </div>
+                `;
+                groupElement.append(playerHtml);
+            });
+
+            courseElement.append(groupElement);
+        });
+
+        $foursomesContainer.append(courseElement);
+    });
+
+    console.log('Foursomes tab updated.');
+}
