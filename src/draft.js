@@ -212,32 +212,32 @@ function assignPlayerToTeam(playerId, team) {
 
 
 function generateFoursomes() {
+    console.log('Generating foursomes...');
     const draftData = StateManager.get('draftData');
-    const courses = StateManager.get('courses');
     const allPlayers = [...draftData.teamOne.players, ...draftData.teamTwo.players];
+    const courses = StateManager.get('courses');
     const shuffledPlayers = shuffleArray(allPlayers);
 
-    const playersPerCourse = Math.ceil(allPlayers.length / courses.length);
-    const foursomes = {};
-
-    courses.forEach((course, index) => {
-        const start = index * playersPerCourse;
-        const end = start + playersPerCourse;
-
-        const coursePlayers = shuffledPlayers.slice(start, end);
-        const groupedPlayers = [];
-
-        while (coursePlayers.length > 0) {
-            groupedPlayers.push(coursePlayers.splice(0, 4)); // Group players into foursomes of 4
-        }
-
-        foursomes[course.name] = groupedPlayers;
+    // Initialize groups for each course
+    const groups = {};
+    courses.forEach(course => {
+        groups[course.name] = [];
     });
 
-    draftData.foursomes = foursomes;
-    StateManager.updateDraftData(draftData);
-    console.log('Generated Foursomes:', foursomes);
+    // Distribute players among courses
+    let courseIndex = 0;
+    shuffledPlayers.forEach((player, index) => {
+        const courseName = courses[courseIndex].name;
+        groups[courseName].push({ ...player, group: Math.floor(index / 4) + 1 });
+        courseIndex = (courseIndex + 1) % courses.length;
+    });
+
+    draftData.foursomes = groups;
+    StateManager.set('draftData', draftData);
+
+    console.log('Foursomes generated:', draftData.foursomes);
 }
+
 
 
 // Utility to shuffle an array
@@ -250,43 +250,44 @@ function shuffleArray(array) {
 
 
 function updateFoursomesTab() {
-    console.log('Updating Foursomes Tab...');
     const draftData = StateManager.get('draftData');
-    const foursomes = draftData.foursomes;
-    const $foursomesContainer = $('#foursomes-container').html('');
+    const courses = StateManager.get('courses');
+    const foursomesContainer = $('#foursomes-container').empty();
 
-    if (!foursomes) {
-        $foursomesContainer.html('<p class="text-danger">No foursomes to display.</p>');
+    if (!draftData.foursomes || Object.keys(draftData.foursomes).length === 0) {
+        foursomesContainer.html('<p class="text-danger">No foursomes generated yet.</p>');
         return;
     }
 
-    // Render each course and its groups
-    Object.entries(foursomes).forEach(([course, groups]) => {
-        const courseElement = $('<div class="mb-4"></div>');
-        courseElement.append(`<h3>${course}</h3>`);
+    Object.keys(draftData.foursomes).forEach(courseName => {
+        const course = courses.find(c => c.name === courseName);
+        const courseFoursomes = draftData.foursomes[courseName];
 
-        groups.forEach((group, index) => {
-            const groupElement = $('<div class="foursome-group mb-3"></div>');
+        const courseSection = $(`
+            <div class="course-section mb-4">
+                <h3><i class="${course.icon}"></i> ${course.name}</h3>
+                <img src="${course.image}" alt="${course.name}" class="img-fluid rounded mb-3">
+                <p>${course.description}</p>
+                <div class="foursome-groups"></div>
+            </div>
+        `);
 
-            groupElement.append(`<h4>Foursome ${index + 1}</h4>`);
-
-            group.forEach(player => {
-                const playerHtml = `
-                    <div class="foursome-player d-flex align-items-center">
-                        <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
-                             alt="${player.team} Logo" 
-                             style="width: 50px; height: 50px; margin-right: 10px;">
-                        <span>${player.name} (${player.handicap})</span>
-                    </div>
-                `;
-                groupElement.append(playerHtml);
-            });
-
-            courseElement.append(groupElement);
+        const foursomeGroupsContainer = courseSection.find('.foursome-groups');
+        courseFoursomes.forEach((player, index) => {
+            const playerElement = $(`
+                <div class="foursome-player d-flex align-items-center mb-2">
+                    <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
+                         alt="${player.team} Logo" 
+                         style="width: 50px; height: 50px; margin-right: 10px;">
+                    <span>${player.name} (${player.handicap})</span>
+                </div>
+            `);
+            foursomeGroupsContainer.append(playerElement);
         });
 
-        $foursomesContainer.append(courseElement);
+        foursomesContainer.append(courseSection);
     });
 
     console.log('Foursomes tab updated.');
 }
+
