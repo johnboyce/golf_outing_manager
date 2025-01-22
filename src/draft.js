@@ -2,6 +2,8 @@ $(document).ready(() => {
     initializeDraftTab();
 });
 
+
+
 // Initialize Draft Tab
 function initializeDraftTab() {
     console.log('Initializing Draft Tab...');
@@ -184,26 +186,30 @@ function assignPlayerToTeam(playerId, team) {
         return;
     }
 
-    // Remove player from available players and add to the selected team
     const player = allPlayers.splice(playerIndex, 1)[0];
     draftData[team].players.push(player);
 
-    // Switch draft turn to the other team
-    draftData.currentDraftTurn = team === 'teamOne' ? 'teamTwo' : 'teamOne';
-
-    // Update state with the changes
-    StateManager.set('playerProfiles', allPlayers);
-    StateManager.set('draftData', draftData);
-
-    // Enable Commission Draft button if all players are drafted
+    // Check if all players have been assigned
     if (allPlayers.length === 0) {
         $('#commission-draft-btn').removeClass('d-none');
         $('#draft-turn-indicator').html('<div class="alert alert-success">All players have been drafted!</div>');
+    } else {
+        draftData.currentDraftTurn = team === 'teamOne' ? 'teamTwo' : 'teamOne';
+
+        const currentTeamNickname =
+            draftData.currentDraftTurn === 'teamOne'
+                ? draftData.teamOne.captain?.nickname || 'Team One'
+                : draftData.teamTwo.captain?.nickname || 'Team Two';
+
+        $('#draft-turn-indicator').html(`<div class="alert alert-info">It's ${currentTeamNickname}'s turn to draft!</div>`);
     }
 
-    // Update the draft UI
+    StateManager.set('playerProfiles', allPlayers);
+    StateManager.set('draftData', draftData);
+
     updateDraftUI();
 }
+
 
 function generateFoursomes() {
     console.log('Generating foursomes...');
@@ -243,6 +249,15 @@ function generateFoursomes() {
     console.log('Foursomes generated:', groups);
 }
 
+// Utility to shuffle an array
+function shuffleArray(array) {
+    return array
+        .map(value => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+}
+
+
 function updateFoursomesTab() {
     console.log('Updating Foursomes Tab...');
     const draftData = StateManager.get('draftData');
@@ -267,7 +282,7 @@ function updateFoursomesTab() {
             group.forEach(player => {
                 const playerHtml = `
                     <div class="foursome-player d-flex align-items-center">
-                        <img src="${player.team}" === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
+                        <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
                              alt="${player.team} Logo" 
                              style="width: 50px; height: 50px; margin-right: 10px;">
                         <span>${player.name} (${player.handicap})</span>

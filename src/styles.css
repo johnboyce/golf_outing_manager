@@ -54,6 +54,13 @@ header {
     padding: 20px;
 }
 
+.text-container {
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    color: #fff; /* White text for better contrast */
+    padding: 10px;
+    border-radius: 5px;
+}
+
 /* Profile Image */
 .profile-image-sm {
     width: 25px;

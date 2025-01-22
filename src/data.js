@@ -1,6 +1,6 @@
 export const fetchPlayers = async () => {
     try {
-        const response = await fetch('https://4epgafkkhl.execute-api.us-east-1.amazonaws.com/players');
+        const response = await fetch(`${API_GATEWAY_URL}/players`);
         console.log(response);
         if (!response.ok) {
             throw new Error(`Failed to fetch players: ${response.statusText}`);
@@ -23,7 +23,7 @@ export const fetchPlayers = async () => {
 
 export const addPlayer = async (playerData) => {
     try {
-        const response = await fetch('https://4epgafkkhl.execute-api.us-east-1.amazonaws.com/players', {
+        const response = await fetch(`${API_GATEWAY_URL}/players`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -46,7 +46,7 @@ export const addPlayer = async (playerData) => {
 
 export const getPlayer = async (playerId) => {
     try {
-        const response = await fetch(`https://4epgafkkhl.execute-api.us-east-1.amazonaws.com/players/${playerId}`);
+        const response = await fetch(`${API_GATEWAY_URL}/players/${playerId}`);
         console.log(response);
         if (!response.ok) {
             throw new Error(`Failed to fetch player: ${response.statusText}`);
