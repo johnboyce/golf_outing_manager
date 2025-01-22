@@ -200,3 +200,26 @@ button {
 .draft-section {
     margin-top: 20px;
 }
+
+.foursomes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.course-section {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.foursome-list {
+    margin-top: 10px;
+}
+
+.foursome-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}

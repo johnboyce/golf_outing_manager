@@ -2,14 +2,29 @@ $(document).ready(() => {
     initializeDraftTab();
 });
 
-// Global Variables
+// Global Variables for Draft
 let allPlayers = [];
-let teamOne = [];
-let teamTwo = [];
+let draftData = {
+    teamOne: {
+        captain: null,
+        name: 'Team One',
+        players: [],
+    },
+    teamTwo: {
+        captain: null,
+        name: 'Team Two',
+        players: [],
+    },
+    foursomes: {
+        bearTrapDunes: [],
+        warAdmiral: [],
+        manOWar: [],
+        lighthouseSound: [],
+    },
+};
 let currentDraftTurn = 'teamOne';
 let draftStarted = false;
-let teamOneCaptain = null;
-let teamTwoCaptain = null;
+
 
 // Initialize Draft Tab
 function initializeDraftTab() {
@@ -50,9 +65,12 @@ function displayErrorMessage() {
 
 // Populate Captain Selectors
 function populateCaptainSelectors(players) {
-    const $teamOneSelector = $('#team-one-captain-selector').html('<option value="">Select Captain</option>');
-    const $teamTwoSelector = $('#team-two-captain-selector').html('<option value="">Select Captain</option>');
-    const $startDraftButton = $('#start-draft-btn').prop('disabled', true);
+    const $teamOneSelector = $('#team-one-captain-selector');
+    const $teamTwoSelector = $('#team-two-captain-selector');
+    const $startDraftButton = $('#start-draft-btn');
+
+    $teamOneSelector.empty().append('<option value="">Select Captain</option>');
+    $teamTwoSelector.empty().append('<option value="">Select Captain</option>');
 
     players.forEach(player => {
         const option = `<option value="${player.id}">${player.name} (${player.nickname || 'No nickname'})</option>`;
@@ -60,28 +78,45 @@ function populateCaptainSelectors(players) {
         $teamTwoSelector.append(option);
     });
 
-    const validateCaptainSelection = () => {
-        teamOneCaptain = players.find(player => player.id === $teamOneSelector.val());
-        teamTwoCaptain = players.find(player => player.id === $teamTwoSelector.val());
-        $startDraftButton.prop('disabled', !(teamOneCaptain && teamTwoCaptain && teamOneCaptain.id !== teamTwoCaptain.id));
-    };
+    function validateCaptainSelection() {
+        draftData.teamOne.captain = players.find(player => player.id === $teamOneSelector.val());
+        draftData.teamTwo.captain = players.find(player => player.id === $teamTwoSelector.val());
+
+        draftData.teamOne.name = draftData.teamOne.captain ? `Team ${draftData.teamOne.captain.nickname}` : 'Team One';
+        draftData.teamTwo.name = draftData.teamTwo.captain ? `Team ${draftData.teamTwo.captain.nickname}` : 'Team Two';
+
+        $startDraftButton.prop('disabled', !(draftData.teamOne.captain && draftData.teamTwo.captain && draftData.teamOne.captain.id !== draftData.teamTwo.captain.id));
+    }
 
     $teamOneSelector.on('change', validateCaptainSelection);
     $teamTwoSelector.on('change', validateCaptainSelection);
+    $startDraftButton.prop('disabled', true);
 }
 
-// Start Draft
+
 function startDraft() {
+    console.log('Starting draft...');
     draftStarted = true;
-    teamOne = [teamOneCaptain];
-    teamTwo = [teamTwoCaptain];
-    allPlayers = allPlayers.filter(player => player.id !== teamOneCaptain.id && player.id !== teamTwoCaptain.id);
+
+    if (!draftData.teamOne.captain || !draftData.teamTwo.captain) {
+        console.error('Captains not selected. Cannot start draft.');
+        return;
+    }
+
+    draftData.teamOne.players = [draftData.teamOne.captain];
+    draftData.teamTwo.players = [draftData.teamTwo.captain];
+
+    allPlayers = allPlayers.filter(player =>
+        player.id !== draftData.teamOne.captain.id && player.id !== draftData.teamTwo.captain.id
+    );
 
     $('#start-draft-btn').addClass('d-none');
     $('#start-over-btn').removeClass('d-none');
     $('#commission-draft-btn').addClass('d-none');
+
     updateDraftUI();
 }
+
 
 // Update Draft UI
 function updateDraftUI() {
@@ -129,27 +164,27 @@ function updateDraftUI() {
     }
 }
 
-// Assign Player to Team
 function assignPlayerToTeam(playerId, team) {
-    const player = allPlayers.find(p => p.id === playerId);
-    if (!player) return;
+    const playerIndex = allPlayers.findIndex(player => player.id === playerId);
+    if (playerIndex === -1) return console.error('Player not found:', playerId);
+
+    const player = allPlayers.splice(playerIndex, 1)[0];
 
     if (team === 'teamOne') {
-        teamOne.push(player);
+        draftData.teamOne.players.push(player);
         currentDraftTurn = 'teamTwo';
     } else {
-        teamTwo.push(player);
+        draftData.teamTwo.players.push(player);
         currentDraftTurn = 'teamOne';
     }
 
-    allPlayers = allPlayers.filter(p => p.id !== playerId);
     updateDraftUI();
 
-    if (allPlayers.length === 0) {
+    if (draftData.teamOne.players.length + draftData.teamTwo.players.length === allPlayers.length + 2) {
         $('#commission-draft-btn').removeClass('d-none');
-        $('#draft-turn-indicator').html('<div class="alert alert-success">All players have been assigned!</div>');
     }
 }
+
 
 // Reset Draft
 function resetDraft() {
@@ -169,20 +204,14 @@ function resetDraft() {
 
 // Commission Draft
 function commissionDraft() {
-    console.log('Committing draft and creating foursomes...');
-    savedFoursomes = []; // Reset saved foursomes
-    const foursomes = [];
-    const totalPlayers = Math.max(teamOne.length, teamTwo.length);
-
-    for (let i = 0; i < totalPlayers; i++) {
-        const group = [];
-        if (teamOne[i]) group.push({ ...teamOne[i], team: 'Team One' });
-        if (teamTwo[i]) group.push({ ...teamTwo[i], team: 'Team Two' });
-        foursomes.push(group);
-    }
-
-    updateFoursomesTab(foursomes);
+    console.log('Commissioning draft...');
+    generateFoursomes();
+    updateFoursomesTab();
+    $('#start-draft-btn, #start-over-btn').addClass('d-none');
+    $('#commission-draft-btn').prop('disabled', true).text('Draft Commissioned');
 }
+
+
 
 // Update Foursomes Tab
 function updateFoursomesTab(foursomes) {
@@ -210,3 +239,38 @@ function updateFoursomesTab(foursomes) {
 
     console.log('Foursomes updated:', foursomes);
 }
+
+function generateFoursomes() {
+    console.log('Generating foursomes...');
+    const allPlayers = [...draftData.teamOne.players, ...draftData.teamTwo.players];
+    const shuffledPlayers = shuffleArray(allPlayers);
+
+    const groups = {
+        bearTrapDunes: [],
+        warAdmiral: [],
+        manOWar: [],
+        lighthouseSound: [],
+    };
+
+    const playersPerGame = Math.ceil(allPlayers.length / 4);
+
+    Object.keys(groups).forEach((course, index) => {
+        groups[course] = shuffledPlayers.slice(index * playersPerGame, (index + 1) * playersPerGame).map((player, i) => ({
+            ...player,
+            group: i + 1,
+        }));
+    });
+
+    draftData.foursomes = groups;
+
+    console.log('Foursomes generated:', draftData.foursomes);
+}
+
+// Utility to shuffle an array
+function shuffleArray(array) {
+    return array
+        .map(value => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+}
+
