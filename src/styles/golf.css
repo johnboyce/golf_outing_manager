@@ -10,12 +10,28 @@
 }
 
 /* General Body Styles */
+/*body {*/
+/*    background-color: var(--golf-sand);*/
+/*    font-family: 'Arial', sans-serif;*/
+/*    color: var(--golf-black);*/
+/*    margin: 0;*/
+/*    padding: 0;*/
+/*}*/
+
+/* General Styles */
 body {
-    background-color: var(--golf-sand);
     font-family: 'Arial', sans-serif;
-    color: var(--golf-black);
     margin: 0;
     padding: 0;
+    background: url("https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg") no-repeat center center fixed;
+    background-size: cover;
+    color: #ffffff; /* White text for contrast with background */
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Georgia', serif;
+    color: #ffffff;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Adds depth to text */
 }
 
 /* Navbar */
@@ -134,3 +150,138 @@ footer {
     color: var(--golf-brown);
 }
 
+
+
+/* Navigation Styles */
+nav {
+    background-color: rgba(0, 51, 102, 0.9); /* Golf-themed navy with transparency */
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav {
+    display: flex;
+    justify-content: space-around;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    margin: 0 10px;
+}
+
+.nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    background-color: #009900; /* Vibrant golf green for active links */
+    color: #ffffff;
+}
+
+/* Responsive Menu */
+#menu-toggle {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    #menu-toggle {
+        display: inline-block;
+        background-color: #009900;
+        color: #ffffff;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    #menu {
+        flex-direction: column;
+        background-color: rgba(0, 51, 102, 0.9);
+        border-radius: 5px;
+        padding: 10px;
+        display: none;
+    }
+
+    #menu.d-none {
+        display: none;
+    }
+
+    #menu .nav-item {
+        margin: 5px 0;
+    }
+}
+
+/* Tab Content */
+.tab-pane {
+    display: none;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.7); /* Subtle dark overlay for content */
+    border-radius: 10px;
+}
+
+.tab-pane.show {
+    display: block;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: 100px 20px;
+    background: rgba(0, 0, 0, 0.5); /* Overlay to make text readable */
+    color: #ffffff;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+/* Footer */
+footer {
+    background-color: rgba(0, 51, 102, 0.9);
+    color: #ffffff;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: #009900;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+.team-logo {
+    width: 50px;
+    height: 50px;
+}
+.alert-info {
+    text-align: center;
+    font-weight: bold;
+}
+.course-foursome img {
+    max-width: 100%;
+    height: auto;
+}
