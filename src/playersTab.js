@@ -48,6 +48,7 @@ function startProfileRotation(players) {
         $profileDisplay.html(`
             <div class="profile-card">
                 <img src="${player.profileImage}" alt="${player.name}" class="profile-image">
+                <img src="${player.teamLogo}" alt="${player.logo}" class="team-logo">
                 <h3>${player.name} (${player.nickname || 'No nickname'})</h3>
                 <p>${player.bio}</p>
                 <p><strong>Prediction:</strong> ${player.prediction}</p>

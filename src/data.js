@@ -12,6 +12,7 @@ export const fetchPlayers = async () => {
             name: player.name,
             handicap: player.handicap,
             nickname: player.nickname,
+            teamLogo: player.teamLogo,
             bio: player.bio,
             prediction: player.prediction
         }));
