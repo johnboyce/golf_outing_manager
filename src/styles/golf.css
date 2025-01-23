@@ -10,23 +10,24 @@
 }
 
 /* General Body Styles */
-/*body {*/
-/*    background-color: var(--golf-sand);*/
-/*    font-family: 'Arial', sans-serif;*/
-/*    color: var(--golf-black);*/
-/*    margin: 0;*/
-/*    padding: 0;*/
-/*}*/
-
-/* General Styles */
 body {
+    background-color: var(--golf-sand);
+    /*background: url("http://cloud2.golfloopy.com/wp-content/uploads/2014/04/Adjusting-to-Different-Lies-and-Sand-Conditions-in-the-Bunker.jpg") no-repeat center center fixed;*/
     font-family: 'Arial', sans-serif;
+    color: var(--golf-black);
     margin: 0;
     padding: 0;
-    background: url("https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg") no-repeat center center fixed;
-    background-size: cover;
-    color: #ffffff; /* White text for contrast with background */
 }
+
+/* General Styles */
+/*body {*/
+/*    font-family: 'Arial', sans-serif;*/
+/*    margin: 0;*/
+/*    padding: 0;*/
+/*    background: url("https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg") no-repeat center center fixed;*/
+/*    background-size: cover;*/
+/*    color: #ffffff; !* White text for contrast with background *!*/
+/*}*/
 
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Georgia', serif;
@@ -225,7 +226,7 @@ nav {
 .tab-pane {
     display: none;
     padding: 20px;
-    background-color: rgba(0, 0, 0, 0.7); /* Subtle dark overlay for content */
+    background-color: rgba(0, 0, 0, 0.1); /* Subtle dark overlay for content */
     border-radius: 10px;
 }
 

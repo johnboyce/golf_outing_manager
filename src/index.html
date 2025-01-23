@@ -23,33 +23,35 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="#draft">Draft</a></li>
-                <li class="nav-item"><a class="nav-link" href="#foursomes">Foursomes</a></li>
-                <li class="nav-item"><a class="nav-link" href="#courses">Courses</a></li>
+                <li class="nav-item"><a class="nav-link" href="#players-tab">Players</a></li>
+                <li class="nav-item"><a class="nav-link" href="#courses-tab">Courses</a></li>
+                <li class="nav-item"><a class="nav-link" href="#draft-tab">Draft</a></li>
+                <li class="nav-item"><a class="nav-link" href="#foursomes-tab">Foursomes</a></li>
             </ul>
         </div>
     </div>
 </nav>
 
-<div class="container my-4">
-    <h2 class="text-center text-success">Meet the Players</h2>
-    <div id="players-carousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner" id="carousel-inner">
-            <!-- Player slides will be dynamically inserted here -->
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#players-carousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#players-carousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-</div>
-
-
 <div class="container mt-4">
+    <div id="players-tab" class="tab-pane fade">
+        <!-- Players Tab -->
+        <div class="container my-4">
+            <h2 class="text-center text-success">Meet the Players</h2>
+            <div id="players-carousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner" id="carousel-inner">
+                    <!-- Player slides will be dynamically inserted here -->
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#players-carousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#players-carousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
     <section id="draft-tab" class="tab-pane fade">
         <div class="container my-4">
             <h2 class="text-center text-success">Draft Process</h2>
