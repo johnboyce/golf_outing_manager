@@ -292,3 +292,11 @@ footer a:hover {
     max-width: 100%;
     height: auto;
 }
+
+#draft-section {
+    margin-top: 20px;
+}
+
+.list-group-item button {
+    float: right;
+}

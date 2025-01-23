@@ -87,14 +87,78 @@ function displayErrorMessage() {
 
 // Start draft process
 function startDraft() {
-    console.log('Draft started...');
+    console.log('Starting draft...');
     const draftData = StateManager.get('draftData');
+    const allPlayers = StateManager.get('playerProfiles');
 
-    // Hide selectors and enable next steps
-    $('#team-one-captain-selector, #team-two-captain-selector').addClass('d-none');
-    $('#start-draft-btn').addClass('d-none');
-    $('#draft-turn-indicator').html(`<p class="alert alert-info">It's ${draftData.teamOne.captain.nickname}'s turn to draft!</p>`);
+    if (!draftData.teamOne.captain || !draftData.teamTwo.captain) {
+        console.error('Captains not selected. Cannot start draft.');
+        return;
+    }
 
-    // Proceed to next step (e.g., player assignment)
-    StateManager.updateDraftData({ draftStarted: true });
+    // Assign captains to their respective teams
+    draftData.teamOne.players = [draftData.teamOne.captain];
+    draftData.teamTwo.players = [draftData.teamTwo.captain];
+
+    // Remove captains from the available players list
+    const availablePlayers = allPlayers.filter(
+        player => player.id !== draftData.teamOne.captain.id && player.id !== draftData.teamTwo.captain.id
+    );
+
+    // Update StateManager with the modified data
+    StateManager.set('playerProfiles', availablePlayers);
+    StateManager.updateDraftData({ draftStarted: true, currentDraftTurn: 'teamOne' });
+
+    // Update UI
+    $('#captain-selection-section').addClass('d-none');
+    $('#draft-section').removeClass('d-none');
+    updateDraftUI();
 }
+
+function updateDraftUI() {
+    const draftData = StateManager.get('draftData');
+    const availablePlayers = StateManager.get('playerProfiles');
+
+    const $availablePlayersList = $('#available-players-list').empty();
+    const $teamOneList = $('#team-one-list').empty();
+    const $teamTwoList = $('#team-two-list').empty();
+
+    // Update team headers
+    $('#team-one-header').text(`Team ${draftData.teamOne.captain.nickname}`);
+    $('#team-two-header').text(`Team ${draftData.teamTwo.captain.nickname}`);
+
+    // Populate available players
+    availablePlayers.forEach(player => {
+        const buttonClass = draftData.currentDraftTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary';
+        const listItem = `
+            <li class="list-group-item">
+                ${player.name} (${player.handicap})
+                <button class="btn ${buttonClass}" onclick="assignPlayerToTeam('${player.id}', '${draftData.currentDraftTurn}')">
+                    Add to ${draftData.currentDraftTurn === 'teamOne' ? 'Team One' : 'Team Two'}
+                </button>
+            </li>
+        `;
+        $availablePlayersList.append(listItem);
+    });
+
+    // Populate team lists
+    draftData.teamOne.players.forEach(player => {
+        $teamOneList.append(`<li class="list-group-item">${player.name} (${player.handicap})</li>`);
+    });
+
+    draftData.teamTwo.players.forEach(player => {
+        $teamTwoList.append(`<li class="list-group-item">${player.name} (${player.handicap})</li>`);
+    });
+
+    // Update turn banner
+    if (availablePlayers.length === 0) {
+        $('#draft-turn-banner').html('<div class="alert alert-success">All players have been drafted!</div>');
+    } else {
+        const currentTeam = draftData.currentDraftTurn === 'teamOne'
+            ? draftData.teamOne.captain.nickname
+            : draftData.teamTwo.captain.nickname;
+
+        $('#draft-turn-banner').html(`It's ${currentTeam}'s turn to draft!`);
+    }
+}
+
