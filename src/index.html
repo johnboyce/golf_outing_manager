@@ -62,9 +62,26 @@
 
 
 <div class="container mt-4">
-    <div id="draft-tab" class="d-none">
-        <!-- Draft Tab -->
-    </div>
+    <section id="draft-tab" class="tab-pane fade">
+        <div class="container my-4">
+            <h2 class="text-center text-success">Draft Process</h2>
+            <div class="row">
+                <!-- Captain Selectors -->
+                <div class="col-md-6">
+                    <label for="team-one-captain-selector" class="form-label">Team One Captain</label>
+                    <select id="team-one-captain-selector" class="form-select"></select>
+                </div>
+                <div class="col-md-6">
+                    <label for="team-two-captain-selector" class="form-label">Team Two Captain</label>
+                    <select id="team-two-captain-selector" class="form-select"></select>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <button id="start-draft-btn" class="btn btn-primary" disabled>Start Draft</button>
+            </div>
+        </div>
+    </section>
+
     <div id="foursomes-tab" class="d-none">
         <!-- Foursomes Tab -->
     </div>
@@ -77,7 +94,7 @@
     <p>2025 Golf Kuntz Outing Draft Manager &copy; All Rights Reserved</p>
 </footer>
 
-<script src="StateManager.js"></script>
-<script src="draft.js"></script>
+<script src="./scripts/StateManager.js"></script>
+<script src="./scripts/draft.js"></script>
 </body>
 </html>
