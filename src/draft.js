@@ -94,6 +94,8 @@ function startDraft() {
     StateManager.set('playerProfiles', availablePlayers);
     StateManager.updateDraftData({ draftStarted: true });
 
+    document.getElementById('team-one-captain-selector').classList.add('d-none');
+    document.getElementById('team-two-captain-selector').classList.add('d-none');
     document.getElementById('start-draft-btn').classList.add('d-none');
     document.getElementById('start-over-btn').classList.remove('d-none');
     document.getElementById('commission-draft-btn').classList.add('d-none');
@@ -139,7 +141,9 @@ function updateDraftUI() {
     });
 
     const draftTurnIndicator = document.getElementById('draft-turn-indicator');
-    if (draftData.draftStarted) {
+    if (availablePlayers.length === 0) {
+        draftTurnIndicator.innerHTML = '<div class="alert alert-success">All players have been drafted!</div>';
+    } else if (draftData.draftStarted) {
         const currentTeamNickname =
             draftData.currentDraftTurn === 'teamOne'
                 ? draftData.teamOne.captain?.nickname || 'Team One'
@@ -177,6 +181,8 @@ function resetDraft() {
     StateManager.reset();
     populateCaptainSelectors(StateManager.get('playerProfiles'));
 
+    document.getElementById('team-one-captain-selector').classList.remove('d-none');
+    document.getElementById('team-two-captain-selector').classList.remove('d-none');
     document.getElementById('start-draft-btn').disabled = true;
     document.getElementById('start-draft-btn').classList.remove('d-none');
     document.getElementById('start-over-btn').classList.add('d-none');
