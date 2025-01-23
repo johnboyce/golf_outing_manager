@@ -258,11 +258,11 @@ footer {
     background-color: rgba(0, 51, 102, 0.9);
     color: #ffffff;
     text-align: center;
-    padding: 10px;
+    padding: 4px;
     position: fixed;
     bottom: 0;
     width: 100%;
-    font-size: 0.9rem;
+    font-size: 0.5rem;
 }
 
 footer a {
@@ -274,10 +274,16 @@ footer a:hover {
     text-decoration: underline;
 }
 
-.team-logo {
-    width: 50px;
-    height: 50px;
+.team-logo-container {
+    text-align: center;
+    margin: 10px 0;
 }
+
+.team-logo {
+    max-width: 100px;
+    max-height: 100px;
+}
+
 .alert-info {
     text-align: center;
     font-weight: bold;

@@ -30,35 +30,54 @@ function populateCaptainSelectors(players) {
     const $teamTwoSelector = $('#team-two-captain-selector');
     const $startDraftButton = $('#start-draft-btn');
 
-    // Clear existing options and add default
     $teamOneSelector.empty().append('<option value="">Select Captain</option>');
     $teamTwoSelector.empty().append('<option value="">Select Captain</option>');
 
-    // Populate selectors with player options
     players.forEach(player => {
-        const option = `<option value="${player.id}">${player.name} (${player.nickname})</option>`;
+        const option = `<option value="${player.id}">${player.name} (${player.nickname || 'No nickname'})</option>`;
         $teamOneSelector.append(option);
         $teamTwoSelector.append(option);
     });
 
-    // Validate captain selection
-    const validateSelection = () => {
-        const teamOneCaptain = players.find(p => p.id === $teamOneSelector.val());
-        const teamTwoCaptain = players.find(p => p.id === $teamTwoSelector.val());
+    const validateCaptainSelection = () => {
+        const teamOneCaptain = players.find(player => player.id === $teamOneSelector.val());
+        const teamTwoCaptain = players.find(player => player.id === $teamTwoSelector.val());
 
         StateManager.updateDraftData({
             teamOne: { ...StateManager.get('draftData').teamOne, captain: teamOneCaptain },
             teamTwo: { ...StateManager.get('draftData').teamTwo, captain: teamTwoCaptain },
         });
 
-        // Enable Start Draft button if valid
+        updateCaptainLogos(teamOneCaptain, teamTwoCaptain);
+
         $startDraftButton.prop('disabled', !(teamOneCaptain && teamTwoCaptain && teamOneCaptain.id !== teamTwoCaptain.id));
     };
 
-    $teamOneSelector.on('change', validateSelection);
-    $teamTwoSelector.on('change', validateSelection);
+    $teamOneSelector.on('change', validateCaptainSelection);
+    $teamTwoSelector.on('change', validateCaptainSelection);
 
     $startDraftButton.prop('disabled', true);
+}
+
+function updateCaptainLogos(teamOneCaptain, teamTwoCaptain) {
+    const $teamOneLogoContainer = $('#team-one-logo');
+    const $teamTwoLogoContainer = $('#team-two-logo');
+    const $teamOneLogo = $('#team-one-captain-logo');
+    const $teamTwoLogo = $('#team-two-captain-logo');
+
+    if (teamOneCaptain?.teamLogo) {
+        $teamOneLogo.attr('src', teamOneCaptain.teamLogo).fadeIn();
+        $teamOneLogoContainer.removeClass('d-none');
+    } else {
+        $teamOneLogoContainer.addClass('d-none');
+    }
+
+    if (teamTwoCaptain?.teamLogo) {
+        $teamTwoLogo.attr('src', teamTwoCaptain.teamLogo).fadeIn();
+        $teamTwoLogoContainer.removeClass('d-none');
+    } else {
+        $teamTwoLogoContainer.addClass('d-none');
+    }
 }
 
 // Display error message for fetch failure
