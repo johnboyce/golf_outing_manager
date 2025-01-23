@@ -1,83 +1,83 @@
-import StateManagerInstance from './StateManager.js';
+// draft.js
 
-$(document).ready(() => {
+document.addEventListener('DOMContentLoaded', () => {
     initializeDraftTab();
 });
 
-// Initialize Draft Tab
 function initializeDraftTab() {
     console.log('Initializing Draft Tab...');
     fetchPlayersForDraft();
 
-    $('#start-draft-btn').on('click', startDraft);
-    $('#start-over-btn').on('click', resetDraft);
-    $('#commission-draft-btn').on('click', commissionDraft);
+    document.getElementById('start-draft-btn').addEventListener('click', startDraft);
+    document.getElementById('start-over-btn').addEventListener('click', resetDraft);
+    document.getElementById('commission-draft-btn').addEventListener('click', commissionDraft);
 }
 
-// Fetch Players for Draft
 function fetchPlayersForDraft() {
     console.log('Fetching players for Draft Tab...');
-    $.getJSON(`${API_GATEWAY_URL}/players`)
-        .done(players => {
+    fetch(`${API_GATEWAY_URL}/players`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch players');
+            }
+            return response.json();
+        })
+        .then(players => {
             console.log('Players fetched:', players);
-
             if (Array.isArray(players)) {
-                StateManagerInstance.set('playerProfiles', players);
+                StateManager.set('playerProfiles', players);
                 populateCaptainSelectors(players);
             } else {
                 console.error('Unexpected response format:', players);
                 displayErrorMessage();
             }
         })
-        .fail((jqXHR, textStatus, errorThrown) => {
-            console.error(`Error fetching players: ${textStatus}`, errorThrown);
+        .catch(error => {
+            console.error('Error fetching players:', error);
             displayErrorMessage();
         });
 }
 
-// Display Error Message
 function displayErrorMessage() {
-    $('#available-players').html('<p class="text-danger">An error occurred while loading players. Please try again.</p>');
+    document.getElementById('available-players').innerHTML = '<p class="text-danger">An error occurred while loading players. Please try again.</p>';
 }
 
-// Populate Captain Selectors
 function populateCaptainSelectors(players) {
-    const $teamOneSelector = $('#team-one-captain-selector');
-    const $teamTwoSelector = $('#team-two-captain-selector');
-    const $startDraftButton = $('#start-draft-btn');
+    const teamOneSelector = document.getElementById('team-one-captain-selector');
+    const teamTwoSelector = document.getElementById('team-two-captain-selector');
+    const startDraftButton = document.getElementById('start-draft-btn');
 
-    $teamOneSelector.empty().append('<option value="">Select Captain</option>');
-    $teamTwoSelector.empty().append('<option value="">Select Captain</option>');
+    teamOneSelector.innerHTML = '<option value="">Select Captain</option>';
+    teamTwoSelector.innerHTML = '<option value="">Select Captain</option>';
 
     players.forEach(player => {
         const option = `<option value="${player.id}">${player.name} (${player.nickname || 'No nickname'})</option>`;
-        $teamOneSelector.append(option);
-        $teamTwoSelector.append(option);
+        teamOneSelector.innerHTML += option;
+        teamTwoSelector.innerHTML += option;
     });
 
     const validateCaptainSelection = () => {
-        const teamOneCaptain = players.find(player => player.id === $teamOneSelector.val());
-        const teamTwoCaptain = players.find(player => player.id === $teamTwoSelector.val());
+        const teamOneCaptain = players.find(player => player.id === teamOneSelector.value);
+        const teamTwoCaptain = players.find(player => player.id === teamTwoSelector.value);
 
-        StateManagerInstance.updateDraftData({
-            teamOne: { ...StateManagerInstance.get('draftData').teamOne, captain: teamOneCaptain },
-            teamTwo: { ...StateManagerInstance.get('draftData').teamTwo, captain: teamTwoCaptain },
+        StateManager.updateDraftData({
+            teamOne: { ...StateManager.get('draftData').teamOne, captain: teamOneCaptain },
+            teamTwo: { ...StateManager.get('draftData').teamTwo, captain: teamTwoCaptain },
         });
 
-        $startDraftButton.prop('disabled', !(teamOneCaptain && teamTwoCaptain && teamOneCaptain.id !== teamTwoCaptain.id));
+        startDraftButton.disabled = !(teamOneCaptain && teamTwoCaptain && teamOneCaptain.id !== teamTwoCaptain.id);
     };
 
-    $teamOneSelector.on('change', validateCaptainSelection);
-    $teamTwoSelector.on('change', validateCaptainSelection);
+    teamOneSelector.addEventListener('change', validateCaptainSelection);
+    teamTwoSelector.addEventListener('change', validateCaptainSelection);
 
-    $startDraftButton.prop('disabled', true);
+    startDraftButton.disabled = true;
 }
 
-// Start Draft
 function startDraft() {
     console.log('Starting draft...');
-    const draftData = StateManagerInstance.get('draftData');
-    const allPlayers = StateManagerInstance.get('playerProfiles');
+    const draftData = StateManager.get('draftData');
+    const allPlayers = StateManager.get('playerProfiles');
 
     if (!draftData.teamOne.captain || !draftData.teamTwo.captain) {
         console.error('Captains not selected. Cannot start draft.');
@@ -91,70 +91,69 @@ function startDraft() {
         player => player.id !== draftData.teamOne.captain.id && player.id !== draftData.teamTwo.captain.id
     );
 
-    StateManagerInstance.set('playerProfiles', availablePlayers);
-    StateManagerInstance.updateDraftData({ draftStarted: true });
+    StateManager.set('playerProfiles', availablePlayers);
+    StateManager.updateDraftData({ draftStarted: true });
 
-    $('#start-draft-btn').addClass('d-none');
-    $('#start-over-btn').removeClass('d-none');
-    $('#commission-draft-btn').addClass('d-none');
+    document.getElementById('start-draft-btn').classList.add('d-none');
+    document.getElementById('start-over-btn').classList.remove('d-none');
+    document.getElementById('commission-draft-btn').classList.add('d-none');
 
     updateDraftUI();
 }
 
-// Update Draft UI
 function updateDraftUI() {
-    const draftData = StateManagerInstance.get('draftData');
-    const availablePlayers = StateManagerInstance.get('playerProfiles');
+    const draftData = StateManager.get('draftData');
+    const availablePlayers = StateManager.get('playerProfiles');
 
-    const $availablePlayersList = $('#available-players').empty();
-    const $teamOneList = $('#team-one').empty();
-    const $teamTwoList = $('#team-two').empty();
+    const availablePlayersList = document.getElementById('available-players');
+    const teamOneList = document.getElementById('team-one');
+    const teamTwoList = document.getElementById('team-two');
 
-    $('#team-one-header h3').text(`Team ${draftData.teamOne.captain?.nickname || 'One'}`);
-    $('#team-two-header h3').text(`Team ${draftData.teamTwo.captain?.nickname || 'Two'}`);
+    availablePlayersList.innerHTML = '';
+    teamOneList.innerHTML = '';
+    teamTwoList.innerHTML = '';
+
+    document.getElementById('team-one-header').querySelector('h3').textContent = `Team ${draftData.teamOne.captain?.nickname || 'One'}`;
+    document.getElementById('team-two-header').querySelector('h3').textContent = `Team ${draftData.teamTwo.captain?.nickname || 'Two'}`;
 
     availablePlayers.forEach(player => {
         const currentTurn = draftData.currentDraftTurn;
         const buttonClass = currentTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary';
-
-        const listItem = $(`
+        const listItem = `
             <li class="list-group-item">
                 ${player.name} (${player.handicap})
-                <button class="btn ${buttonClass}" >Add to ${currentTurn === 'teamOne' ? 'Team One' : 'Team Two'}</button>
+                <button class="btn ${buttonClass}" onclick="assignPlayerToTeam('${player.id}', '${currentTurn}')">
+                    Add to ${currentTurn === 'teamOne' ? 'Team One' : 'Team Two'}
+                </button>
             </li>
-        `);
-
-        listItem.find('button').on('click', () => assignPlayerToTeam(player.id, currentTurn));
-        $availablePlayersList.append(listItem);
+        `;
+        availablePlayersList.innerHTML += listItem;
     });
 
     draftData.teamOne.players.forEach(player => {
-        $teamOneList.append(`<li class="list-group-item">${player.name} (${player.handicap})</li>`);
+        teamOneList.innerHTML += `<li class="list-group-item">${player.name} (${player.handicap})</li>`;
     });
 
     draftData.teamTwo.players.forEach(player => {
-        $teamTwoList.append(`<li class="list-group-item">${player.name} (${player.handicap})</li>`);
+        teamTwoList.innerHTML += `<li class="list-group-item">${player.name} (${player.handicap})</li>`;
     });
 
+    const draftTurnIndicator = document.getElementById('draft-turn-indicator');
     if (draftData.draftStarted) {
         const currentTeamNickname =
             draftData.currentDraftTurn === 'teamOne'
                 ? draftData.teamOne.captain?.nickname || 'Team One'
                 : draftData.teamTwo.captain?.nickname || 'Team Two';
 
-        $('#draft-turn-indicator').html(`<div class="alert alert-info">It's ${currentTeamNickname}'s turn to draft!</div>`);
-    }
-
-    if (availablePlayers.length === 0) {
-        $('#commission-draft-btn').removeClass('d-none');
-        $('#draft-turn-indicator').html('<div class="alert alert-success">All players have been drafted!</div>');
+        draftTurnIndicator.innerHTML = `<div class="alert alert-info">It's ${currentTeamNickname}'s turn to draft!</div>`;
+    } else {
+        draftTurnIndicator.innerHTML = '';
     }
 }
 
-// Assign Player to Team
 function assignPlayerToTeam(playerId, team) {
-    const draftData = StateManagerInstance.get('draftData');
-    const allPlayers = StateManagerInstance.get('playerProfiles');
+    const draftData = StateManager.get('draftData');
+    const allPlayers = StateManager.get('playerProfiles');
     const playerIndex = allPlayers.findIndex(player => player.id === playerId);
 
     if (playerIndex === -1) {
@@ -167,73 +166,100 @@ function assignPlayerToTeam(playerId, team) {
 
     draftData.currentDraftTurn = team === 'teamOne' ? 'teamTwo' : 'teamOne';
 
-    StateManagerInstance.set('playerProfiles', allPlayers);
-    StateManagerInstance.set('draftData', draftData);
+    StateManager.set('playerProfiles', allPlayers);
+    StateManager.set('draftData', draftData);
 
     updateDraftUI();
 }
 
-// Reset Draft
 function resetDraft() {
     console.log('Resetting draft...');
-    StateManagerInstance.reset();
-    populateCaptainSelectors(StateManagerInstance.get('playerProfiles'));
+    StateManager.reset();
+    populateCaptainSelectors(StateManager.get('playerProfiles'));
 
-    $('#start-draft-btn').prop('disabled', true).removeClass('d-none');
-    $('#start-over-btn, #commission-draft-btn').addClass('d-none');
-    $('#draft-turn-indicator').empty();
+    document.getElementById('start-draft-btn').disabled = true;
+    document.getElementById('start-draft-btn').classList.remove('d-none');
+    document.getElementById('start-over-btn').classList.add('d-none');
+    document.getElementById('commission-draft-btn').classList.add('d-none');
+    document.getElementById('draft-turn-indicator').innerHTML = '';
+
     updateDraftUI();
 }
 
-// Generate Foursomes
-function generateFoursomes() {
-    const draftData = StateManagerInstance.get('draftData');
-    const allPlayers = [...draftData.teamOne.players, ...draftData.teamTwo.players];
-    const courses = StateManagerInstance.get('courses');
-    const shuffledPlayers = StateManagerInstance.shuffleArray(allPlayers);
-
-    const groups = courses.reduce((acc, course) => {
-        acc[course.name] = [];
-        return acc;
-    }, {});
-
-    shuffledPlayers.forEach((player, index) => {
-        const course = courses[index % courses.length].name;
-        groups[course].push(player);
-    });
-
-    StateManagerInstance.updateDraftData({ foursomes: groups });
-}
-
-// Update Foursomes Tab
-function updateFoursomesTab() {
-    const draftData = StateManagerInstance.get('draftData');
-    const $foursomesContainer = $('#foursomes-container').empty();
-
-    Object.entries(draftData.foursomes).forEach(([course, players]) => {
-        const courseGroup = $(`<div class="course-group"><h4>${course}</h4></div>`);
-
-        players.forEach(player => {
-            const playerElement = $(`
-                <div class="player-item">
-                    <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" alt="${player.team} Logo" style="width: 50px; height: 50px; margin-right: 10px;">
-                    <span>${player.name} (${player.handicap})</span>
-                </div>
-            `);
-            courseGroup.append(playerElement);
-        });
-
-        $foursomesContainer.append(courseGroup);
-    });
-}
-
-// Commission Draft
 function commissionDraft() {
     console.log('Commissioning draft...');
     generateFoursomes();
     updateFoursomesTab();
-    $('#start-draft-btn, #start-over-btn').addClass('d-none');
-    $('#commission-draft-btn').prop('disabled', true).text('Draft Commissioned');
+    document.getElementById('start-draft-btn').classList.add('d-none');
+    document.getElementById('start-over-btn').classList.add('d-none');
+    document.getElementById('commission-draft-btn').disabled = true;
+    document.getElementById('commission-draft-btn').textContent = 'Draft Commissioned';
 }
 
-export { assignPlayerToTeam, startDraft, resetDraft, commissionDraft };
+function generateFoursomes() {
+    const allPlayers = [
+        ...StateManager.get('draftData').teamOne.players,
+        ...StateManager.get('draftData').teamTwo.players,
+    ];
+    const shuffledPlayers = StateManager.shuffleArray(allPlayers);
+
+    const groups = {
+        bearTrapDunes: [],
+        warAdmiral: [],
+        manOWar: [],
+        lighthouseSound: [],
+    };
+
+    const playersPerGame = Math.ceil(allPlayers.length / 4);
+
+    Object.keys(groups).forEach((course, index) => {
+        groups[course] = shuffledPlayers.slice(index * playersPerGame, (index + 1) * playersPerGame).map((player, i) => ({
+            ...player,
+            group: i + 1,
+        }));
+    });
+
+    StateManager.updateDraftData({ foursomes: groups });
+}
+
+function updateFoursomesTab(foursomes) {
+    const $foursomesContainer = $('#foursomes-container').html('');
+
+    if (!foursomes || !Object.keys(foursomes).length) {
+        $foursomesContainer.html('<p class="text-danger">No foursomes have been created yet. Please commission the draft first.</p>');
+        return;
+    }
+
+    Object.keys(foursomes).forEach(courseName => {
+        const courseFoursomes = foursomes[courseName];
+        const courseSection = $('<div class="course-section mb-4"></div>');
+
+        const courseHeader = `<h4>${courseName}</h4>`;
+        courseSection.append(courseHeader);
+
+        courseFoursomes.forEach((group, groupIndex) => {
+            const groupElement = $('<div class="foursome-group mb-3"></div>');
+
+            const header = `<h5>Foursome ${groupIndex + 1}</h5>`;
+            groupElement.append(header);
+
+            group.forEach(player => {
+                const playerElement = `
+                    <div class="foursome-player d-flex align-items-center">
+                        <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
+                             alt="${player.team} Logo" 
+                             style="width: 50px; height: 50px; margin-right: 10px;">
+                        <span>${player.name} (${player.handicap})</span>
+                    </div>
+                `;
+                groupElement.append(playerElement);
+            });
+
+            courseSection.append(groupElement);
+        });
+
+        $foursomesContainer.append(courseSection);
+    });
+
+    console.log('Foursomes updated:', foursomes);
+}
