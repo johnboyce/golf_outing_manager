@@ -51,7 +51,9 @@ function populateCaptainSelectors(players) {
     teamTwoSelector.innerHTML = '<option value="">Select Captain</option>';
 
     players.forEach(player => {
-        const option = `<option value="${player.id}">${player.name} (${player.nickname || 'No nickname'})</option>`;
+        const option = `<option value="${player.id}" data-logo="${player.teamLogo}">
+                            ${player.name} (${player.nickname || 'No nickname'})
+                        </option>`;
         teamOneSelector.innerHTML += option;
         teamTwoSelector.innerHTML += option;
     });
@@ -65,6 +67,11 @@ function populateCaptainSelectors(players) {
             teamTwo: { ...StateManager.get('draftData').teamTwo, captain: teamTwoCaptain },
         });
 
+        // Update logos dynamically
+        updateTeamLogo(teamOneSelector, 'team-one-header');
+        updateTeamLogo(teamTwoSelector, 'team-two-header');
+
+        // Enable start draft button if captains are valid
         startDraftButton.disabled = !(teamOneCaptain && teamTwoCaptain && teamOneCaptain.id !== teamTwoCaptain.id);
     };
 
@@ -73,6 +80,7 @@ function populateCaptainSelectors(players) {
 
     startDraftButton.disabled = true;
 }
+
 
 function startDraft() {
     console.log('Starting draft...');
@@ -94,14 +102,29 @@ function startDraft() {
     StateManager.set('playerProfiles', availablePlayers);
     StateManager.updateDraftData({ draftStarted: true });
 
+    // Hide captain selectors and call updateCaptainLogos
     document.getElementById('team-one-captain-selector').classList.add('d-none');
     document.getElementById('team-two-captain-selector').classList.add('d-none');
+    updateCaptainLogos();
+
+    // Update the UI for the draft
     document.getElementById('start-draft-btn').classList.add('d-none');
     document.getElementById('start-over-btn').classList.remove('d-none');
     document.getElementById('commission-draft-btn').classList.add('d-none');
 
     updateDraftUI();
 }
+
+
+function updateCaptainLogos() {
+    const draftData = StateManager.get('draftData');
+    const teamOneLogo = draftData.teamOne.captain?.teamLogo || 'https://m.media-amazon.com/images/M/MV5BMTM0MjM3MTIwNl5BMl5BanBnXkFtZTcwMTM2ODYwNA@@._V1_.jpg';
+    const teamTwoLogo = draftData.teamTwo.captain?.teamLogo || 'https://thumbs.dreamstime.com/b/asian-chinese-male-golfer-posing-golf-club-isolated-white-background-88322914.jpg';
+
+    document.querySelector('#team-one-header img').src = teamOneLogo;
+    document.querySelector('#team-two-header img').src = teamTwoLogo;
+}
+
 
 function updateDraftUI() {
     const draftData = StateManager.get('draftData');
@@ -119,16 +142,16 @@ function updateDraftUI() {
     document.getElementById('team-two-header').querySelector('h3').textContent = `Team ${draftData.teamTwo.captain?.nickname || 'Two'}`;
 
     availablePlayers.forEach(player => {
-        const currentTurn = draftData.currentDraftTurn;
-        const buttonClass = currentTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary';
+        const buttonClass = draftData.currentDraftTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary';
         const listItem = `
-            <li class="list-group-item">
-                ${player.name} (${player.handicap})
-                <button class="btn ${buttonClass}" onclick="assignPlayerToTeam('${player.id}', '${currentTurn}')">
-                    Add to ${currentTurn === 'teamOne' ? 'Team One' : 'Team Two'}
-                </button>
-            </li>
-        `;
+        <li class="list-group-item d-flex align-items-center">
+            <img src="${player.teamLogo}" alt="Team Logo" style="width: 30px; height: 30px; margin-right: 10px;">
+            ${player.name} (${player.handicap})
+            <button class="btn ${buttonClass}" onclick="assignPlayerToTeam('${player.id}', '${draftData.currentDraftTurn}')">
+                Add to ${draftData.currentDraftTurn === 'teamOne' ? 'Team One' : 'Team Two'}
+            </button>
+        </li>
+    `;
         availablePlayersList.innerHTML += listItem;
     });
 
@@ -251,15 +274,14 @@ function updateFoursomesTab(foursomes) {
 
             group.forEach(player => {
                 const playerElement = `
-                    <div class="foursome-player d-flex align-items-center">
-                        <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
-                             alt="${player.team} Logo" 
-                             style="width: 50px; height: 50px; margin-right: 10px;">
-                        <span>${player.name} (${player.handicap})</span>
-                    </div>
-                `;
-                groupElement.append(playerElement);
+        <div class="foursome-player d-flex align-items-center">
+            <img src="${player.teamLogo}" alt="${player.team} Logo" style="width: 50px; height: 50px; margin-right: 10px;">
+            <span>${player.name} (${player.handicap})</span>
+        </div>
+    `;
+                groupElement.innerHTML += playerElement;
             });
+
 
             courseSection.append(groupElement);
         });
