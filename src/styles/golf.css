@@ -1,0 +1,120 @@
+/* Golf Color Palette */
+:root {
+    --golf-green: #3b873e;
+    --golf-dark-green: #2e6b32;
+    --golf-light-green: #88d498;
+    --golf-sand: #f4e1c6;
+    --golf-brown: #a57c4a;
+    --golf-white: #ffffff;
+    --golf-black: #000000;
+}
+
+/* General Body Styles */
+body {
+    background-color: var(--golf-sand);
+    font-family: 'Arial', sans-serif;
+    color: var(--golf-black);
+    margin: 0;
+    padding: 0;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--golf-dark-green);
+    border-bottom: 4px solid var(--golf-light-green);
+}
+
+.navbar-brand, .nav-link {
+    color: var(--golf-white) !important;
+    font-weight: bold;
+}
+
+.nav-link.active {
+    background-color: var(--golf-light-green);
+    color: var(--golf-dark-green) !important;
+}
+
+/* Main Content */
+.container {
+    padding: 20px;
+}
+
+/* Team Headers */
+.team-header h3 {
+    color: var(--golf-dark-green);
+    font-weight: bold;
+}
+
+.team-header img {
+    border: 2px solid var(--golf-green);
+    border-radius: 50%;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--golf-green);
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: var(--golf-dark-green);
+}
+
+.btn-secondary {
+    background-color: var(--golf-sand);
+    border: 1px solid var(--golf-green);
+    color: var(--golf-black);
+}
+
+.btn-secondary:hover {
+    background-color: var(--golf-light-green);
+}
+
+/* Lists */
+.list-group-item {
+    border: 1px solid var(--golf-green);
+    background-color: var(--golf-white);
+}
+
+.list-group-item .btn {
+    float: right;
+}
+
+/* Foursomes Section */
+.course-foursome {
+    border: 2px solid var(--golf-green);
+    border-radius: 10px;
+    background-color: var(--golf-light-green);
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.course-foursome img {
+    border-radius: 10px;
+}
+
+.player-entry {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.player-entry img {
+    margin-right: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--golf-green);
+}
+
+.player-entry span {
+    font-weight: bold;
+}
+
+/* Footer */
+footer {
+    background-color: var(--golf-dark-green);
+    color: var(--golf-white);
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 30px;
+    font-size: 14px;
+}
