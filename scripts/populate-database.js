@@ -19,7 +19,8 @@ const populateDatabase = async () => {
                 handicap: { N: String(player.handicap) },
                 profileImage: { S: player.profileImage },
                 bio: { S: player.bio },
-                prediction: { S: player.prediction }
+                prediction: { S: player.prediction },
+                teamLogo: { S: player.teamLogo }
             }
         };
 
