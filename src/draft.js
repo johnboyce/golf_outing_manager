@@ -6,12 +6,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initializeDraftTab() {
     console.log('Initializing Draft Tab...');
-    fetchPlayersForDraft();
+    const startDraftButton = document.getElementById('start-draft-btn');
+    const startOverButton = document.getElementById('start-over-btn');
+    const commissionDraftButton = document.getElementById('commission-draft-btn');
 
-    document.getElementById('start-draft-btn').addEventListener('click', startDraft);
-    document.getElementById('start-over-btn').addEventListener('click', resetDraft);
-    document.getElementById('commission-draft-btn').addEventListener('click', commissionDraft);
+    if (!startDraftButton || !startOverButton || !commissionDraftButton) {
+        console.error("Error: One or more draft buttons are missing in the DOM.");
+        return;
+    }
+
+    startDraftButton.addEventListener('click', startDraft);
+    startOverButton.addEventListener('click', resetDraft);
+    commissionDraftButton.addEventListener('click', commissionDraft);
+
+    fetchPlayersForDraft();
 }
+
 
 function fetchPlayersForDraft() {
     console.log('Fetching players for Draft Tab...');
