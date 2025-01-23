@@ -114,6 +114,6 @@ jobs:
           echo "Validating deployment..."
           terraform -chdir=terraform output api_gateway_url
 
-      - name: Populate Database
-        run: |
-          aws dynamodb batch-write-item --request-items file://players.json
+#      - name: Populate Database
+#        run: |
+#          aws dynamodb batch-write-item --request-items file://players.json
