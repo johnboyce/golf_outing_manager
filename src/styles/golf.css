@@ -300,3 +300,36 @@ footer a:hover {
 .list-group-item button {
     float: right;
 }
+.course-foursome {
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #f9f9f9;
+}
+
+.foursome-group {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.cart-group {
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+.player-entry {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.player-entry img {
+    border-radius: 50%;
+    margin-right: 10px;
+}

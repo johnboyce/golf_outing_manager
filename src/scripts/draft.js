@@ -131,11 +131,14 @@ function updateDraftUI() {
     // Populate available players
     availablePlayers.forEach(player => {
         const buttonClass = draftData.currentDraftTurn === 'teamOne' ? 'btn-primary' : 'btn-secondary';
+        const currentTurn = draftData.currentDraftTurn;
+        const team = currentTurn;
+        const captainsLogo = draftData.currentDraftTurn === 'teamOne' ? draftData.teamOne.captain.teamLogo : draftData.teamTwo.captain.teamLogo;
         const listItem = `
             <li class="list-group-item">
                 ${player.name} (${player.handicap})
-                <button class="btn ${buttonClass}" onclick="assignPlayerToTeam('${player.id}', '${draftData.currentDraftTurn}')">
-                    Add to ${draftData.currentDraftTurn === 'teamOne' ? 'Team One' : 'Team Two'}
+                <button class="btn ${buttonClass}" onclick="assignPlayerToTeam('${player.id}', '${team}', '${captainsLogo}')">
+                    Add to ${team === 'teamOne' ? 'Team One' : 'Team Two'}
                 </button>
             </li>
         `;
@@ -159,6 +162,9 @@ function updateDraftUI() {
         const currentTeam = draftData.currentDraftTurn === 'teamOne'
             ? draftData.teamOne.captain.nickname
             : draftData.teamTwo.captain.nickname;
+        const currentTeamLogo = draftData.currentDraftTurn === 'teamOne'
+            ? draftData.teamOne.captain.teamLogo
+            : draftData.teamTwo.captain.teamLogo;
 
         $('#draft-turn-banner').html(`It's ${currentTeam}'s turn to draft!`);
     } else {
@@ -167,41 +173,32 @@ function updateDraftUI() {
     }
 }
 
-function assignPlayerToTeam(playerId, team) {
+function assignPlayerToTeam(playerId, team, captainsLogo) {
     const draftData = StateManager.get('draftData');
     const allPlayers = StateManager.get('playerProfiles');
-
-    // Find the player in the available pool
     const playerIndex = allPlayers.findIndex(player => player.id === playerId);
+
     if (playerIndex === -1) {
         console.error('Player not found:', playerId);
         return;
     }
 
-    // Remove player from available pool and add to the selected team
     const player = allPlayers.splice(playerIndex, 1)[0];
+
+    // Assign team name to the player
+
+    player.team = team;
+    player.captainsLogo = captainsLogo;
+
+
     draftData[team].players.push(player);
 
-    // Alternate the draft turn
+    // Alternate draft turn
     draftData.currentDraftTurn = team === 'teamOne' ? 'teamTwo' : 'teamOne';
 
-    // Update the state
     StateManager.set('playerProfiles', allPlayers);
     StateManager.set('draftData', draftData);
 
-    // Check if all players are drafted
-    if (allPlayers.length === 0) {
-        $('#commission-draft-btn').removeClass('d-none');
-        $('#draft-turn-banner').html('<div class="alert alert-success">All players have been drafted!</div>');
-    } else {
-        // Update turn banner
-        const currentTeam = draftData.currentDraftTurn === 'teamOne'
-            ? draftData.teamOne.captain.nickname
-            : draftData.teamTwo.captain.nickname;
-
-        $('#draft-turn-banner').html(`<div class="alert alert-info">It's ${currentTeam}'s turn to draft!`);
-    }
-
-    // Update the UI
     updateDraftUI();
 }
+

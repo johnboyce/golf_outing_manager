@@ -41,7 +41,7 @@ function setupTabNavigation() {
 }
 
 // Responsive Menu Setup (Optional)
-function setupResponsiveMenu() {
+function  setupResponsiveMenu() {
     console.log('Setting up responsive menu...');
 
     // Toggle menu visibility for smaller screens
