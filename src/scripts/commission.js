@@ -44,84 +44,58 @@ function commissionDraft() {
 // Generate Foursomes
 function generateFoursomes() {
     console.log('Generating foursomes...');
+
     const draftData = StateManager.get('draftData');
     const courses = StateManager.get('courses');
+    const allFoursomes = {};
 
-    // Clone and shuffle team arrays to avoid mutating the original data
-    const teamOne = StateManager.shuffleArray([...draftData.teamOne.players]);
-    const teamTwo = StateManager.shuffleArray([...draftData.teamTwo.players]);
-
-    const allPlayers = [...teamOne, ...teamTwo]; // All players combined
-    const playerMatchTracker = new Map(allPlayers.map(player => [player.id, new Set()])); // Track matchups
-
-    // Initialize empty groups for each course
-    const courseFoursomes = courses.reduce((acc, course) => {
-        acc[course.id] = []; // Each course gets an empty array
-        return acc;
-    }, {});
-
-    // Generate foursomes for each course
     courses.forEach(course => {
-        const remainingTeamOne = [...teamOne];
-        const remainingTeamTwo = [...teamTwo];
+        const courseFoursomes = [];
 
-        const courseFoursomesForCourse = [];
-        while (remainingTeamOne.length > 0 || remainingTeamTwo.length > 0) {
-            // Generate a foursome by alternating players between teams
-            const [cartOne, cartTwo] = createBalancedFoursome(remainingTeamOne, remainingTeamTwo, playerMatchTracker);
+        // Shuffle the teams independently for this course
+        const shuffledTeamOne = StateManager.shuffleArray([...draftData.teamOne.players]);
+        const shuffledTeamTwo = StateManager.shuffleArray([...draftData.teamTwo.players]);
 
-            if (cartOne.length > 0 || cartTwo.length > 0) {
-                courseFoursomesForCourse.push({ cartOne, cartTwo });
-            }
+        // Clone the shuffled teams to avoid modifying the original arrays
+        const teamOnePlayers = [...shuffledTeamOne];
+        const teamTwoPlayers = [...shuffledTeamTwo];
 
-            // Stop when we can't form a complete foursome
-            if (remainingTeamOne.length + remainingTeamTwo.length < 4) break;
+        // Generate balanced foursomes for the course
+        while (teamOnePlayers.length >= 2 && teamTwoPlayers.length >= 2) {
+            const [cartOne, cartTwo] = assignCarts(teamOnePlayers, teamTwoPlayers);
+            courseFoursomes.push({ cartOne, cartTwo });
         }
 
-        courseFoursomes[course.id] = courseFoursomesForCourse;
+        // Log any unassigned players for debugging
+        if (teamOnePlayers.length > 0 || teamTwoPlayers.length > 0) {
+            console.warn(`Extra players for course ${course.name}:`, { teamOnePlayers, teamTwoPlayers });
+        }
+
+        // Add the generated foursomes to the course
+        allFoursomes[course.id] = courseFoursomes;
     });
 
-    StateManager.updateDraftData({ foursomes: courseFoursomes });
-    console.log('Foursomes generated:', courseFoursomes);
+    // Update the draft data with generated foursomes
+    StateManager.updateDraftData({ foursomes: allFoursomes });
+    console.log('Foursomes generated:', allFoursomes);
 }
 
 
-function createBalancedFoursome(teamOne, teamTwo, playerMatchTracker) {
+
+
+function assignCarts(teamOnePlayers, teamTwoPlayers) {
     const cartOne = [];
     const cartTwo = [];
 
-    // Assign players to carts ensuring balance between teams
-    while (cartOne.length < 2 && teamOne.length > 0 && teamTwo.length > 0) {
-        const playerOne = teamOne.shift();
-        const playerTwo = teamTwo.shift();
-
-        cartOne.push(playerOne);
-        cartTwo.push(playerTwo);
-
-        // Update the match tracker
-        updateMatchTracker(playerOne, playerTwo, playerMatchTracker);
-    }
-
-    // Balance remaining players, prioritize players from opposite teams
-    while (cartOne.length < 2 && (teamOne.length > 0 || teamTwo.length > 0)) {
-        const nextPlayer = teamOne.length > 0 ? teamOne.shift() : teamTwo.shift();
-        cartOne.push(nextPlayer);
-    }
-
-    while (cartTwo.length < 2 && (teamOne.length > 0 || teamTwo.length > 0)) {
-        const nextPlayer = teamOne.length > 0 ? teamOne.shift() : teamTwo.shift();
-        cartTwo.push(nextPlayer);
-    }
+    if (teamOnePlayers.length > 0) cartOne.push(teamOnePlayers.shift());
+    if (teamTwoPlayers.length > 0) cartOne.push(teamTwoPlayers.shift());
+    if (teamOnePlayers.length > 0) cartTwo.push(teamOnePlayers.shift());
+    if (teamTwoPlayers.length > 0) cartTwo.push(teamTwoPlayers.shift());
 
     return [cartOne, cartTwo];
 }
 
-function updateMatchTracker(playerOne, playerTwo, playerMatchTracker) {
-    if (!playerOne || !playerTwo) return;
 
-    playerMatchTracker.get(playerOne.id).add(playerTwo.id);
-    playerMatchTracker.get(playerTwo.id).add(playerOne.id);
-}
 
 // Update Foursomes Tab
 function updateFoursomesTab() {
@@ -131,9 +105,6 @@ function updateFoursomesTab() {
     const draftData = StateManager.get('draftData');
     const $foursomesContainer = $('#foursomes-container').empty();
 
-    // Ensure the tab is visible
-    $('#foursomes-tab').removeClass('d-none');
-
     // Fetch team names based on captains' nicknames
     const teamOneName = `Team ${draftData.teamOne.captain.nickname}`;
     const teamTwoName = `Team ${draftData.teamTwo.captain.nickname}`;
@@ -142,37 +113,40 @@ function updateFoursomesTab() {
         const courseFoursomes = foursomes[course.id] || [];
         const courseElement = $(`
             <div class="course-foursome mb-4">
-                <h4 style="background-color:DarkGreen;">${course.name}</h4>
-                <img src="${course.image}" alt="${course.name}" width="300" height="300" class="img-fluid rounded mb-3">
+                <h4 class="text-center text-primary">${course.name} <i class="fas fa-flag-checkered"></i></h4>
+                <img src="${course.image}" alt="${course.name}" class="img-fluid rounded mb-3" style="height: 200px; border: 2px solid #007bff;">
             </div>
         `);
 
         courseFoursomes.forEach((foursome, index) => {
             const groupElement = $(`
-                <div class="foursome-group mb-3" style="background-color:burlywood;">
-                    <h5 style="background-color:saddlebrown;">Foursome ${index + 1}</h5>
+                <div class="foursome-group mb-3 p-3 rounded border" style="background-color: #f8f9fa;">
+                    <h5 class="text-center text-success"><i class="fas fa-users"></i> Foursome ${index + 1}</h5>
                 </div>
             `);
 
             [foursome.cartOne, foursome.cartTwo].forEach((cart, cartIndex) => {
                 const cartElement = $(`
-                    <div class="cart-group mb-2">
-                        <h6 style="background-color:darkolivegreen;">Cart ${cartIndex + 1}</h6>
+                    <div class="cart-group mb-2 d-flex align-items-center">
+                        <h6 class="me-2 text-info"><i class="fas fa-golf-cart"></i> Cart ${cartIndex + 1}:</h6>
+                        <div class="cart-players d-flex justify-content-between flex-wrap"></div>
                     </div>
                 `);
+
+                const $cartPlayersContainer = cartElement.find('.cart-players');
 
                 cart.forEach(player => {
                     const teamName = player.team === 'teamOne' ? teamOneName : teamTwoName;
 
-                    cartElement.append(`
-                        <div class="player-entry d-flex align-items-center mb-2" style="background-color:lightblue;">
+                    $cartPlayersContainer.append(`
+                        <div class="player-entry d-flex align-items-center mx-2 p-2" style="border: 1px solid #ddd; border-radius: 5px; background-color: #fff;">
                             <img src="${player.captainsLogo}" 
                                  alt="${teamName} Logo" 
-                                 style="width: 50px; height: 50px; margin-right: 10px;">
+                                 style="width: 50px; height: 50px; margin-right: 10px; border-radius: 50%; border: 2px solid #007bff;">
                             <div>
-                                <span>${player.name} (${player.handicap})</span>
+                                <span style="font-weight: bold; color: #333;">${player.name} (${player.handicap})</span>
                                 <br>
-                                <small class="text-muted">${teamName}</small>
+                                <small class="text-muted"><i class="fas fa-flag"></i> ${teamName}</small>
                             </div>
                         </div>
                     `);
@@ -187,7 +161,9 @@ function updateFoursomesTab() {
         $foursomesContainer.append(courseElement);
     });
 
-    console.log('Foursomes tab updated with team names based on captains.');
+    console.log('Foursomes tab updated with enhanced styling.');
 }
+
+
 
 
