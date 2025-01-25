@@ -33,10 +33,12 @@ function commissionDraft() {
     // Generate Foursomes
     generateFoursomes();
 
-    // Confirm success to the user
-    alert(`Draft commissioned successfully on ${humanReadableName}.`);
+    $('#draft-turn-banner').html('<div class="alert alert-success">`Draft commissioned successfully!`</div>');
+    $('#commission-draft-btn').prop('disabled', false).removeClass('d-none');
     updateFoursomesTab();
     $('#foursomes-tab').click(); // Redirect to Foursomes tab
+
+    updateFoursomesTab();
 }
 
 // Generate Foursomes
@@ -180,7 +182,6 @@ function updateFoursomesTab() {
 
         $foursomesContainer.append(courseElement);
     });
-
     console.log('Foursomes tab updated.');
 }
 

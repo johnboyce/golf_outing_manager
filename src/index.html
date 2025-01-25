@@ -35,7 +35,7 @@
 <div class="container mt-4">
     <div id="players-tab" class="tab-pane fade">
         <!-- Players Tab -->
-        <div class="container my-4">
+        <div class="container my-0">
             <h2 class="text-center text-success">Meet the Players</h2>
             <div id="players-carousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner" id="carousel-inner">
@@ -49,6 +49,7 @@
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Next</span>
                 </button>
+            </div>
             </div>
         </div>
     </div>
@@ -74,6 +75,7 @@
             </div>
             <div class="text-center mt-3">
                 <button id="start-draft-btn" class="btn btn-primary" disabled>Start Draft</button>
+                <button id="start-over-btn" class="btn btn-secondary" disabled>Start Over</button>
                 <button id="commission-draft-btn" class="btn btn-success d-none" disabled>Commission Draft</button>
             </div>
         </div>
@@ -94,15 +96,13 @@
                 </div>
             </div>
         </div>
-        <div id="foursomes-container" class="foursomes-container">
-            <h2>Foursomes - Good Luck!</h2>
-                <!-- Dynamic content will be injected here -->
-        </div>
-
     </section>
 
     <div id="foursomes-tab" class="d-none">
-        <!-- Foursomes Tab -->
+        <div id="foursomes-container" class="foursomes-container">
+            <h2>Foursomes - Good Luck!</h2>
+            <!-- Dynamic content will be injected here -->
+        </div>
     </div>
     <div id="courses-tab" class="d-none">
         <!-- Courses Tab -->

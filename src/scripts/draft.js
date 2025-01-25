@@ -113,6 +113,8 @@ function startDraft() {
     // Update UI
     $('#captain-selection-section').addClass('d-none');
     $('#draft-section').removeClass('d-none');
+    $('#start-draft-btn').prop('disabled', true).addClass('d-none');
+    $('#start-over-btn').prop('disabled', false).removeClass('d-none');
     updateDraftUI();
 }
 
@@ -157,6 +159,7 @@ function updateDraftUI() {
     // Update turn banner
     if (availablePlayers.length === 0) {
         $('#draft-turn-banner').html('<div class="alert alert-success">All players have been drafted!</div>');
+        $('#available-players-list').addClass('d-none');
         $('#commission-draft-btn').prop('disabled', false).removeClass('d-none');
     } else if(draftData.draftStarted){
         const currentTeam = draftData.currentDraftTurn === 'teamOne'
