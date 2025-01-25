@@ -98,8 +98,15 @@ function startDraft() {
     }
 
     // Assign captains to their respective teams
+
+    draftData.teamOne.captain.captainsLogo = draftData.teamOne.captain.teamLogo;
+    draftData.teamOne.captain.team = "teamOne";
     draftData.teamOne.players = [draftData.teamOne.captain];
+
+    draftData.teamTwo.captain.captainsLogo = draftData.teamTwo.captain.teamLogo;
+    draftData.teamTwo.captain.team = "teamTwo";
     draftData.teamTwo.players = [draftData.teamTwo.captain];
+
 
     // Remove captains from the available players list
     const availablePlayers = allPlayers.filter(

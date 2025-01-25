@@ -16,7 +16,7 @@
     "handicap": 10,
     "bio": "Jimmy Boyce is a powerhouse on the course with a swing that can rival the pros. Known for his long drives and competitive spirit, he’s the guy you want on your team. Off the greens, Jimmy is a barbecue enthusiast. His pet peeve is leaving the flag in while putting. Jimmy's recent form hints at a spectacular outing.",
     "prediction": "Expect Jimmy to dominate with his distance game, but his short game might need sharpening.",
-    "profileImage": "https://i.pravatar.cc/150?img=2",
+    "profileImage": "./images/duck.jpeg",
     "teamLogo": "https://static.vecteezy.com/system/resources/previews/023/509/550/original/duck-head-logo-for-sport-or-esport-team-ducks-illustration-design-for-gaming-logos-badge-emblem-apparel-merchandise-vector.jpg"
   },
   {
@@ -66,7 +66,7 @@
     "handicap": 9,
     "bio": "Dan Hamilton is a focused golfer with an analytical mind. He’s always calculating the best angles and strategies. Off the course, Dan enjoys reading sci-fi novels. His pet peeve is when people don’t replace their divots. He approaches every shot as though it were a chess move.",
     "prediction": "Expect Dan to shine with his precision approach shots, but his putting may need some extra focus.",
-    "profileImage": "https://i.pravatar.cc/150?img=7",
+    "profileImage": "./images/dan.jpeg",
     "teamLogo": "https://logos.flamingtext.com/City-Logos/Ham-Amped-Logo.png"
   },
   {

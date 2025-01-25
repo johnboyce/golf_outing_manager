@@ -35,9 +35,9 @@ function commissionDraft() {
 
     $('#draft-turn-banner').html('<div class="alert alert-success">`Draft commissioned successfully!`</div>');
     $('#commission-draft-btn').prop('disabled', false).removeClass('d-none');
-    updateFoursomesTab();
     $('#foursomes-tab').click(); // Redirect to Foursomes tab
-
+    $('#draft-tab').addClass('d-none');
+    $('#foursomes-tab').removeClass('d-none');
     updateFoursomesTab();
 }
 
@@ -131,6 +131,10 @@ function updateFoursomesTab() {
     const draftData = StateManager.get('draftData');
     const $foursomesContainer = $('#foursomes-container').empty();
 
+    // Ensure the tab is visible
+    $('#foursomes-tab').removeClass('d-none');
+
+    // Fetch team names based on captains' nicknames
     const teamOneName = `Team ${draftData.teamOne.captain.nickname}`;
     const teamTwoName = `Team ${draftData.teamTwo.captain.nickname}`;
 
@@ -138,22 +142,22 @@ function updateFoursomesTab() {
         const courseFoursomes = foursomes[course.id] || [];
         const courseElement = $(`
             <div class="course-foursome mb-4">
-                <h4>${course.name}</h4>
-                <img src="${course.image}" alt="${course.name}" class="img-fluid rounded mb-3">
+                <h4 style="background-color:DarkGreen;">${course.name}</h4>
+                <img src="${course.image}" alt="${course.name}" width="300" height="300" class="img-fluid rounded mb-3">
             </div>
         `);
 
         courseFoursomes.forEach((foursome, index) => {
             const groupElement = $(`
-                <div class="foursome-group mb-3">
-                    <h5>Foursome ${index + 1}</h5>
+                <div class="foursome-group mb-3" style="background-color:burlywood;">
+                    <h5 style="background-color:saddlebrown;">Foursome ${index + 1}</h5>
                 </div>
             `);
 
             [foursome.cartOne, foursome.cartTwo].forEach((cart, cartIndex) => {
                 const cartElement = $(`
                     <div class="cart-group mb-2">
-                        <h6>Cart ${cartIndex + 1}</h6>
+                        <h6 style="background-color:darkolivegreen;">Cart ${cartIndex + 1}</h6>
                     </div>
                 `);
 
@@ -161,8 +165,8 @@ function updateFoursomesTab() {
                     const teamName = player.team === 'teamOne' ? teamOneName : teamTwoName;
 
                     cartElement.append(`
-                        <div class="player-entry d-flex align-items-center mb-2">
-                            <img src="${player.team === 'teamOne' ? draftData.teamOne.captain.teamLogo : draftData.teamTwo.captain.teamLogo}" 
+                        <div class="player-entry d-flex align-items-center mb-2" style="background-color:lightblue;">
+                            <img src="${player.captainsLogo}" 
                                  alt="${teamName} Logo" 
                                  style="width: 50px; height: 50px; margin-right: 10px;">
                             <div>
@@ -182,6 +186,8 @@ function updateFoursomesTab() {
 
         $foursomesContainer.append(courseElement);
     });
-    console.log('Foursomes tab updated.');
+
+    console.log('Foursomes tab updated with team names based on captains.');
 }
+
 
