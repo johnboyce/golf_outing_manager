@@ -103,21 +103,39 @@ function updateFoursomesTab() {
     const foursomes = StateManager.get('draftData').foursomes;
     const courses = StateManager.get('courses');
     const draftData = StateManager.get('draftData');
-    const $foursomesContainer = $('#foursomes-container').empty();
+
+    const $tabsContainer = $('#foursomeCourseTabs').empty();
+    const $tabContentContainer = $('#foursomeCourseTabContent').empty();
 
     // Fetch team names based on captains' nicknames
     const teamOneName = `Team ${draftData.teamOne.captain.nickname}`;
     const teamTwoName = `Team ${draftData.teamTwo.captain.nickname}`;
 
-    courses.forEach(course => {
-        const courseFoursomes = foursomes[course.id] || [];
-        const courseElement = $(`
-            <div class="course-foursome mb-4">
-                <h4 class="text-center text-primary">${course.name} <i class="fas fa-flag-checkered"></i></h4>
-                <img src="${course.image}" alt="${course.name}" class="img-fluid rounded mb-3" style="height: 200px; border: 2px solid #007bff;">
+    courses.forEach((course, index) => {
+        // Create the tab button
+        const courseTab = $(`
+            <button
+                class="custom-tab ${index === 0 ? 'active-tab' : ''}" 
+                data-course-id="${course.id}">
+                ${course.name}
+            </button>
+        `);
+        $tabsContainer.append(courseTab);
+
+        // Create the tab content container
+        const courseContent = $(`
+            <div
+                class="custom-tab-content ${index === 0 ? 'active-content' : 'hidden-content'}" 
+                data-course-id="${course.id}">
+                <div class="course-foursome">
+                    <h4 class="text-center text-primary">${course.name}</h4>
+                    <img src="${course.image}" alt="${course.name}" class="img-fluid rounded mb-3" style="height: 200px; border: 2px solid #007bff;">
+                </div>
             </div>
         `);
 
+        // Populate the course content with foursomes
+        const courseFoursomes = foursomes[course.id] || [];
         courseFoursomes.forEach((foursome, index) => {
             const groupElement = $(`
                 <div class="foursome-group mb-3 p-3 rounded border" style="background-color: #f8f9fa;">
@@ -140,7 +158,7 @@ function updateFoursomesTab() {
 
                     $cartPlayersContainer.append(`
                         <div class="player-entry d-flex align-items-center mx-2 p-2" style="border: 1px solid #ddd; border-radius: 5px; background-color: #fff;">
-                            <img src="${player.captainsLogo}" 
+                            <img src="${player.teamLogo}" 
                                  alt="${teamName} Logo" 
                                  style="width: 50px; height: 50px; margin-right: 10px; border-radius: 50%; border: 2px solid #007bff;">
                             <div>
@@ -155,14 +173,32 @@ function updateFoursomesTab() {
                 groupElement.append(cartElement);
             });
 
-            courseElement.append(groupElement);
+            courseContent.append(groupElement);
         });
 
-        $foursomesContainer.append(courseElement);
+        $tabContentContainer.append(courseContent);
     });
 
-    console.log('Foursomes tab updated with enhanced styling.');
+    // Custom Tab Switching Logic
+    $('.custom-tab').on('click', function () {
+        const courseId = $(this).data('course-id');
+
+        // Update tab button styling
+        $('.custom-tab').removeClass('active-tab');
+        $(this).addClass('active-tab');
+
+        // Update tab content visibility
+        $('.custom-tab-content').removeClass('active-content').addClass('hidden-content');
+        $(`.custom-tab-content[data-course-id="${courseId}"]`).removeClass('hidden-content').addClass('active-content');
+    });
+
+    console.log('Foursomes tab updated with custom tab-switching logic.');
 }
+
+
+
+
+
 
 
 

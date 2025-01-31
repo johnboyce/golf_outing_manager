@@ -50,63 +50,66 @@
                     <span class="visually-hidden">Next</span>
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+<section id="draft-tab" class="tab-pane fade">
+    <div class="container my-4">
+        <h2 class="text-center text-success">Draft Process</h2>
+        <div class="row">
+            <!-- Captain Selectors -->
+            <div class="col-md-6">
+                <label for="team-one-captain-selector" class="form-label">Team One Captain</label>
+                <select id="team-one-captain-selector" class="form-select"></select>
+                <div id="team-one-logo" class="team-logo-container d-none">
+                    <img id="team-one-captain-logo" src="" alt="Team One Logo" class="team-logo img-fluid" style="display: none;">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="team-two-captain-selector" class="form-label">Team Two Captain</label>
+                <select id="team-two-captain-selector" class="form-select"></select>
+                <div id="team-two-logo" class="team-logo-container d-none">
+                    <img id="team-two-captain-logo" src="" alt="Team Two Logo" class="team-logo img-fluid" style="display: none;">
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <button id="start-draft-btn" class="btn btn-primary" disabled>Start Draft</button>
+            <button id="start-over-btn" class="btn btn-secondary" disabled>Start Over</button>
+            <button id="commission-draft-btn" class="btn btn-success d-none" disabled>Commission Draft</button>
+        </div>
+    </div>
+    <div id="draft-section" class="d-none">
+        <div id="draft-turn-banner" class="alert alert-info text-center"></div>
+        <div class="row">
+            <div class="col-md-4">
+                <h4 id="team-one-header">Team One</h4>
+                <ul id="team-one-list" class="list-group"></ul>
+            </div>
+            <div class="col-md-4">
+                <h4>Available Players</h4>
+                <ul id="available-players-list" class="list-group"></ul>
+            </div>
+            <div class="col-md-4">
+                <h4 id="team-two-header">Team Two</h4>
+                <ul id="team-two-list" class="list-group"></ul>
             </div>
         </div>
     </div>
-    <section id="draft-tab" class="tab-pane fade">
-        <div class="container my-4">
-            <h2 class="text-center text-success">Draft Process</h2>
-            <div class="row">
-                <!-- Captain Selectors -->
-                <div class="col-md-6">
-                    <label for="team-one-captain-selector" class="form-label">Team One Captain</label>
-                    <select id="team-one-captain-selector" class="form-select"></select>
-                    <div id="team-one-logo" class="team-logo-container d-none">
-                        <img id="team-one-captain-logo" src="" alt="Team One Logo" class="team-logo img-fluid" style="display: none;">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <label for="team-two-captain-selector" class="form-label">Team Two Captain</label>
-                    <select id="team-two-captain-selector" class="form-select"></select>
-                    <div id="team-two-logo" class="team-logo-container d-none">
-                        <img id="team-two-captain-logo" src="" alt="Team Two Logo" class="team-logo img-fluid" style="display: none;">
-                    </div>
-                </div>
-            </div>
-            <div class="text-center mt-3">
-                <button id="start-draft-btn" class="btn btn-primary" disabled>Start Draft</button>
-                <button id="start-over-btn" class="btn btn-secondary" disabled>Start Over</button>
-                <button id="commission-draft-btn" class="btn btn-success d-none" disabled>Commission Draft</button>
-            </div>
-        </div>
-        <div id="draft-section" class="d-none">
-            <div id="draft-turn-banner" class="alert alert-info text-center"></div>
-            <div class="row">
-                <div class="col-md-4">
-                    <h4 id="team-one-header">Team One</h4>
-                    <ul id="team-one-list" class="list-group"></ul>
-                </div>
-                <div class="col-md-4">
-                    <h4>Available Players</h4>
-                    <ul id="available-players-list" class="list-group"></ul>
-                </div>
-                <div class="col-md-4">
-                    <h4 id="team-two-header">Team Two</h4>
-                    <ul id="team-two-list" class="list-group"></ul>
-                </div>
-            </div>
-        </div>
-    </section>
+</section>
 
-    <div id="foursomes-tab" class="d-none">
-        <div id="foursomes-container" class="foursomes-container">
-            <h2>Foursomes - Good Luck!</h2>
-            <!-- Dynamic content will be injected here -->
-        </div>
+<div id="foursomes-tab" class="mt-4 d-none">
+    <h2 style="background-color: #2e6b32">Foursomes - Good Luck!</h2>
+    <div id="foursomeCourseTabs" class="tab-buttons d-flex justify-content-center mb-3">
+        <!-- Dynamic Tabs Will Be Inserted Here -->
     </div>
-    <div id="courses-tab" class="d-none">
-        <!-- Courses Tab -->
+    <div id="foursomeCourseTabContent" class="tab-content">
+        <!-- Dynamic Content for Each Course Will Be Inserted Here -->
     </div>
+</div>
+<div id="courses-tab" class="d-none">
+    <!-- Courses Tab -->
+</div>
 </div>
 
 <!--<footer class="mt-4 bg-dark text-white text-center py-3">-->

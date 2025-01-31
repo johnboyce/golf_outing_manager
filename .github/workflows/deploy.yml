@@ -8,17 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
-    env:
-      S3_LAMBDA_BUCKET: golf-outing-lambda-deployments
-      S3_GOLF_BUCKET: golf-outing-manager
-      LAMBDA_NAME: GolfOutingHandler
-      LAMBDA_RUNTIME: nodejs18.x
-      LAMBDA_HANDLER: index.handler
-      REGION: us-east-1
-      ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/golf_outing_lambda_role
-      DYNAMODB_TABLE: GolfOutingTable
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -69,36 +58,6 @@ jobs:
 
       - name: Deploy Lambda Function
         run: |
-          echo "Checking if Lambda function $LAMBDA_NAME exists..."
-          FUNCTION_EXISTS=$(aws lambda get-function --function-name $LAMBDA_NAME 2>/dev/null || echo "NOT_EXISTS")
-
-          if [[ "$FUNCTION_EXISTS" == "NOT_EXISTS" ]]; then
-          echo "Creating Lambda function $LAMBDA_NAME..."
-          aws lambda create-function \
-           --function-name $LAMBDA_NAME \
-           --runtime $LAMBDA_RUNTIME \
-           --role $ROLE_ARN \
-           --handler $LAMBDA_HANDLER \
-           --code S3Bucket=${{ env.S3_LAMBDA_BUCKET }} ,S3Key=lambda.zip \
-           --environment Variables="{DYNAMODB_TABLE=$DYNAMODB_TABLE}"
-          else
-          echo "Updating Lambda function $LAMBDA_NAME..."
-          aws lambda update-function-code \
-           --function-name $LAMBDA_NAME \
-           --s3-bucket ${{ env.S3_LAMBDA_BUCKET }} \
-           --s3-key lambda.zip
-          fi
-
-      # Invalidate CloudFront cache
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation --distribution-id E143Q96G9TRDSS --paths "/*"
-          echo "CloudFront cache invalidated. Explicitly"
-
-      - name: Validate Cloudfront Deployment
-        run: |
-          echo "Validating deployment..."
-          echo "Retrieving Cloudfront Domain..."
           cd terraform
           CLOUDFRONT_URL=$(terraform output -raw s3_bucket_website_url || echo "Failed to fetch Cloudfront Domain")
           echo "Cloudfront Domain: $CLOUDFRONT_URL"
@@ -113,7 +72,3 @@ jobs:
         run: |
           echo "Validating deployment..."
           terraform -chdir=terraform output api_gateway_url
-
-#      - name: Populate Database
-#        run: |
-#          aws dynamodb batch-write-item --request-items file://players.json

@@ -2,12 +2,12 @@ import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { readFileSync } from 'fs';
 
 const REGION = 'us-east-1';
-const TABLE_NAME = 'GolfOutingTable';
+const TABLE_NAME = 'GolfOutingPlayersTable';
 
 const client = new DynamoDBClient({ region: REGION });
 
-const populateDatabase = async () => {
-    const players = JSON.parse(readFileSync('./players.json', 'utf-8'));
+const populatePlayersDatabase = async () => {
+    const players = JSON.parse(readFileSync('./data/players.json', 'utf-8'));
 
     for (const player of players) {
         const params = {
@@ -33,4 +33,4 @@ const populateDatabase = async () => {
     }
 };
 
-populateDatabase();
+populatePlayersDatabase();
