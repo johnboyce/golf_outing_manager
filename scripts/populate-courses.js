@@ -22,9 +22,9 @@ const populateCoursesDatabase = async () => {
 
         try {
             await client.send(new PutItemCommand(params));
-            console.log(`Successfully added course: ${player.name}`);
+            console.log(`Successfully added course: ${course.name}`);
         } catch (error) {
-            console.error(`Error adding course ${player.name}:`, error);
+            console.error(`Error adding course ${course.name}:`, error);
         }
     }
 };
