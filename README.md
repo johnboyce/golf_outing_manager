@@ -2,10 +2,10 @@
 
 A fun, interactive, and visually appealing web app for managing golf outings. Built with:
 
-- HTML, CSS, and JavaScript for the frontend
-- AWS S3, Lambda, API Gateway, and DynamoDB for hosting and persistence
-- Terraform for infrastructure as code
-- GitHub Actions for automated deployment
+- **HTML, CSS, and JavaScript** for the frontend
+- **AWS S3, Lambda, API Gateway, and DynamoDB** for hosting and persistence
+- **Terraform** for infrastructure as code
+- **GitHub Actions** for automated deployment
 
 ## Features
 
@@ -19,7 +19,8 @@ A fun, interactive, and visually appealing web app for managing golf outings. Bu
 1. Run the following commands to set up the project locally:
    zsh setup.sh
 2. Deploy the infrastructure and app using Terraform and GitHub Actions.
-3. Update the golfer data, bios, and predictions in the src/data.js file.
+3. Update the golfer data, bios, and predictions in the src/data/players.json file.
+4. Update the courses data in the src/data/courses.json file.
 
 ## Deployment
 
@@ -39,7 +40,7 @@ A fun, interactive, and visually appealing web app for managing golf outings. Bu
 
 ## Infrastructure
 
-Terraform scripts are included in the terraform/ directory to provision:
+Terraform scripts are included in the  directory to provision:
 - S3 bucket for static hosting
 - DynamoDB table for persistence
 - Lambda functions and API Gateway for backend
