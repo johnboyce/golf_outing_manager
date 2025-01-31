@@ -7,7 +7,7 @@ const TABLE_NAME = 'GolfOutingCoursesTable';
 const client = new DynamoDBClient({ region: REGION });
 
 const populateCoursesDatabase = async () => {
-    const players = JSON.parse(readFileSync('./courses.json', 'utf-8'));
+    const players = JSON.parse(readFileSync('./data/courses.json', 'utf-8'));
 
     for (const player of players) {
         const params = {
