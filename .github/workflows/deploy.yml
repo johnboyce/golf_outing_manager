@@ -8,6 +8,17 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    env:
+      S3_LAMBDA_BUCKET: golf-outing-lambda-deployments
+      S3_GOLF_BUCKET: golf-outing-manager
+      LAMBDA_NAME: GolfOutingHandler
+      LAMBDA_RUNTIME: nodejs18.x
+      LAMBDA_HANDLER: index.handler
+      REGION: us-east-1
+      ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/golf_outing_lambda_role
+      DYNAMODB_TABLE: GolfOutingTable
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
