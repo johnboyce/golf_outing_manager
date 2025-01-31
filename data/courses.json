@@ -1,0 +1,26 @@
+[
+  {
+    "id": "beartrap",
+    "name": "Bear Trap Dunes",
+    "image": "https://www.beartrapdunes.com/wp-content/uploads/sites/8962/2023/06/home-main-1.jpg",
+    "description": "A spectacular course featuring coastal views and challenging dunes. Perfect for golfers of all skill levels."
+  },
+  {
+    "id": "waradmiral",
+    "name": "War Admiral",
+    "image": "https://www.pamsgolfoc.com/wp-content/uploads/2020/01/waradmiral-1.jpg",
+    "description": "Inspired by the famous thoroughbred, this course offers a mix of strategy and precision with its unique design."
+  },
+  {
+    "id": "manowar",
+    "name": "Man O' War",
+    "image": "https://www.ruarkgolf.com/app/uploads/2018/08/MOW-30-1024x576.jpg",
+    "description": "A thrilling challenge for golfers, with picturesque views and water hazards adding to its allure."
+  },
+  {
+    "id": "lighthouse",
+    "name": "Lighthouse Sound",
+    "image": "https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg",
+    "description": "Known for its incredible views of the bay and a distinctive setup that challenges even the best golfers."
+  }
+]
