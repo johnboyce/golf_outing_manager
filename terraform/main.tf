@@ -123,7 +123,7 @@ resource "aws_apigatewayv2_api" "golf_outing_api" {
   protocol_type = "HTTP"
 }
 
-# ✅ API Gateway Lambda Integration
+# Create API Gateway Lambda Integration
 resource "aws_apigatewayv2_integration" "golf_outing_integration" {
   api_id                 = aws_apigatewayv2_api.golf_outing_api.id
   integration_type       = "AWS_PROXY"
@@ -131,24 +131,93 @@ resource "aws_apigatewayv2_integration" "golf_outing_integration" {
   payload_format_version = "2.0"
 }
 
-# ✅ API Gateway Routes
-resource "aws_apigatewayv2_route" "golf_outing_route" {
+# Define Routes for Players API
+resource "aws_apigatewayv2_route" "players_list" {
   api_id    = aws_apigatewayv2_api.golf_outing_api.id
-  route_key = "ANY /{proxy+}"
+  route_key = "GET /players"
   target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
 }
 
-# ✅ API Gateway Stage (Auto-deploy)
+resource "aws_apigatewayv2_route" "player_get" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "GET /players/{playerId}"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "player_add" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "POST /players"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "player_update" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "PUT /players/{playerId}"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "player_delete" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "DELETE /players/{playerId}"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
+
+# Define Routes for Courses API
+resource "aws_apigatewayv2_route" "courses_list" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "GET /courses"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "course_get" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "GET /courses/{courseId}"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "course_add" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "POST /courses"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "course_update" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "PUT /courses/{courseId}"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "course_delete" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "DELETE /courses/{courseId}"
+  target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
+}
+
+# Deploy API Gateway
 resource "aws_apigatewayv2_stage" "golf_outing_stage" {
   api_id      = aws_apigatewayv2_api.golf_outing_api.id
-  name        = "$default"
-  auto_deploy = true
+  name        = "$default"   # Use "$default" for HTTP API to enable auto-deploy
+  auto_deploy = true         # Enables automatic deployment on route changes
+
+  default_route_settings {
+    throttling_rate_limit  = 10   # Limit requests per second
+    throttling_burst_limit = 10    # Burst limit
+  }
+}
+
+# Allow API Gateway to invoke Lambda
+resource "aws_lambda_permission" "api_gateway_invoke" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.golf_outing_lambda.arn
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
 }
 
 # ✅ CloudWatch Logs for API Gateway
 resource "aws_cloudwatch_log_group" "api_gateway_logs" {
   name              = "/aws/api-gateway/golf-outing-api"
-  retention_in_days = 5
+  retention_in_days = 3
 }
 
 # ✅ S3 Bucket for Lambda Deployment
@@ -180,7 +249,7 @@ resource "null_resource" "package_lambda" {
   }
 
   triggers = {
-    last_updated = timestamp()
+    lambda_src_hash = filemd5("../lambda/index.js")
   }
 }
 
