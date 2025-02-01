@@ -235,6 +235,32 @@ resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
   restrict_public_buckets = true
 }
 
+resource "null_resource" "setup_lambda_environment" {
+  provisioner "local-exec" {
+    command = <<EOT
+    echo "Setting up Lambda environment..."
+    cd ../lambda
+
+    # Ensure package.json exists
+    if [ ! -f "package.json" ]; then
+      npm init -y
+      echo "Initialized package.json."
+    fi
+
+    # Ensure required dependencies are installed
+    npm install @aws-sdk/client-dynamodb uuid --save
+    npm install @aws-sdk/lib-dynamodb --save
+    npm install --production
+
+    echo "Lambda environment setup complete."
+    EOT
+  }
+
+  triggers = {
+    last_updated = timestamp()  # Ensures this runs on each apply
+  }
+}
+
 # ✅ Package Lambda Before Uploading to S3
 resource "null_resource" "package_lambda" {
   provisioner "local-exec" {
@@ -251,6 +277,7 @@ resource "null_resource" "package_lambda" {
   triggers = {
     lambda_src_hash = filemd5("../lambda/index.js")
   }
+  depends_on = [ null_resource.setup_lambda_environment ]
 }
 
 # ✅ Upload Packaged Lambda ZIP to S3
