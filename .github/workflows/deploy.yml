@@ -68,6 +68,9 @@ jobs:
           aws s3 cp ./lambda.zip s3://${{ env.S3_LAMBDA_BUCKET }}/lambda.zip
 
       - name: Deploy Lambda Function
+        with:
+          terraform_version: 1.5.0
+          terraform_wrapper: false
         run: |
           cd terraform
           CLOUDFRONT_URL=$(terraform output -raw s3_bucket_website_url || echo "Failed to fetch Cloudfront Domain")
@@ -80,6 +83,9 @@ jobs:
           curl -I https://$CLOUDFRONT_URL || echo "Validation failed but continuing deployment"
 
       - name: Validate API Gateway Deployment
+        with:
+          terraform_version: 1.5.0
+          terraform_wrapper: false
         run: |
           echo "Validating deployment..."
           terraform -chdir=terraform output api_gateway_url
