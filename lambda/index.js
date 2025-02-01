@@ -1,4 +1,5 @@
 const {DynamoDBClient} = require('@aws-sdk/client-dynamodb');
+const {v4: uuidv4} = require('uuid');
 const {
     DynamoDBDocumentClient,
     ScanCommand,
@@ -7,7 +8,6 @@ const {
     UpdateCommand,
     DeleteCommand
 } = require('@aws-sdk/lib-dynamodb');
-const {v4: uuidv4} = require('uuid');
 
 const REGION = process.env.AWS_REGION || 'us-east-1';
 const PLAYERS_TABLE = process.env.DYNAMODB_PLAYERS_TABLE || 'GolfOutingPlayersTable';
