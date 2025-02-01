@@ -51,10 +51,10 @@ jobs:
         run: terraform apply -auto-approve
         working-directory: terraform
 
-      - name: Sync to S3
+      - name: Sync Web files to S3 ${{ env.S3_GOLF_BUCKET }}
         run: |
           aws s3 sync ./src s3://${{ env.S3_GOLF_BUCKET }} --delete
-          echo "Static files synced to S3 bucket."
+          echo "Static web files synced to S3 bucket."
 
       - name: Package Lambda
         run: |
@@ -63,7 +63,7 @@ jobs:
           echo "Lambda package created successfully."
           ls -la ../lambda.zip
 
-      - name: Upload Lambda to S3
+      - name: Upload Lambda to S3 ${{ env.S3_LAMBDA_BUCKET }}
         run: |
           aws s3 cp ./lambda.zip s3://${{ env.S3_LAMBDA_BUCKET }}/lambda.zip
 

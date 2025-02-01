@@ -18,3 +18,8 @@ output "api_gateway_url" {
 output "cloudfront_distribution_id" {
   value = aws_cloudfront_distribution.golf_outing_distribution.id
 }
+
+output "cloudfront_url" {
+  description = "The CloudFront distribution domain name"
+  value       = aws_cloudfront_distribution.golf_outing_distribution.domain_name
+}

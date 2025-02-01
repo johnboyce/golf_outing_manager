@@ -3,7 +3,7 @@ const { DynamoDBDocumentClient, ScanCommand, GetCommand, PutCommand, UpdateComma
 const { v4: uuidv4 } = require('uuid');
 
 const REGION = process.env.AWS_REGION || 'us-east-1';
-const PLAYERS_TABLE = process.env.DYNAMODB_PLAYERS_TABLE || 'GolfOutingPlayersTable'; // Updated name
+const PLAYERS_TABLE = process.env.DYNAMODB_PLAYERS_TABLE || 'GolfOutingPlayersTable';
 const COURSES_TABLE = process.env.DYNAMODB_COURSES_TABLE || 'GolfOutingCoursesTable';
 
 const dbClient = new DynamoDBClient({ region: REGION });
@@ -13,26 +13,41 @@ exports.handler = async (event) => {
     console.log('Received event:', JSON.stringify(event, null, 2));
 
     try {
-        const operation = event.operation;
-        if (!operation) return formatResponse(400, { message: 'operation is required' });
+        const { httpMethod, path, queryStringParameters, body } = event;
+        let requestBody = body ? JSON.parse(body) : null;
 
-        switch (operation) {
-            // Player Operations
-            case 'listPlayers': return await listItems(PLAYERS_TABLE);
-            case 'getPlayer': return event.playerId ? await getItem(PLAYERS_TABLE, event.playerId) : formatResponse(400, { message: 'playerId is required' });
-            case 'addPlayer': return event.playerData ? await addItem(PLAYERS_TABLE, event.playerData) : formatResponse(400, { message: 'playerData is required' });
-            case 'updatePlayer': return (event.playerId && event.updateData) ? await updateItem(PLAYERS_TABLE, event.playerId, event.updateData) : formatResponse(400, { message: 'playerId and updateData are required' });
-
-            // Course Operations
-            case 'listCourses': return await listItems(COURSES_TABLE);
-            case 'getCourse': return event.courseId ? await getItem(COURSES_TABLE, event.courseId) : formatResponse(400, { message: 'courseId is required' });
-            case 'addCourse': return event.courseData ? await addItem(COURSES_TABLE, event.courseData) : formatResponse(400, { message: 'courseData is required' });
-            case 'updateCourse': return (event.courseId && event.updateData) ? await updateItem(COURSES_TABLE, event.courseId, event.updateData) : formatResponse(400, { message: 'courseId and updateData are required' });
-            case 'deleteCourse': return event.courseId ? await deleteItem(COURSES_TABLE, event.courseId) : formatResponse(400, { message: 'courseId is required' });
-
-            default:
-                return formatResponse(400, { message: `Unsupported operation: ${operation}` });
+        if (httpMethod === 'GET' && path.includes('/players')) {
+            return queryStringParameters?.id
+                ? await getItem(PLAYERS_TABLE, queryStringParameters.id)
+                : await listItems(PLAYERS_TABLE);
         }
+        if (httpMethod === 'POST' && path.includes('/players')) {
+            return requestBody ? await addItem(PLAYERS_TABLE, requestBody) : formatResponse(400, { message: 'playerData is required' });
+        }
+        if (httpMethod === 'PUT' && path.includes('/players')) {
+            return requestBody?.id && requestBody?.updateData
+                ? await updateItem(PLAYERS_TABLE, requestBody.id, requestBody.updateData)
+                : formatResponse(400, { message: 'playerId and updateData are required' });
+        }
+
+        if (httpMethod === 'GET' && path.includes('/courses')) {
+            return queryStringParameters?.id
+                ? await getItem(COURSES_TABLE, queryStringParameters.id)
+                : await listItems(COURSES_TABLE);
+        }
+        if (httpMethod === 'POST' && path.includes('/courses')) {
+            return requestBody ? await addItem(COURSES_TABLE, requestBody) : formatResponse(400, { message: 'courseData is required' });
+        }
+        if (httpMethod === 'PUT' && path.includes('/courses')) {
+            return requestBody?.id && requestBody?.updateData
+                ? await updateItem(COURSES_TABLE, requestBody.id, requestBody.updateData)
+                : formatResponse(400, { message: 'courseId and updateData are required' });
+        }
+        if (httpMethod === 'DELETE' && path.includes('/courses')) {
+            return queryStringParameters?.id ? await deleteItem(COURSES_TABLE, queryStringParameters.id) : formatResponse(400, { message: 'courseId is required' });
+        }
+
+        return formatResponse(400, { message: `Unsupported operation for ${httpMethod} ${path}` });
     } catch (error) {
         console.error('Error processing event:', error);
         return formatResponse(500, { message: 'Internal server error', error: error.message });
@@ -54,8 +69,7 @@ const listItems = async (tableName) => {
 const getItem = async (tableName, id) => {
     try {
         const data = await docClient.send(new GetCommand({ TableName: tableName, Key: { id } }));
-        if (!data.Item) return formatResponse(404, { message: 'Item not found' });
-        return formatResponse(200, data.Item);
+        return data.Item ? formatResponse(200, data.Item) : formatResponse(404, { message: 'Item not found' });
     } catch (error) {
         console.error(`Error fetching item from ${tableName}:`, error);
         return formatResponse(500, { message: `Failed to fetch item from ${tableName}`, error: error.message });
@@ -65,9 +79,7 @@ const getItem = async (tableName, id) => {
 // Add a new item (assigning an ID if missing)
 const addItem = async (tableName, itemData) => {
     try {
-        if (!itemData.id) {
-            itemData.id = uuidv4();
-        }
+        itemData.id = itemData.id || uuidv4();
         await docClient.send(new PutCommand({ TableName: tableName, Item: itemData }));
         return formatResponse(201, { message: 'Item added successfully', id: itemData.id });
     } catch (error) {
@@ -81,6 +93,7 @@ const updateItem = async (tableName, id, updateData) => {
     try {
         const updateExpressions = [];
         const expressionAttributeValues = {};
+
         for (const key in updateData) {
             updateExpressions.push(`${key} = :${key}`);
             expressionAttributeValues[`:${key}`] = updateData[key];
@@ -116,7 +129,7 @@ const formatResponse = (statusCode, body) => ({
     statusCode,
     headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Content-Type': 'application/json',
     },

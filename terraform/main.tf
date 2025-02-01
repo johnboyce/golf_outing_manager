@@ -1,3 +1,4 @@
+# AWS Provider
 provider "aws" {
   region = "us-east-1"
 }
@@ -11,6 +12,7 @@ terraform {
   }
 }
 
+# ✅ S3 Bucket for Hosting Golf Outing Assets
 resource "aws_s3_bucket" "golf_outing_bucket" {
   bucket = "golf-outing-manager"
 
@@ -24,6 +26,7 @@ resource "aws_s3_bucket" "golf_outing_bucket" {
   }
 }
 
+# ✅ Enable Versioning for S3 Bucket
 resource "aws_s3_bucket_versioning" "golf_outing_versioning" {
   bucket = aws_s3_bucket.golf_outing_bucket.id
 
@@ -32,6 +35,7 @@ resource "aws_s3_bucket_versioning" "golf_outing_versioning" {
   }
 }
 
+# ✅ Block Public Access for S3
 resource "aws_s3_bucket_public_access_block" "block_public_access" {
   bucket                  = aws_s3_bucket.golf_outing_bucket.id
   block_public_acls       = true
@@ -40,176 +44,12 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
   restrict_public_buckets = true
 }
 
+# ✅ CloudFront Origin Access Identity (OAI)
 resource "aws_cloudfront_origin_access_identity" "golf_outing_oai" {
   comment = "OAI for Golf Outing CloudFront"
 }
 
-resource "aws_s3_bucket_policy" "golf_outing_policy" {
-  bucket = aws_s3_bucket.golf_outing_bucket.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Sid       = "AllowCloudFrontAccess",
-        Effect    = "Allow",
-        Principal = {
-          AWS = aws_cloudfront_origin_access_identity.golf_outing_oai.iam_arn
-        },
-        Action    = "s3:GetObject",
-        Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*"
-      }
-    ]
-  })
-}
-
-# S3 Bucket for Lambda Deployment
-resource "aws_s3_bucket" "lambda_deployment_bucket" {
-  bucket        = "golf-outing-lambda-deployments"
-  force_destroy = true
-}
-
-resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
-  bucket                  = aws_s3_bucket.lambda_deployment_bucket.bucket
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-resource "null_resource" "setup_npmrc" {
-  provisioner "local-exec" {
-    command = <<EOT
-    echo "Before setting up .npmrc:"
-    ls -la ../lambda
-    if [ ! -f "../lambda/.npmrc" ]; then
-      echo "production=true" > ../lambda/.npmrc;
-      echo "package-lock=false" >> ../lambda/.npmrc;
-      echo "save-exact=true" >> ../lambda/.npmrc;
-      echo "omit=dev" >> ../lambda/.npmrc;
-      echo ".npmrc file created successfully.";
-    else
-      echo ".npmrc file already exists.";
-    fi
-    echo "After setting up .npmrc:"
-    ls -la ../lambda
-    EOT
-  }
-}
-
-resource "null_resource" "setup_lambda_environment" {
-  provisioner "local-exec" {
-    command = <<EOT
-    echo "Before setting up Lambda environment:"
-    ls -la ../lambda
-    if [ ! -d "../lambda" ]; then
-      echo "Error: Lambda source directory '../lambda' does not exist!";
-      exit 1;
-    fi
-    cd ../lambda
-    if [ ! -f "package.json" ]; then
-      npm init -y
-      echo "Initialized package.json."
-    fi
-    npm install @aws-sdk/client-dynamodb --save
-    echo "Installed @aws-sdk/client-dynamodb."
-    cd -
-    echo "After setting up Lambda environment:"
-    ls -la ../lambda
-    EOT
-  }
-
-  triggers = {
-    last_updated = timestamp()
-  }
-
-  depends_on = [
-    null_resource.setup_npmrc
-  ]
-}
-
-resource "null_resource" "package_lambda" {
-  provisioner "local-exec" {
-    command = <<EOT
-    echo "Packaging Lambda..."
-    cd ../lambda
-    npm install --production
-    zip -r ../lambda.zip . -x "*.git*" "*.md" "test/*" "../lambda.zip" "lambda.zip"|| { echo "Error creating Lambda package"; exit 1; }
-    echo "Lambda package created successfully at ../lambda.zip."
-    ls -la ../lambda.zip
-    EOT
-  }
-
-
-  triggers = {
-    last_updated = timestamp() # Updates the zip file on every `apply`
-  }
-
-  depends_on = [
-    null_resource.setup_lambda_environment
-  ]
-}
-
-resource "aws_s3_object" "lambda_zip" {
-  bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
-  key    = "lambda.zip"
-  source = "../lambda.zip"
-
-  depends_on = [
-    null_resource.package_lambda
-  ]
-}
-
-resource "aws_iam_role" "golf_outing_lambda_role" {
-  name               = "GolfOutingLambdaRole"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-  role       = aws_iam_role.golf_outing_lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
-  role       = aws_iam_role.golf_outing_lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
-}
-
-resource "aws_lambda_function" "golf_outing_lambda" {
-  function_name = "GolfOutingHandler"
-  runtime       = "nodejs18.x"
-  role          = aws_iam_role.golf_outing_lambda_role.arn
-  handler       = "index.handler"
-  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.bucket
-  s3_key        = aws_s3_object.lambda_zip.key
-
-  memory_size   = 128
-  timeout       = 10
-
-  environment {
-    variables = {
-      DYNAMODB_TABLE = aws_dynamodb_table.golf_outing_table.name
-    }
-  }
-
-  depends_on = [
-    aws_iam_role_policy_attachment.lambda_basic_execution,
-    aws_iam_role_policy_attachment.lambda_dynamodb_access,
-    aws_s3_object.lambda_zip
-  ]
-}
-
+# ✅ CloudFront Distribution for S3
 resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   origin {
     domain_name = aws_s3_bucket.golf_outing_bucket.bucket_regional_domain_name
@@ -257,11 +97,33 @@ resource "aws_cloudfront_distribution" "golf_outing_distribution" {
   }
 }
 
+# ✅ S3 Bucket Policy to Allow CloudFront Access
+resource "aws_s3_bucket_policy" "golf_outing_policy" {
+  bucket = aws_s3_bucket.golf_outing_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AllowCloudFrontAccess",
+        Effect    = "Allow",
+        Principal = {
+          AWS = aws_cloudfront_origin_access_identity.golf_outing_oai.iam_arn
+        },
+        Action    = "s3:GetObject",
+        Resource  = "${aws_s3_bucket.golf_outing_bucket.arn}/*"
+      }
+    ]
+  })
+}
+
+# ✅ API Gateway REST API for Golf Outing
 resource "aws_apigatewayv2_api" "golf_outing_api" {
   name          = "GolfOutingAPI"
   protocol_type = "HTTP"
 }
 
+# ✅ API Gateway Lambda Integration
 resource "aws_apigatewayv2_integration" "golf_outing_integration" {
   api_id                 = aws_apigatewayv2_api.golf_outing_api.id
   integration_type       = "AWS_PROXY"
@@ -269,57 +131,120 @@ resource "aws_apigatewayv2_integration" "golf_outing_integration" {
   payload_format_version = "2.0"
 }
 
-resource "aws_apigatewayv2_stage" "golf_outing_stage" {
-  api_id      = aws_apigatewayv2_api.golf_outing_api.id
-  name        = "$default"
-  auto_deploy = true
-
-  default_route_settings {
-    throttling_rate_limit = 1000
-    throttling_burst_limit = 500
-  }
-
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.api_gateway_logs.arn
-    format = jsonencode({
-      requestId       = "$context.requestId",
-      ip              = "$context.identity.sourceIp",
-      requestTime     = "$context.requestTime",
-      routeKey        = "$context.routeKey",
-      status          = "$context.status",
-      protocol        = "$context.protocol",
-      responseLength  = "$context.responseLength"
-    })
-  }
-}
-
-resource "aws_cloudwatch_log_group" "api_gateway_logs" {
-  name              = "/aws/api-gateway/golf-outing-api"
-  retention_in_days = 5 # Adjust retention period as needed
-}
-
+# ✅ API Gateway Routes
 resource "aws_apigatewayv2_route" "golf_outing_route" {
   api_id    = aws_apigatewayv2_api.golf_outing_api.id
   route_key = "ANY /{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
 }
 
-# DynamoDB Table for Data Persistence
-resource "aws_dynamodb_table" "golf_outing_table" {
-  name           = "GolfOutingTable"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "id"
+# ✅ API Gateway Stage (Auto-deploy)
+resource "aws_apigatewayv2_stage" "golf_outing_stage" {
+  api_id      = aws_apigatewayv2_api.golf_outing_api.id
+  name        = "$default"
+  auto_deploy = true
+}
 
-  attribute {
-    name = "id"
-    type = "S"
+# ✅ CloudWatch Logs for API Gateway
+resource "aws_cloudwatch_log_group" "api_gateway_logs" {
+  name              = "/aws/api-gateway/golf-outing-api"
+  retention_in_days = 5
+}
+
+# ✅ S3 Bucket for Lambda Deployment
+resource "aws_s3_bucket" "lambda_deployment_bucket" {
+  bucket        = "golf-outing-lambda-deployments"
+  force_destroy = true
+}
+
+# ✅ Block Public Access for Lambda Deployment S3
+resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
+  bucket                  = aws_s3_bucket.lambda_deployment_bucket.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# ✅ Package Lambda Before Uploading to S3
+resource "null_resource" "package_lambda" {
+  provisioner "local-exec" {
+    command = <<EOT
+    echo "Packaging Lambda..."
+    cd ../lambda
+    npm install --production
+    zip -r ../lambda.zip . -x "*.git*" "*.md" "test/*" "../lambda.zip" "lambda.zip" || { echo "Error creating Lambda package"; exit 1; }
+    echo "Lambda package created successfully at ../lambda.zip."
+    ls -la ../lambda.zip
+    EOT
+  }
+
+  triggers = {
+    last_updated = timestamp()
   }
 }
 
-resource "aws_lambda_permission" "api_gateway_invoke" {
-  statement_id  = "AllowAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.golf_outing_lambda.arn
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
+# ✅ Upload Packaged Lambda ZIP to S3
+resource "aws_s3_object" "lambda_zip" {
+  bucket = aws_s3_bucket.lambda_deployment_bucket.id
+  key    = "lambda.zip"
+  source = "${path.module}/../lambda.zip"
+
+  depends_on = [
+    null_resource.package_lambda
+  ]
+}
+
+# ✅ IAM Role for Lambda Function
+resource "aws_iam_role" "golf_outing_lambda_role" {
+  name               = "GolfOutingLambdaRole"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# ✅ Attach IAM Policies to Lambda Role
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+  role       = aws_iam_role.golf_outing_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
+  role       = aws_iam_role.golf_outing_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+}
+
+# ✅ Lambda Function
+resource "aws_lambda_function" "golf_outing_lambda" {
+  function_name = "GolfOutingHandler"
+  runtime       = "nodejs18.x"
+  role          = aws_iam_role.golf_outing_lambda_role.arn
+  handler       = "index.handler"
+  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
+  s3_key        = aws_s3_object.lambda_zip.key
+
+  memory_size   = 128
+  timeout       = 10
+
+  environment {
+    variables = {
+      DYNAMODB_PLAYERS_TABLE = "GolfOutingPlayersTable"
+      DYNAMODB_COURSES_TABLE = "GolfOutingCoursesTable"
+    }
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.lambda_basic_execution,
+    aws_iam_role_policy_attachment.lambda_dynamodb_access,
+    aws_s3_object.lambda_zip
+  ]
 }
