@@ -19,47 +19,37 @@ const docClient = DynamoDBDocumentClient.from(dbClient);
 exports.handler = async (event) => {
     console.log('Received event:', JSON.stringify(event, null, 2));
 
+    const httpMethod = event.requestContext?.http?.method; // Get HTTP method
+    const path = event.rawPath; // Get request path
+
+    console.log(`HTTP Method: ${httpMethod}, Path: ${path}`);
+
+    let operation;
+    if (httpMethod === "GET" && path === "/players") {
+        operation = "listPlayers";
+    } else if (httpMethod === "GET" && path === "/courses") {
+        operation = "listCourses";
+    } else {
+        return formatResponse(400, { message: `Unsupported operation for ${httpMethod} ${path}` });
+    }
+
+    console.log(`Resolved operation: ${operation}`);
+
     try {
-        const {httpMethod, path, queryStringParameters, body} = event;
-        let requestBody = body ? JSON.parse(body) : null;
-
-        if (httpMethod === 'GET' && path.includes('/players')) {
-            return queryStringParameters?.id
-                ? await getItem(PLAYERS_TABLE, queryStringParameters.id)
-                : await listItems(PLAYERS_TABLE);
+        switch (operation) {
+            case "listPlayers":
+                return await listItems(PLAYERS_TABLE);
+            case "listCourses":
+                return await listItems(COURSES_TABLE);
+            default:
+                return formatResponse(400, { message: `Unhandled operation: ${operation}` });
         }
-        if (httpMethod === 'POST' && path.includes('/players')) {
-            return requestBody ? await addItem(PLAYERS_TABLE, requestBody) : formatResponse(400, {message: 'playerData is required'});
-        }
-        if (httpMethod === 'PUT' && path.includes('/players')) {
-            return requestBody?.id && requestBody?.updateData
-                ? await updateItem(PLAYERS_TABLE, requestBody.id, requestBody.updateData)
-                : formatResponse(400, {message: 'playerId and updateData are required'});
-        }
-
-        if (httpMethod === 'GET' && path.includes('/courses')) {
-            return queryStringParameters?.id
-                ? await getItem(COURSES_TABLE, queryStringParameters.id)
-                : await listItems(COURSES_TABLE);
-        }
-        if (httpMethod === 'POST' && path.includes('/courses')) {
-            return requestBody ? await addItem(COURSES_TABLE, requestBody) : formatResponse(400, {message: 'courseData is required'});
-        }
-        if (httpMethod === 'PUT' && path.includes('/courses')) {
-            return requestBody?.id && requestBody?.updateData
-                ? await updateItem(COURSES_TABLE, requestBody.id, requestBody.updateData)
-                : formatResponse(400, {message: 'courseId and updateData are required'});
-        }
-        if (httpMethod === 'DELETE' && path.includes('/courses')) {
-            return queryStringParameters?.id ? await deleteItem(COURSES_TABLE, queryStringParameters.id) : formatResponse(400, {message: 'courseId is required'});
-        }
-
-        return formatResponse(400, {message: `Unsupported operation for ${httpMethod} ${path}`});
     } catch (error) {
-        console.error('Error processing event:', error);
-        return formatResponse(500, {message: 'Internal server error', error: error.message});
+        console.error("Error processing event:", error);
+        return formatResponse(500, { message: "Internal server error", error: error.message });
     }
 };
+
 
 // Fetch all items from a table
 const listItems = async (tableName) => {
