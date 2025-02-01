@@ -282,9 +282,10 @@ resource "null_resource" "package_lambda" {
 
 # ✅ Upload Packaged Lambda ZIP to S3
 resource "aws_s3_object" "lambda_zip" {
-  bucket = aws_s3_bucket.lambda_deployment_bucket.id
+  bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
   key    = "lambda.zip"
-  source = "${path.module}/../lambda.zip"
+  source = "../lambda.zip"
+  etag   = filemd5("../lambda.zip") # Forces update when zip file changes
 
   depends_on = [
     null_resource.package_lambda
