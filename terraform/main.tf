@@ -337,8 +337,8 @@ resource "aws_lambda_function" "golf_outing_lambda" {
     }
   }
 
-  # Ensures Lambda updates when code changes
-  source_code_hash = filebase64sha256("../lambda/lambda.zip")
+  # Prevents Terraform failure if lambda.zip does not exist yet
+  source_code_hash = fileexists("../lambda/lambda.zip") ? filebase64sha256("../lambda/lambda.zip") : null
 
   depends_on = [
     aws_s3_object.lambda_zip
