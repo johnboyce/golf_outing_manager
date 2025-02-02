@@ -33,7 +33,7 @@ jobs:
         run: |
           cd lambda
           ./package_lambda.sh
-          ls -l ../lambda.zip  # Debugging: Ensure ZIP exists
+          ls -l lambda.zip  # Debugging: Ensure ZIP exists
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
