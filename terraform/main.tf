@@ -235,60 +235,55 @@ resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
   restrict_public_buckets = true
 }
 
-resource "null_resource" "setup_lambda_environment" {
-  provisioner "local-exec" {
-    command = <<EOT
-    echo "Setting up Lambda environment..."
-    cd ../lambda
-
-    # Ensure package.json exists
-    if [ ! -f "package.json" ]; then
-      npm init -y
-      echo "Initialized package.json."
-    fi
-
-    # Ensure required dependencies are installed
-    npm install @aws-sdk/client-dynamodb uuid --save
-    npm install @aws-sdk/lib-dynamodb --save
-    npm install --production
-
-    echo "Lambda environment setup complete."
-    EOT
-  }
-
-  triggers = {
-    last_updated = timestamp()  # Ensures this runs on each apply
-  }
-}
 
 # ✅ Package Lambda Before Uploading to S3
 resource "null_resource" "package_lambda" {
   provisioner "local-exec" {
     command = <<EOT
-    echo "Packaging Lambda..."
-    cd ../lambda
-    npm install --production
-    zip -r ../lambda.zip . -x "*.git*" "*.md" "test/*" "../lambda.zip" "lambda.zip" || { echo "Error creating Lambda package"; exit 1; }
-    echo "Lambda package created successfully at ../lambda.zip."
-    ls -la ../lambda.zip
+    echo "Packaging Python Lambda..."
+
+    SCRIPT_DIR="${path.module}/../lambda"
+
+    if [ ! -d "$SCRIPT_DIR" ]; then
+      echo "Error: Lambda directory not found!" >&2
+      exit 1
+    fi
+
+    cd "$SCRIPT_DIR"
+
+    # Create a clean package directory
+    rm -rf package
+    mkdir package
+
+    # Install dependencies
+    pip install -r requirements.txt -t package
+
+    # Copy the Lambda handler file
+    cp lambda_handler.py package/
+
+    # Create the zip package
+    cd package
+    zip -r ../lambda.zip .
+
+    echo "Lambda package created successfully."
     EOT
   }
 
   triggers = {
-    lambda_src_hash = filemd5("../lambda/index.js")
+    lambda_src_hash = filemd5("${path.module}/../lambda/lambda_handler.py")
   }
-  depends_on = [ null_resource.setup_lambda_environment ]
 }
+
 
 # ✅ Upload Packaged Lambda ZIP to S3
 resource "aws_s3_object" "lambda_zip" {
   bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
-  key    = "lambda.zip"
-  source = "../lambda.zip"
-  etag   = filemd5("../lambda.zip") # Forces update when zip file changes
+  key    = "lambda/lambda.zip"
+  source = "../lambda/lambda.zip"
+  etag = fileexists("../lambda/lambda.zip") ? filemd5("../lambda/lambda.zip") : null
 
   depends_on = [
-    null_resource.package_lambda
+    null_resource.package_lambda # Ensures zip file is created first
   ]
 }
 
@@ -323,9 +318,9 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
 # ✅ Lambda Function
 resource "aws_lambda_function" "golf_outing_lambda" {
   function_name = "GolfOutingHandler"
-  runtime       = "nodejs18.x"
+  runtime       = "python3.9"
   role          = aws_iam_role.golf_outing_lambda_role.arn
-  handler       = "index.handler"
+  handler       = "lambda_handler.lambda_handler"  # Update handler reference
   s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
   s3_key        = aws_s3_object.lambda_zip.key
 
@@ -336,6 +331,7 @@ resource "aws_lambda_function" "golf_outing_lambda" {
     variables = {
       DYNAMODB_PLAYERS_TABLE = "GolfOutingPlayersTable"
       DYNAMODB_COURSES_TABLE = "GolfOutingCoursesTable"
+      DYNAMODB_DRAFTS_TABLE  = "GolfOutingDraftsTable"
     }
   }
 
@@ -344,4 +340,183 @@ resource "aws_lambda_function" "golf_outing_lambda" {
     aws_iam_role_policy_attachment.lambda_dynamodb_access,
     aws_s3_object.lambda_zip
   ]
+}
+
+# Lambda Function: Create Draft
+resource "aws_lambda_function" "create_draft_lambda" {
+  function_name = "create_draft_lambda"
+  runtime       = "python3.9"
+  role          = aws_iam_role.golf_outing_lambda_role.arn
+  handler       = "lambda.create_draft"
+  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
+  s3_key        = aws_s3_object.lambda_zip.key
+
+  memory_size   = 128
+  timeout       = 10
+
+  environment {
+    variables = {
+      DYNAMODB_TABLE = "GolfOutingDraftsTable"
+    }
+  }
+}
+
+# Lambda Function: Get Latest Draft
+resource "aws_lambda_function" "get_latest_draft_lambda" {
+  function_name = "get_latest_draft_lambda"
+  runtime       = "python3.9"
+  role          = aws_iam_role.golf_outing_lambda_role.arn
+  handler       = "lambda.get_latest_draft"
+  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
+  s3_key        = aws_s3_object.lambda_zip.key
+
+  memory_size   = 128
+  timeout       = 10
+
+  environment {
+    variables = {
+      DYNAMODB_TABLE = "GolfOutingDraftsTable"
+    }
+  }
+}
+
+# Lambda Function: Regenerate Foursomes
+resource "aws_lambda_function" "regenerate_foursomes_lambda" {
+  function_name = "regenerate_foursomes_lambda"
+  runtime       = "python3.9"
+  role          = aws_iam_role.golf_outing_lambda_role.arn
+  handler       = "lambda.regenerate_foursomes"
+  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
+  s3_key        = aws_s3_object.lambda_zip.key
+
+  memory_size   = 128
+  timeout       = 10
+
+  environment {
+    variables = {
+      DYNAMODB_TABLE = "GolfOutingDraftsTable"
+    }
+  }
+}
+
+# Lambda Function: Finalize Draft
+resource "aws_lambda_function" "finalize_draft_lambda" {
+  function_name = "finalize_draft_lambda"
+  runtime       = "python3.9"
+  role          = aws_iam_role.golf_outing_lambda_role.arn
+  handler       = "lambda.finalize_draft"
+  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
+  s3_key        = aws_s3_object.lambda_zip.key
+
+  memory_size   = 128
+  timeout       = 10
+
+  environment {
+    variables = {
+      DYNAMODB_TABLE = "GolfOutingDraftsTable"
+    }
+  }
+}
+
+# API Gateway Lambda Integration for Drafts
+resource "aws_apigatewayv2_integration" "create_draft_integration" {
+  api_id                 = aws_apigatewayv2_api.golf_outing_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.create_draft_lambda.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_integration" "get_latest_draft_integration" {
+  api_id                 = aws_apigatewayv2_api.golf_outing_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.get_latest_draft_lambda.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_integration" "regenerate_foursomes_integration" {
+  api_id                 = aws_apigatewayv2_api.golf_outing_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.regenerate_foursomes_lambda.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_integration" "finalize_draft_integration" {
+  api_id                 = aws_apigatewayv2_api.golf_outing_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.finalize_draft_lambda.invoke_arn
+  payload_format_version = "2.0"
+}
+
+
+# API Routes for Drafts
+resource "aws_apigatewayv2_route" "create_draft" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "POST /drafts"
+  target    = "integrations/${aws_apigatewayv2_integration.create_draft_integration.id}"
+
+  depends_on = [
+    aws_lambda_function.create_draft_lambda
+  ]
+}
+
+resource "aws_apigatewayv2_route" "get_latest_draft" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "GET /drafts/latest"
+  target    = "integrations/${aws_apigatewayv2_integration.get_latest_draft_integration.id}"
+
+  depends_on = [
+    aws_lambda_function.get_latest_draft_lambda
+  ]
+}
+
+resource "aws_apigatewayv2_route" "regenerate_foursomes" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "POST /drafts/{draftId}/regenerate"
+  target    = "integrations/${aws_apigatewayv2_integration.regenerate_foursomes_integration.id}"
+
+  depends_on = [
+    aws_lambda_function.regenerate_foursomes_lambda
+  ]
+}
+
+resource "aws_apigatewayv2_route" "finalize_draft" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "POST /drafts/{draftId}/finalize"
+  target    = "integrations/${aws_apigatewayv2_integration.finalize_draft_integration.id}"
+
+  depends_on = [
+    aws_lambda_function.finalize_draft_lambda
+  ]
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_create_draft" {
+  statement_id  = "AllowAPIGatewayCreateDraftInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.create_draft_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_get_latest_draft" {
+  statement_id  = "AllowAPIGatewayGetLatestDraftInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.get_latest_draft_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_regenerate_foursomes" {
+  statement_id  = "AllowAPIGatewayRegenerateFoursomesInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.regenerate_foursomes_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_finalize_draft" {
+  statement_id  = "AllowAPIGatewayFinalizeDraftInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.finalize_draft_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
 }
