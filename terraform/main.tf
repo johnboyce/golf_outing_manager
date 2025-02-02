@@ -280,7 +280,9 @@ resource "aws_s3_object" "lambda_zip" {
   bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
   key    = "lambda/lambda.zip"
   source = "../lambda/lambda.zip"
-  etag = fileexists("../lambda/lambda.zip") ? filemd5("../lambda/lambda.zip") : null
+
+  # Ensures Terraform detects changes when lambda_handler.py is modified
+  etag = fileexists("../lambda/lambda.zip") ? filemd5("../lambda/lambda.zip") : filemd5("../lambda/lambda_handler.py")
 
   depends_on = [
     null_resource.package_lambda # Ensures zip file is created first
@@ -320,7 +322,7 @@ resource "aws_lambda_function" "golf_outing_lambda" {
   function_name = "GolfOutingHandler"
   runtime       = "python3.9"
   role          = aws_iam_role.golf_outing_lambda_role.arn
-  handler       = "lambda_handler.lambda_handler"  # Update handler reference
+  handler       = "lambda_handler.lambda_handler"
   s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
   s3_key        = aws_s3_object.lambda_zip.key
 
@@ -335,9 +337,10 @@ resource "aws_lambda_function" "golf_outing_lambda" {
     }
   }
 
+  # Ensures Lambda updates when code changes
+  source_code_hash = filebase64sha256("../lambda/lambda.zip")
+
   depends_on = [
-    aws_iam_role_policy_attachment.lambda_basic_execution,
-    aws_iam_role_policy_attachment.lambda_dynamodb_access,
     aws_s3_object.lambda_zip
   ]
 }
