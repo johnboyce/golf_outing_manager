@@ -282,7 +282,7 @@ resource "aws_s3_object" "lambda_zip" {
   source = "../lambda/lambda.zip"
 
   # Ensures Terraform detects changes when lambda_handler.py is modified
-  etag = fileexists("../lambda/lambda.zip") ? filemd5("../lambda/lambda.zip") : filemd5("../lambda/lambda_handler.py")
+  etag   = fileexists("../lambda/lambda.zip") ? filemd5("../lambda/lambda.zip") : null  # Ensures Terraform handles missing/changed file gracefully
 
   depends_on = [
     null_resource.package_lambda # Ensures zip file is created first
