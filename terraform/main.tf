@@ -362,6 +362,10 @@ resource "aws_lambda_function" "create_draft_lambda" {
       DYNAMODB_TABLE = "GolfOutingDraftsTable"
     }
   }
+
+  # Prevents Terraform failure if lambda.zip does not exist yet
+  source_code_hash = fileexists("../lambda/lambda.zip") ? filebase64sha256("../lambda/lambda.zip") : null
+
 }
 
 # Lambda Function: Get Latest Draft
@@ -381,6 +385,10 @@ resource "aws_lambda_function" "get_latest_draft_lambda" {
       DYNAMODB_TABLE = "GolfOutingDraftsTable"
     }
   }
+
+  # Prevents Terraform failure if lambda.zip does not exist yet
+  source_code_hash = fileexists("../lambda/lambda.zip") ? filebase64sha256("../lambda/lambda.zip") : null
+
 }
 
 # Lambda Function: Regenerate Foursomes
@@ -400,6 +408,10 @@ resource "aws_lambda_function" "regenerate_foursomes_lambda" {
       DYNAMODB_TABLE = "GolfOutingDraftsTable"
     }
   }
+
+  # Prevents Terraform failure if lambda.zip does not exist yet
+  source_code_hash = fileexists("../lambda/lambda.zip") ? filebase64sha256("../lambda/lambda.zip") : null
+
 }
 
 # Lambda Function: Finalize Draft
@@ -419,6 +431,10 @@ resource "aws_lambda_function" "finalize_draft_lambda" {
       DYNAMODB_TABLE = "GolfOutingDraftsTable"
     }
   }
+
+  # Prevents Terraform failure if lambda.zip does not exist yet
+  source_code_hash = fileexists("../lambda/lambda.zip") ? filebase64sha256("../lambda/lambda.zip") : null
+
 }
 
 # API Gateway Lambda Integration for Drafts
