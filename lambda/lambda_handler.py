@@ -1,33 +1,51 @@
 import json
 import boto3
 import time
+from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from typing import List, Dict
 
-dynamodb = boto3.client("dynamodb")
-DYNAMODB_PLAYERS_TABLE = "GolfOutingPlayersTable"
-DYNAMODB_COURSES_TABLE = "GolfOutingCoursesTable"
-DYNAMODB_DRAFTS_TABLE = "GolfOutingDraftsTable"
+dynamodb = boto3.resource("dynamodb")
+players_table = dynamodb.Table("GolfOutingPlayersTable")
+courses_table = dynamodb.Table("GolfOutingCoursesTable")
+drafts_table = dynamodb.Table("GolfOutingDraftsTable")
+
+deserializer = TypeDeserializer()
+serializer = TypeSerializer()
 
 def lambda_handler(event, context):
-    path = event["rawPath"]
-    method = event["requestContext"]["http"]["method"]
+    path = event.get("rawPath", "")
+    method = event.get("requestContext", {}).get("http", {}).get("method", "")
 
-    if path.startswith("/players"):
-        response = handle_players(event, method)
-    elif path.startswith("/courses"):
-        response = handle_courses(event, method)
-    elif path.startswith("/drafts"):
-        response = handle_drafts(event, method)
+    if method == "OPTIONS":
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE",
+                "Access-Control-Allow-Headers": "Content-Type,Authorization"
+            },
+            "body": ""
+        }
+
+    routes = {
+        "/players": handle_players,
+        "/courses": handle_courses,
+        "/drafts": handle_drafts
+    }
+
+    for route, handler in routes.items():
+        if path.startswith(route):
+            response = handler(event, method)
+            break
     else:
         response = {"statusCode": 404, "body": json.dumps({"error": "Not Found"})}
 
-    # Add CORS headers to all responses
     response["headers"] = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE",
         "Access-Control-Allow-Headers": "Content-Type,Authorization"
     }
-
     return response
 
 def handle_players(event, method):
@@ -35,7 +53,7 @@ def handle_players(event, method):
         return get_players()
     if method == "POST":
         body = json.loads(event["body"])
-        return create_player(body["id"], body["name"], body["nickname"], body["handicap"], body["bio"], body["prediction"], body["profileImage"], body["teamLogo"])
+        return create_player(body)
     return {"statusCode": 405, "body": json.dumps({"error": "Method Not Allowed"})}
 
 def handle_courses(event, method):
@@ -43,7 +61,7 @@ def handle_courses(event, method):
         return get_courses()
     if method == "POST":
         body = json.loads(event["body"])
-        return create_course(body["id"], body["name"], body["image"], body["description"])
+        return create_course(body)
     return {"statusCode": 405, "body": json.dumps({"error": "Method Not Allowed"})}
 
 def handle_drafts(event, method):
@@ -51,62 +69,55 @@ def handle_drafts(event, method):
         return get_latest_draft()
     if method == "POST":
         body = json.loads(event["body"])
-        return create_draft(body.get("players", []), body.get("description", ""))
+        return create_draft(body)
     return {"statusCode": 405, "body": json.dumps({"error": "Method Not Allowed"})}
 
-def create_player(player_id: str, name: str, nickname: str, handicap: int, bio: str, prediction: str, profile_image: str, team_logo: str):
-    item = {
-        "PK": {"S": f"PLAYER#{player_id}"},
-        "SK": {"S": "DETAILS"},
-        "name": {"S": name},
-        "nickname": {"S": nickname},
-        "handicap": {"N": str(handicap)},
-        "bio": {"S": bio},
-        "prediction": {"S": prediction},
-        "profileImage": {"S": profile_image},
-        "teamLogo": {"S": team_logo}
-    }
-    dynamodb.put_item(TableName=DYNAMODB_PLAYERS_TABLE, Item=item)
-    return {"statusCode": 201, "body": json.dumps({"player_id": player_id})}
+def create_player(data: Dict):
+    item = {key: serializer.serialize(value) for key, value in data.items()}
+    item["PK"] = serializer.serialize(f"PLAYER#{data['id']}")
+    item["SK"] = serializer.serialize("DETAILS")
+    players_table.put_item(Item=item)
+    return {"statusCode": 201, "body": json.dumps({"player_id": data["id"]})}
 
 def get_players():
-    response = dynamodb.scan(TableName=DYNAMODB_PLAYERS_TABLE)
-    return {"statusCode": 200, "body": json.dumps(response.get("Items", []))}
+    response = players_table.query(
+        KeyConditionExpression=Key("PK").begins_with("PLAYER#")
+    )
+    players = [{key: deserializer.deserialize(value) for key, value in item.items()} for item in response.get("Items", [])]
+    return {"statusCode": 200, "body": json.dumps(players)}
 
-def create_course(course_id: str, name: str, image: str, description: str):
-    item = {
-        "PK": {"S": f"COURSE#{course_id}"},
-        "SK": {"S": "DETAILS"},
-        "name": {"S": name},
-        "image": {"S": image},
-        "description": {"S": description}
-    }
-    dynamodb.put_item(TableName=DYNAMODB_COURSES_TABLE, Item=item)
-    return {"statusCode": 201, "body": json.dumps({"course_id": course_id})}
+def create_course(data: Dict):
+    item = {key: serializer.serialize(value) for key, value in data.items()}
+    item["PK"] = serializer.serialize(f"COURSE#{data['id']}")
+    item["SK"] = serializer.serialize("DETAILS")
+    courses_table.put_item(Item=item)
+    return {"statusCode": 201, "body": json.dumps({"course_id": data["id"]})}
 
 def get_courses():
-    response = dynamodb.scan(TableName=DYNAMODB_COURSES_TABLE)
-    return {"statusCode": 200, "body": json.dumps(response.get("Items", []))}
+    response = courses_table.query(
+        KeyConditionExpression=Key("PK").begins_with("COURSE#")
+    )
+    courses = [{key: deserializer.deserialize(value) for key, value in item.items()} for item in response.get("Items", [])]
+    return {"statusCode": 200, "body": json.dumps(courses)}
 
-def create_draft(players: List[str], description: str):
+def create_draft(data: Dict):
     timestamp = int(time.time())
     draft_id = f"DRAFT#{timestamp}"
     item = {
-        "PK": {"S": draft_id},
-        "SK": {"S": "DETAILS"},
-        "description": {"S": description},
-        "players": {"S": json.dumps(players)},
-        "foursomes": {"S": "[]"}
+        "PK": serializer.serialize(draft_id),
+        "SK": serializer.serialize("DETAILS"),
+        "description": serializer.serialize(data.get("description", "")),
+        "players": serializer.serialize(data.get("players", [])),
+        "foursomes": serializer.serialize([])
     }
-    dynamodb.put_item(TableName=DYNAMODB_DRAFTS_TABLE, Item=item)
+    drafts_table.put_item(Item=item)
     return {"statusCode": 201, "body": json.dumps({"draft_id": draft_id})}
 
 def get_latest_draft():
-    response = dynamodb.scan(
-        TableName=DYNAMODB_DRAFTS_TABLE,
-        FilterExpression="begins_with(PK, :prefix)",
-        ExpressionAttributeValues={":prefix": {"S": "DRAFT#"}}
+    response = drafts_table.query(
+        KeyConditionExpression=Key("PK").begins_with("DRAFT#"),
+        ScanIndexForward=False,  # Get the latest draft first
+        Limit=1  # Only fetch the most recent item
     )
-    items = sorted(response.get("Items", []), key=lambda x: x["PK"]["S"], reverse=True)
-    latest_draft = items[0] if items else {}
+    latest_draft = {key: deserializer.deserialize(value) for key, value in response.get("Items", [])[0].items()} if response.get("Items", []) else {}
     return {"statusCode": 200, "body": json.dumps(latest_draft)}
