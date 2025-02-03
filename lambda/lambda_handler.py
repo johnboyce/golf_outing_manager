@@ -48,7 +48,8 @@ def lambda_handler(event, context):
 
 def handle_players(event, method, debug):
     if method == "GET":
-        return get_players(debug)
+        player_id = event.get("queryStringParameters", {}).get("id")
+        return get_player_by_id(player_id, debug) if player_id else get_players(debug)
     if method == "POST":
         body = json.loads(event["body"])
         return create_player(body, debug)
@@ -59,6 +60,14 @@ def get_players(debug=False):
         response = players_table.scan()
         players = deserialize_items(response.get("Items", []))
         return generate_response(200, players, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
+def get_player_by_id(player_id, debug=False):
+    try:
+        response = players_table.get_item(Key={"PK": f"PLAYER#{player_id}", "SK": "DETAILS"})
+        player = response.get("Item")
+        return generate_response(200, deserialize_items([player])[0] if player else {}, debug)
     except Exception as e:
         return generate_error_response(e, debug)
 
@@ -74,7 +83,8 @@ def create_player(data, debug=False):
 
 def handle_courses(event, method, debug):
     if method == "GET":
-        return get_courses(debug)
+        course_id = event.get("queryStringParameters", {}).get("id")
+        return get_course_by_id(course_id, debug) if course_id else get_courses(debug)
     if method == "POST":
         body = json.loads(event["body"])
         return create_course(body, debug)
@@ -88,6 +98,14 @@ def get_courses(debug=False):
     except Exception as e:
         return generate_error_response(e, debug)
 
+def get_course_by_id(course_id, debug=False):
+    try:
+        response = courses_table.get_item(Key={"PK": f"COURSE#{course_id}", "SK": "DETAILS"})
+        course = response.get("Item")
+        return generate_response(200, deserialize_items([course])[0] if course else {}, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
 def create_course(data, debug=False):
     try:
         item = serialize_item(data)
@@ -98,11 +116,40 @@ def create_course(data, debug=False):
     except Exception as e:
         return generate_error_response(e, debug)
 
+def handle_drafts(event, method, debug):
+    if method == "GET":
+        return get_latest_draft(debug)
+    if method == "POST":
+        body = json.loads(event["body"])
+        return create_draft(body, debug)
+    return generate_response(405, {"error": "Method Not Allowed"}, debug)
+
+def get_latest_draft(debug=False):
+    try:
+        response = drafts_table.scan()
+        drafts = deserialize_items(response.get("Items", []))
+        return generate_response(200, drafts, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
+def create_draft(data, debug=False):
+    try:
+        timestamp = int(time.time())
+        draft_id = f"DRAFT#{timestamp}"
+        item = {
+            "PK": f"DRAFT#{draft_id}",
+            "SK": "DETAILS",
+            "description": data.get("description", ""),
+            "players": data.get("players", []),
+            "foursomes": []
+        }
+        drafts_table.put_item(Item=item)
+        return generate_response(201, {"draft_id": draft_id}, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
 def deserialize_items(items) -> List[Dict]:
-    deserialized = []
-    for item in items:
-        deserialized.append({key: deserializer.deserialize(value) if isinstance(value, dict) else value for key, value in item.items()})
-    return deserialized
+    return [{key: deserializer.deserialize(value) if isinstance(value, dict) else value for key, value in item.items()} for item in items]
 
 def generate_response(status_code, body, debug=False):
     response_body = body if isinstance(body, str) else json.dumps(body)
@@ -120,9 +167,6 @@ def generate_response(status_code, body, debug=False):
     return response
 
 def generate_error_response(exception, debug=False):
-    error_details = {
-        "error": str(exception),
-        "traceback": traceback.format_exc()
-    }
+    error_details = {"error": str(exception), "traceback": traceback.format_exc()}
     print("ERROR OCCURRED:", json.dumps(error_details, indent=2))
     return generate_response(500, {"error": "Internal Server Error", "debug_info": error_details}, debug)
