@@ -59,11 +59,25 @@ def handle_players(event, method, debug):
         return create_player(body, debug)
     return generate_response(405, {"error": "Method Not Allowed"}, debug)
 
+def handle_courses(event, method, debug):
+    if method == "GET":
+        return get_courses(debug)
+    if method == "POST":
+        body = json.loads(event["body"])
+        return create_course(body, debug)
+    return generate_response(405, {"error": "Method Not Allowed"}, debug)
+
+def handle_drafts(event, method, debug):
+    if method == "GET":
+        return get_latest_draft(debug)
+    if method == "POST":
+        body = json.loads(event["body"])
+        return create_draft(body, debug)
+    return generate_response(405, {"error": "Method Not Allowed"}, debug)
+
 def get_players(debug=False):
     try:
-        response = players_table.query(
-            KeyConditionExpression=Key("PK").begins_with("PLAYER#")
-        )
+        response = players_table.scan()
         players = deserialize_items(response)
         return generate_response(200, players, debug)
     except Exception as e:
@@ -76,6 +90,48 @@ def create_player(data, debug=False):
         item["SK"] = serializer.serialize("DETAILS")
         players_table.put_item(Item=item)
         return generate_response(201, {"player_id": data["id"]}, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
+def get_courses(debug=False):
+    try:
+        response = courses_table.scan()
+        courses = deserialize_items(response)
+        return generate_response(200, courses, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
+def create_course(data, debug=False):
+    try:
+        item = serialize_item(data)
+        item["PK"] = serializer.serialize(f"COURSE#{data['id']}")
+        item["SK"] = serializer.serialize("DETAILS")
+        courses_table.put_item(Item=item)
+        return generate_response(201, {"course_id": data["id"]}, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
+def get_latest_draft(debug=False):
+    try:
+        response = drafts_table.scan()
+        drafts = deserialize_items(response)
+        return generate_response(200, drafts, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
+def create_draft(data, debug=False):
+    try:
+        timestamp = int(time.time())
+        draft_id = f"DRAFT#{timestamp}"
+        item = {
+            "PK": serializer.serialize(draft_id),
+            "SK": serializer.serialize("DETAILS"),
+            "description": serializer.serialize(data.get("description", "")),
+            "players": serializer.serialize(data.get("players", [])),
+            "foursomes": serializer.serialize([])
+        }
+        drafts_table.put_item(Item=item)
+        return generate_response(201, {"draft_id": draft_id}, debug)
     except Exception as e:
         return generate_error_response(e, debug)
 
