@@ -8,7 +8,54 @@ function initializeDraftTab() {
 
     $('#start-draft-btn').on('click', startDraft);
     $('#commission-draft-btn').on('click', commissionDraft);
+    $('#start-over-btn').on('click', resetDraft);  // ✅ Bind "Start Over" button
 }
+
+function resetDraft() {
+    console.log("Resetting the draft...");
+
+    // ✅ Retrieve the original player list from StateManager
+    const originalPlayers = StateManager.get("originalPlayerProfiles");
+
+    if (!originalPlayers || originalPlayers.length === 0) {
+        console.error("Original player list not found. Resetting might be incomplete.");
+        return;
+    }
+
+    // ✅ Get selected captains (preserve them)
+    const teamOneCaptain = StateManager.get('draftData').teamOne.captain;
+    const teamTwoCaptain = StateManager.get('draftData').teamTwo.captain;
+
+    // ✅ Restore all players (excluding captains)
+    const restoredPlayers = originalPlayers.filter(player =>
+        player.id !== teamOneCaptain?.id && player.id !== teamTwoCaptain?.id
+    );
+
+    // ✅ Reset draft data, keeping captains but emptying teams
+    StateManager.set('draftData', {
+        teamOne: { captain: teamOneCaptain, players: [] },
+        teamTwo: { captain: teamTwoCaptain, players: [] },
+        draftStarted: false,
+        currentDraftTurn: "teamOne"
+    });
+
+    // ✅ Restore player list for draft selection
+    StateManager.set('playerProfiles', restoredPlayers);
+
+    // ✅ Reset UI elements
+    $('#captain-selection-section').removeClass('d-none');  // Show captain selection again
+    $('#draft-section').addClass('d-none'); // Hide draft UI
+    $('#start-draft-btn').prop('disabled', false).removeClass('d-none');  // Enable "Start Draft"
+    $('#start-over-btn').prop('disabled', true).addClass('d-none');  // Hide "Start Over"
+    $('#commission-draft-btn').prop('disabled', true).addClass('d-none');  // Hide "Commission Draft"
+
+    // ✅ Ensure available players are refreshed in the UI
+    updateDraftUI();
+}
+
+
+
+
 
 // Fetch players for populating captain selectors
 function fetchPlayersForDraft() {
@@ -16,7 +63,13 @@ function fetchPlayersForDraft() {
     $.getJSON(`${API_GATEWAY_URL}/players`)
         .done(players => {
             console.log('Players fetched:', players);
-            StateManager.set('playerProfiles', players); // Store players in StateManager
+
+            // ✅ Store original player list before any modifications
+            StateManager.set("originalPlayerProfiles", [...players]);
+
+            // ✅ Also store in playerProfiles for in-draft modifications
+            StateManager.set('playerProfiles', [...players]);
+
             populateCaptainSelectors(players);
         })
         .fail(() => {
@@ -24,6 +77,7 @@ function fetchPlayersForDraft() {
             displayErrorMessage();
         });
 }
+
 
 // Populate captain selectors
 function populateCaptainSelectors(players) {
@@ -90,15 +144,17 @@ function displayErrorMessage() {
 function startDraft() {
     console.log('Starting draft...');
     const draftData = StateManager.get('draftData');
-    const allPlayers = StateManager.get('playerProfiles');
+    let allPlayers = StateManager.get('playerProfiles');
 
     if (!draftData.teamOne.captain || !draftData.teamTwo.captain) {
         console.error('Captains not selected. Cannot start draft.');
         return;
     }
 
-    // Assign captains to their respective teams
+    // ✅ Always store the original list before modifying it
+    StateManager.set("originalPlayerProfiles", [...allPlayers]);  // Ensure the full copy exists
 
+    // ✅ Assign captains to their respective teams
     draftData.teamOne.captain.captainsLogo = draftData.teamOne.captain.teamLogo;
     draftData.teamOne.captain.team = "teamOne";
     draftData.teamOne.players = [draftData.teamOne.captain];
@@ -107,23 +163,26 @@ function startDraft() {
     draftData.teamTwo.captain.team = "teamTwo";
     draftData.teamTwo.players = [draftData.teamTwo.captain];
 
-
-    // Remove captains from the available players list
+    // ✅ Remove captains from the available players list
     const availablePlayers = allPlayers.filter(
         player => player.id !== draftData.teamOne.captain.id && player.id !== draftData.teamTwo.captain.id
     );
 
-    // Update StateManager with the modified data
+    // ✅ Update StateManager with the modified data
     StateManager.set('playerProfiles', availablePlayers);
     StateManager.updateDraftData({ draftStarted: true, currentDraftTurn: 'teamOne' });
 
-    // Update UI
+    // ✅ Update UI
     $('#captain-selection-section').addClass('d-none');
     $('#draft-section').removeClass('d-none');
     $('#start-draft-btn').prop('disabled', true).addClass('d-none');
     $('#start-over-btn').prop('disabled', false).removeClass('d-none');
+
     updateDraftUI();
 }
+
+
+
 
 function updateDraftUI() {
     const draftData = StateManager.get('draftData');
@@ -132,6 +191,10 @@ function updateDraftUI() {
     const $availablePlayersList = $('#available-players-list').empty();
     const $teamOneList = $('#team-one-list').empty();
     const $teamTwoList = $('#team-two-list').empty();
+    const $commissionDraftBtn = $('#commission-draft-btn');
+
+    // ✅ Ensure available players are shown when resetting
+    $('#available-players-list').removeClass('d-none');
 
     // Update team headers
     $('#team-one-header').text(`Team ${draftData.teamOne.captain.nickname}`);
@@ -163,25 +226,24 @@ function updateDraftUI() {
         $teamTwoList.append(`<li class="list-group-item">${player.name} (${player.handicap})</li>`);
     });
 
-    // Update turn banner
+    // Check if all players are drafted
     if (availablePlayers.length === 0) {
         $('#draft-turn-banner').html('<div class="alert alert-success">All players have been drafted!</div>');
         $('#available-players-list').addClass('d-none');
-        $('#commission-draft-btn').prop('disabled', false).removeClass('d-none');
-    } else if(draftData.draftStarted){
+
+        // ✅ Show "Commission Draft" button
+        $commissionDraftBtn.prop('disabled', false).removeClass('d-none');
+
+    } else {
         const currentTeam = draftData.currentDraftTurn === 'teamOne'
             ? draftData.teamOne.captain.nickname
             : draftData.teamTwo.captain.nickname;
-        const currentTeamLogo = draftData.currentDraftTurn === 'teamOne'
-            ? draftData.teamOne.captain.teamLogo
-            : draftData.teamTwo.captain.teamLogo;
 
         $('#draft-turn-banner').html(`It's ${currentTeam}'s turn to draft!`);
-    } else {
-        $('#draft-turn-banner').html('');
-        $('#commission-draft-btn').prop('disabled', true).addClass('d-none');
+        $commissionDraftBtn.prop('disabled', true).addClass('d-none');
     }
 }
+
 
 function assignPlayerToTeam(playerId, team, captainsLogo) {
     const draftData = StateManager.get('draftData');
