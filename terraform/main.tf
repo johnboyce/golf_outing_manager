@@ -236,45 +236,6 @@ resource "aws_s3_bucket_public_access_block" "lambda_access_block" {
 }
 
 
-# ✅ Package Lambda Before Uploading to S3
-resource "null_resource" "package_lambda" {
-  provisioner "local-exec" {
-    command = <<EOT
-    echo "Packaging Python Lambda..."
-
-    SCRIPT_DIR="${path.module}/../lambda"
-
-    if [ ! -d "$SCRIPT_DIR" ]; then
-      echo "Error: Lambda directory not found!" >&2
-      exit 1
-    fi
-
-    cd "$SCRIPT_DIR"
-
-    # Create a clean package directory
-    rm -rf package
-    mkdir package
-
-    # Install dependencies
-    pip install -r requirements.txt -t package
-
-    # Copy the Lambda handler file
-    cp lambda_handler.py package/
-
-    # Create the zip package
-    cd package
-    zip -r ../lambda.zip .
-
-    echo "Lambda package created successfully."
-    EOT
-  }
-
-  triggers = {
-    lambda_src_hash = filemd5("${path.module}/../lambda/lambda_handler.py")
-  }
-}
-
-
 # ✅ Upload Packaged Lambda ZIP to S3
 resource "aws_s3_object" "lambda_zip" {
   bucket = aws_s3_bucket.lambda_deployment_bucket.bucket
@@ -283,10 +244,6 @@ resource "aws_s3_object" "lambda_zip" {
 
   # Ensures Terraform detects changes when lambda_handler.py is modified
   etag   = fileexists("../lambda/lambda.zip") ? filebase64sha256("../lambda/lambda.zip") : null  # Ensures Terraform handles missing/changed file gracefully
-
-  depends_on = [
-    null_resource.package_lambda # Ensures zip file is created first
-  ]
 }
 
 # ✅ IAM Role for Lambda Function
@@ -319,15 +276,15 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
 
 # ✅ Lambda Function
 resource "aws_lambda_function" "golf_outing_lambda" {
-  function_name = "GolfOutingHandler"
-  runtime       = "python3.9"
-  role          = aws_iam_role.golf_outing_lambda_role.arn
-  handler       = "lambda_handler.lambda_handler"
-  s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
-  s3_key        = aws_s3_object.lambda_zip.key
+  function_name    = "GolfOutingHandler"
+  runtime         = "python3.9"
+  role            = aws_iam_role.golf_outing_lambda_role.arn
+  handler         = "lambda_handler.lambda_handler"
+  s3_bucket       = aws_s3_bucket.lambda_deployment_bucket.id
+  s3_key          = aws_s3_object.lambda_zip.key
 
-  memory_size   = 128
-  timeout       = 10
+  memory_size     = 128
+  timeout         = 10
 
   environment {
     variables = {
@@ -338,6 +295,7 @@ resource "aws_lambda_function" "golf_outing_lambda" {
   }
 
   # Prevents Terraform failure if lambda.zip does not exist yet
+  # This should be build in github action btw
   source_code_hash = fileexists("../lambda/lambda.zip") ? filebase64sha256("../lambda/lambda.zip") : null
 
   depends_on = [

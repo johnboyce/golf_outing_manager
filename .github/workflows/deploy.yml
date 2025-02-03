@@ -35,6 +35,15 @@ jobs:
           ./package_lambda.sh
           ls -l lambda.zip  # Debugging: Ensure ZIP exists
 
+      - name: Ensure ZIP is in the correct location
+        run: |
+          if [ -f "lambda/lambda.zip" ]; then
+            echo "Lambda ZIP exists in lambda/ directory."
+          else
+            echo "Error: lambda.zip not found in lambda/ directory!" >&2
+            exit 1
+          fi
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:

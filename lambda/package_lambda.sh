@@ -9,8 +9,15 @@ cd "$SCRIPT_DIR" || exit 1
 rm -rf package
 mkdir package
 
-# Install dependencies
-pip install -r requirements.txt -t package
+# Install dependencies using pip if available, otherwise fallback to pip3
+if command -v pip &>/dev/null; then
+    pip install -r requirements.txt -t package
+elif command -v pip3 &>/dev/null; then
+    pip3 install -r requirements.txt -t package
+else
+    echo "Error: Neither pip nor pip3 found!" >&2
+    exit 1
+fi
 
 # Copy the Lambda handler file
 cp lambda_handler.py package/
