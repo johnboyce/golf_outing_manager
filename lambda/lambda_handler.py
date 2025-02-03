@@ -72,6 +72,32 @@ def create_player(data, debug=False):
     except Exception as e:
         return generate_error_response(e, debug)
 
+def handle_courses(event, method, debug):
+    if method == "GET":
+        return get_courses(debug)
+    if method == "POST":
+        body = json.loads(event["body"])
+        return create_course(body, debug)
+    return generate_response(405, {"error": "Method Not Allowed"}, debug)
+
+def get_courses(debug=False):
+    try:
+        response = courses_table.scan()
+        courses = deserialize_items(response.get("Items", []))
+        return generate_response(200, courses, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
+def create_course(data, debug=False):
+    try:
+        item = serialize_item(data)
+        item["PK"] = f"COURSE#{data['id']}"
+        item["SK"] = "DETAILS"
+        courses_table.put_item(Item=item)
+        return generate_response(201, {"course_id": data["id"]}, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
 def deserialize_items(items) -> List[Dict]:
     deserialized = []
     for item in items:
