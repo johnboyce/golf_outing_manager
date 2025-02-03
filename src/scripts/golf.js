@@ -32,6 +32,11 @@ function setupTabNavigation() {
         // Update active link
         $('.nav-link').removeClass('active');
         $(this).addClass('active');
+
+        // Load courses when the "Courses" tab is clicked
+        if (targetTab === '#courses-tab') {
+            loadCourses();
+        }
     });
 
     // Load the default tab (Players Tab)

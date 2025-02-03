@@ -6,35 +6,7 @@ const StateManager = (() => {
             teamTwo: { captain: null, players: [] },
             draftStarted: false,
         },
-        courses: [
-            {   id: 1,
-                name: "Bear Trap Dunes",
-                description: "A spectacular course featuring coastal views and challenging dunes. Perfect for golfers of all skill levels.",
-                image: "https://www.beartrapdunes.com/wp-content/uploads/sites/8962/2023/06/home-main-1.jpg",
-                icon: "fas fa-golf-ball",
-            },
-            {
-                id: 2,
-                name: "War Admiral",
-                description: "Inspired by the famous thoroughbred, this course offers a mix of strategy and precision with its unique design.",
-                image: "https://www.pamsgolfoc.com/wp-content/uploads/2020/01/waradmiral-1.jpg",
-                icon: "fas fa-golf-club",
-            },
-            {
-                id: 3,
-                name: "Man O' War",
-                description: "A thrilling challenge for golfers, with picturesque views and water hazards adding to its allure.",
-                image: "https://www.ruarkgolf.com/app/uploads/2018/08/MOW-30-1024x576.jpg",
-                icon: "fas fa-water",
-            },
-            {
-                id: 4,
-                name: "Lighthouse Sound",
-                description: "Known for its incredible views of the bay and a distinctive setup that challenges even the best golfers.",
-                image: "https://www.ruarkgolf.com/app/uploads/2018/08/RP-06_DJI_0062.jpg",
-                icon: "fas fa-lightbulb",
-            },
-        ],
+        courses: [], // Start empty, will be populated dynamically
     };
 
     return {
@@ -51,6 +23,7 @@ const StateManager = (() => {
                     teamTwo: { captain: null, players: [] },
                     draftStarted: false,
                 },
+                courses: [],
             };
         },
         shuffleArray(array) {
@@ -59,6 +32,27 @@ const StateManager = (() => {
                 .sort((a, b) => a.sort - b.sort)
                 .map(({ value }) => value);
         },
+        async fetchCourses() {
+            try {
+                const response = await fetch(`${API_GATEWAY_URL}/courses`);
+                if (!response.ok) throw new Error(`Failed to fetch courses: ${response.statusText}`);
 
+                const courses = await response.json();
+                state.courses = courses;
+                this.notifyListeners(); // Ensure UI updates after loading courses
+            } catch (error) {
+                console.error("Error fetching courses:", error);
+            }
+        },
+        notifyListeners() {
+            // Placeholder function to trigger UI updates (modify based on framework)
+            console.log("State updated:", state);
+        },
+        async initialize() {
+            await this.fetchCourses();
+        },
     };
 })();
+
+// Initialize the state manager
+StateManager.initialize();
