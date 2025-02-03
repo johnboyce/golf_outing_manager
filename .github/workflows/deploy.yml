@@ -75,6 +75,18 @@ jobs:
           aws s3 sync ./src s3://${{ env.S3_GOLF_BUCKET }} --delete
           echo "Static web files synced to S3 bucket."
 
+      - name: Fetch CloudFront Distribution ID from Terraform
+        run: |
+          CLOUDFRONT_DISTRIBUTION_ID=$(terraform -chdir=terraform output -raw cloudfront_distribution_id)
+          echo "CloudFront Distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
+          echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_DISTRIBUTION_ID" >> $GITHUB_ENV
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
+            --paths "/*"
+          echo "CloudFront cache invalidation triggered."
 
       - name: Validate CloudFront Deployment
         run: |
