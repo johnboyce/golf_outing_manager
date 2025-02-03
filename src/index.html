@@ -33,7 +33,7 @@
 </nav>
 
 <div class="container mt-4">
-    <div id="players-tab" class="tab-pane fade">
+    <div id="players-tab" class="tab-pane fade show active">
         <!-- Players Tab -->
         <div class="container my-0">
             <h2 class="text-center text-success">Meet the Players</h2>
@@ -98,7 +98,7 @@
     </div>
 </section>
 
-<div id="foursomes-tab" class="mt-4 d-none">
+<div id="foursomes-tab" class="tab-pane fade">
     <div id="foursomeCourseTabs" class="tab-buttons d-flex justify-content-center mb-3">
         <!-- Dynamic Tabs Will Be Inserted Here -->
     </div>
@@ -106,8 +106,20 @@
         <!-- Dynamic Content for Each Course Will Be Inserted Here -->
     </div>
 </div>
-<div id="courses-tab" class="d-none">
-    <!-- Courses Tab -->
+<div id="courses-tab" class="tab-pane fade">
+    <div id="coursesCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner" id="courses-carousel-inner">
+            <!-- Courses will be dynamically inserted here -->
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#coursesCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#coursesCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
 </div>
 </div>
 

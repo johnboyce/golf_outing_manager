@@ -5,12 +5,12 @@ $(document).ready(function () {
 function setupCoursesTab() {
     $(".nav-link[href='#courses-tab']").on("click", function () {
         console.log("Courses tab clicked.");
-        var coursesTab=$("#courses-tab");
+        var coursesTab = $("#courses-tab");
 
         // Remove d-none to make sure the tab is visible
         coursesTab.removeClass("d-none");
 
-        if (coursesTab.is(":empty")) {
+        if ($("#courses-carousel-inner").children().length === 0) {
             loadCourses();
         }
     });
@@ -35,30 +35,33 @@ function loadCourses() {
 }
 
 function renderCourses(courses) {
-    const coursesContainer = $("#courses-tab");
-    coursesContainer.empty(); // Clear existing content
+    const carouselInner = $("#courses-carousel-inner");
+    carouselInner.empty(); // Clear existing content
 
     if (!courses.length) {
-        coursesContainer.append("<p class='text-muted'>No courses available.</p>");
+        carouselInner.append("<p class='text-muted'>No courses available.</p>");
         return;
     }
 
-    let courseHtml = `<div class="row">`;
-
-    courses.forEach(course => {
-        courseHtml += `
-            <div class="col-md-4">
-                <div class="card shadow-sm">
+    courses.forEach((course, index) => {
+        const isActive = index === 0 ? "active" : "";
+        const courseItem = `
+            <div class="carousel-item ${isActive}">
+                <div class="card mx-auto shadow-sm" style="max-width: 80%;">
                     <img src="${course.image}" class="card-img-top" alt="${course.name}">
-                    <div class="card-body">
+                    <div class="card-body text-center">
                         <h5 class="card-title"><i class="${course.icon}"></i> ${course.name}</h5>
                         <p class="card-text">${course.description}</p>
                     </div>
                 </div>
             </div>
         `;
+        carouselInner.append(courseItem);
     });
 
-    courseHtml += `</div>`;
-    coursesContainer.append(courseHtml);
+    // Initialize the Bootstrap carousel
+    new bootstrap.Carousel(document.getElementById("coursesCarousel"), {
+        interval: 3000, // Auto-slide every 3 seconds
+        wrap: true
+    });
 }
