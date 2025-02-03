@@ -2,6 +2,7 @@ import json
 import boto3
 import time
 import traceback
+import decimal
 from boto3.dynamodb.conditions import Key
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from typing import List, Dict
@@ -42,9 +43,19 @@ def lambda_handler(event, context):
             response = generate_response(404, {"error": "Not Found"}, debug)
 
     except Exception as e:
-        return generate_error_response(e, debug)
+        response = generate_error_response(e, debug)
 
     return response
+
+def convert_decimals(obj):
+    """Recursively convert Decimal values to float or int."""
+    if isinstance(obj, list):
+        return [convert_decimals(i) for i in obj]
+    elif isinstance(obj, dict):
+        return {k: convert_decimals(v) for k, v in obj.items()}
+    elif isinstance(obj, decimal.Decimal):
+        return int(obj) if obj % 1 == 0 else float(obj)
+    return obj
 
 def handle_players(event, method, debug):
     if method == "GET":
@@ -116,43 +127,8 @@ def create_course(data, debug=False):
     except Exception as e:
         return generate_error_response(e, debug)
 
-def handle_drafts(event, method, debug):
-    if method == "GET":
-        return get_latest_draft(debug)
-    if method == "POST":
-        body = json.loads(event["body"])
-        return create_draft(body, debug)
-    return generate_response(405, {"error": "Method Not Allowed"}, debug)
-
-def get_latest_draft(debug=False):
-    try:
-        response = drafts_table.scan()
-        drafts = deserialize_items(response.get("Items", []))
-        return generate_response(200, drafts, debug)
-    except Exception as e:
-        return generate_error_response(e, debug)
-
-def create_draft(data, debug=False):
-    try:
-        timestamp = int(time.time())
-        draft_id = f"DRAFT#{timestamp}"
-        item = {
-            "PK": f"DRAFT#{draft_id}",
-            "SK": "DETAILS",
-            "description": data.get("description", ""),
-            "players": data.get("players", []),
-            "foursomes": []
-        }
-        drafts_table.put_item(Item=item)
-        return generate_response(201, {"draft_id": draft_id}, debug)
-    except Exception as e:
-        return generate_error_response(e, debug)
-
-def deserialize_items(items) -> List[Dict]:
-    return [{key: deserializer.deserialize(value) if isinstance(value, dict) else value for key, value in item.items()} for item in items]
-
 def generate_response(status_code, body, debug=False):
-    response_body = body if isinstance(body, str) else json.dumps(body)
+    response_body = json.dumps(convert_decimals(body))
     response = {
         "statusCode": status_code,
         "headers": {
