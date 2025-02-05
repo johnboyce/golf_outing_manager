@@ -227,15 +227,6 @@ resource "aws_apigatewayv2_stage" "golf_outing_stage" {
       responseLength  = "$context.responseLength"
     })
   }
-
-  # Enable CORS
-  cors_configuration {
-    allow_credentials = false
-    allow_headers     = ["Content-Type", "Authorization"]
-    allow_methods     = ["OPTIONS", "GET", "POST", "PUT", "DELETE"]
-    allow_origins     = ["*"]
-    max_age           = 3600
-  }
 }
 
 
