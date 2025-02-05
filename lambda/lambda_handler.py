@@ -27,7 +27,7 @@ def lambda_handler(event, context):
         method = event.get("requestContext", {}).get("http", {}).get("method", "")
 
         if method == "OPTIONS":
-            return generate_response(200, "", debug)
+            return generate_response(200, {"message": "CORS preflight successful"}, debug)
 
         routes = {
             "/players": handle_players,
@@ -142,9 +142,10 @@ def generate_response(status_code, body, debug=False):
     response = {
         "statusCode": status_code,
         "headers": {
-            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Origin": "*",  # Allow all origins
             "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE",
-            "Access-Control-Allow-Headers": "Content-Type,Authorization"
+            "Access-Control-Allow-Headers": "Content-Type,Authorization",
+            "Access-Control-Allow-Credentials": "true"
         },
         "body": response_body
     }

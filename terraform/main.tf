@@ -194,16 +194,50 @@ resource "aws_apigatewayv2_route" "course_delete" {
 }
 
 # Deploy API Gateway
+# Add CORS to API Gateway Routes
+resource "aws_apigatewayv2_route" "options_drafts" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "OPTIONS /drafts"
+  target    = "integrations/${aws_apigatewayv2_integration.create_draft_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "options_draft_by_id" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "OPTIONS /drafts/{draftId}"
+  target    = "integrations/${aws_apigatewayv2_integration.create_draft_integration.id}"
+}
+
+# Enable CORS in API Gateway Stage
 resource "aws_apigatewayv2_stage" "golf_outing_stage" {
   api_id      = aws_apigatewayv2_api.golf_outing_api.id
-  name        = "$default"   # Use "$default" for HTTP API to enable auto-deploy
-  auto_deploy = true         # Enables automatic deployment on route changes
+  name        = "$default"
+  auto_deploy = true
 
   default_route_settings {
-    throttling_rate_limit  = 10   # Limit requests per second
-    throttling_burst_limit = 10    # Burst limit
+    throttling_rate_limit  = 10
+    throttling_burst_limit = 10
+  }
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway_logs.arn
+    format          = jsonencode({
+      httpMethod       = "$context.httpMethod",
+      path            = "$context.path",
+      responseLatency = "$context.responseLatency",
+      responseLength  = "$context.responseLength"
+    })
+  }
+
+  # Enable CORS
+  cors_configuration {
+    allow_credentials = false
+    allow_headers     = ["Content-Type", "Authorization"]
+    allow_methods     = ["OPTIONS", "GET", "POST", "PUT", "DELETE"]
+    allow_origins     = ["*"]
+    max_age           = 3600
   }
 }
+
 
 # Allow API Gateway to invoke Lambda
 resource "aws_lambda_permission" "api_gateway_invoke" {
