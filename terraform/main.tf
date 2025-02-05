@@ -454,6 +454,15 @@ resource "aws_apigatewayv2_integration" "finalize_draft_integration" {
 
 
 # API Routes for Drafts
+resource "aws_apigatewayv2_route" "get_drafts" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "GET /drafts"
+  target    = "integrations/${aws_apigatewayv2_integration.get_latest_draft_integration.id}"
+
+  depends_on = [
+    aws_lambda_function.get_latest_draft_lambda
+  ]
+}
 resource "aws_apigatewayv2_route" "create_draft" {
   api_id    = aws_apigatewayv2_api.golf_outing_api.id
   route_key = "POST /drafts"
