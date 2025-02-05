@@ -218,16 +218,19 @@ resource "aws_apigatewayv2_stage" "golf_outing_stage" {
     throttling_burst_limit = 10
   }
 
+  # ✅ Corrected access log format
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gateway_logs.arn
     format          = jsonencode({
-      httpMethod       = "$context.httpMethod",
-      path            = "$context.path",
+      requestId       = "$context.requestId",      # ✅ Required field
+      httpMethod      = "$context.httpMethod",
+      path           = "$context.path",
       responseLatency = "$context.responseLatency",
       responseLength  = "$context.responseLength"
     })
   }
 }
+
 
 
 # Allow API Gateway to invoke Lambda
