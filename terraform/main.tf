@@ -232,20 +232,21 @@ resource "aws_apigatewayv2_stage" "golf_outing_stage" {
   name        = "$default"
   auto_deploy = true
 
+  # ✅ Enable CORS globally
   default_route_settings {
     throttling_rate_limit  = 10
     throttling_burst_limit = 10
   }
 
-  # ✅ Corrected access log format
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gateway_logs.arn
     format          = jsonencode({
-      requestId       = "$context.requestId",      # ✅ Required field
+      requestId       = "$context.requestId",
       httpMethod      = "$context.httpMethod",
-      path           = "$context.path",
+      path            = "$context.path",
       responseLatency = "$context.responseLatency",
-      responseLength  = "$context.responseLength"
+      responseLength  = "$context.responseLength",
+      status          = "$context.status"
     })
   }
 }
