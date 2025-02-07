@@ -201,10 +201,36 @@ resource "aws_apigatewayv2_route" "options_drafts" {
   target    = "integrations/${aws_apigatewayv2_integration.create_draft_integration.id}"
 }
 
+resource "aws_apigatewayv2_integration" "cors_response_drafts" {
+  api_id                 = aws_apigatewayv2_api.golf_outing_api.id
+  integration_type       = "MOCK"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_route" "cors_drafts" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "OPTIONS /drafts"
+  target    = "integrations/${aws_apigatewayv2_integration.cors_response_drafts.id}"
+}
+
 resource "aws_apigatewayv2_route" "options_draft_by_id" {
   api_id    = aws_apigatewayv2_api.golf_outing_api.id
   route_key = "OPTIONS /drafts/{draftId}"
   target    = "integrations/${aws_apigatewayv2_integration.create_draft_integration.id}"
+}
+
+# ✅ Create a Mock Integration for CORS Response (No Lambda)
+resource "aws_apigatewayv2_integration" "cors_response_draft_by_id" {
+  api_id                 = aws_apigatewayv2_api.golf_outing_api.id
+  integration_type       = "MOCK"
+  payload_format_version = "1.0"
+}
+
+# ✅ Define an API Route to Handle OPTIONS /drafts/{draftId}
+resource "aws_apigatewayv2_route" "options_draft_by_id" {
+  api_id    = aws_apigatewayv2_api.golf_outing_api.id
+  route_key = "OPTIONS /drafts/{draftId}"
+  target    = "integrations/${aws_apigatewayv2_integration.cors_response_draft_by_id.id}"
 }
 
 # Enable CORS in API Gateway Stage
