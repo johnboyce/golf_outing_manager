@@ -121,6 +121,11 @@ resource "aws_s3_bucket_policy" "golf_outing_policy" {
 resource "aws_apigatewayv2_api" "golf_outing_api" {
   name          = "GolfOutingAPI"
   protocol_type = "HTTP"
+  cors_configuration {
+    allow_origins = ["*"]
+    allow_methods = ["OPTIONS", "GET", "POST", "PUT", "DELETE"]
+    allow_headers = ["Content-Type", "Authorization"]
+  }
 }
 
 # Create API Gateway Lambda Integration
@@ -193,38 +198,6 @@ resource "aws_apigatewayv2_route" "course_delete" {
   target    = "integrations/${aws_apigatewayv2_integration.golf_outing_integration.id}"
 }
 
-# Deploy API Gateway
-# Add CORS to API Gateway Routes
-resource "aws_apigatewayv2_route" "options_drafts" {
-  api_id    = aws_apigatewayv2_api.golf_outing_api.id
-  route_key = "OPTIONS /drafts"
-  target    = "integrations/${aws_apigatewayv2_integration.create_draft_integration.id}"
-}
-
-resource "aws_apigatewayv2_integration" "cors_response_drafts" {
-  api_id                 = aws_apigatewayv2_api.golf_outing_api.id
-  integration_type       = "MOCK"
-  payload_format_version = "1.0"
-}
-
-resource "aws_apigatewayv2_route" "cors_drafts" {
-  api_id    = aws_apigatewayv2_api.golf_outing_api.id
-  route_key = "OPTIONS /drafts"
-  target    = "integrations/${aws_apigatewayv2_integration.cors_response_drafts.id}"
-}
-
-resource "aws_apigatewayv2_route" "options_draft_by_id" {
-  api_id    = aws_apigatewayv2_api.golf_outing_api.id
-  route_key = "OPTIONS /drafts/{draftId}"
-  target    = "integrations/${aws_apigatewayv2_integration.create_draft_integration.id}"
-}
-
-# ✅ Create a Mock Integration for CORS Response (No Lambda)
-resource "aws_apigatewayv2_integration" "cors_response_draft_by_id" {
-  api_id                 = aws_apigatewayv2_api.golf_outing_api.id
-  integration_type       = "MOCK"
-  payload_format_version = "1.0"
-}
 
 # Enable CORS in API Gateway Stage
 resource "aws_apigatewayv2_stage" "golf_outing_stage" {
