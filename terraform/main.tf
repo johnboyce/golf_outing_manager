@@ -226,13 +226,6 @@ resource "aws_apigatewayv2_integration" "cors_response_draft_by_id" {
   payload_format_version = "1.0"
 }
 
-# ✅ Define an API Route to Handle OPTIONS /drafts/{draftId}
-resource "aws_apigatewayv2_route" "options_draft_by_id" {
-  api_id    = aws_apigatewayv2_api.golf_outing_api.id
-  route_key = "OPTIONS /drafts/{draftId}"
-  target    = "integrations/${aws_apigatewayv2_integration.cors_response_draft_by_id.id}"
-}
-
 # Enable CORS in API Gateway Stage
 resource "aws_apigatewayv2_stage" "golf_outing_stage" {
   api_id      = aws_apigatewayv2_api.golf_outing_api.id
