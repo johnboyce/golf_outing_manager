@@ -9,11 +9,10 @@ function initializeCommissionTab() {
 }
 
 // Commission Draft
+// Commission Draft (No Persistence Yet)
 function commissionDraft() {
     console.log('Commissioning draft...');
     const draftData = StateManager.get('draftData');
-    const timestamp = new Date().toISOString();
-    const humanReadableName = new Date().toLocaleString();
 
     if (!draftData.teamOne.players.length || !draftData.teamTwo.players.length) {
         console.error('Cannot commission draft: Teams are incomplete.');
@@ -21,64 +20,61 @@ function commissionDraft() {
         return;
     }
 
-    // Save draft under unique timestamp
-    StateManager.set(`drafts.${timestamp}`, {
-        timestamp,
-        name: humanReadableName,
-        data: draftData,
+    // ✅ Generate foursomes and save them to state
+    const foursomes = generateFoursomes();
+    StateManager.updateDraftData({ foursomes });
+
+    console.log("Foursomes generated and saved:", foursomes);
+
+    // ✅ Store commissioned draft in memory but DO NOT persist it yet
+    StateManager.set("commissionedDraft", {
+        timestamp: new Date().toISOString(),
+        description: `Commissioned Draft - ${new Date().toLocaleString()}`,
+        foursomes: foursomes
     });
 
-    console.log(`Draft saved as ${humanReadableName}:`, draftData);
+    // ✅ Update the UI to show the new foursomes
+    updateFoursomesTab();
 
-    // Generate Foursomes
-    generateFoursomes();
+    // ✅ Enable "Save Draft" button after commission is complete
+    $('#save-draft-btn').prop('disabled', false);
 
-    $('#draft-turn-banner').html('<div class="alert alert-success">`Draft commissioned successfully!`</div>');
+    $('#draft-turn-banner').html('<div class="alert alert-success">Draft commissioned successfully! Now you can save it.</div>');
     $('#commission-draft-btn').prop('disabled', false).removeClass('d-none');
-    $('#foursomes-tab').click(); // Redirect to Foursomes tab
+    $('#foursomes-tab').click();
     $('#draft-tab').addClass('d-none');
     $('#foursomes-tab').removeClass('d-none');
-    updateFoursomesTab();
 }
+
+
+
 
 // Generate Foursomes
 function generateFoursomes() {
     console.log('Generating foursomes...');
-
     const draftData = StateManager.get('draftData');
     const courses = StateManager.get('courses');
     const allFoursomes = {};
 
     courses.forEach(course => {
         const courseFoursomes = [];
-
-        // Shuffle the teams independently for this course
         const shuffledTeamOne = StateManager.shuffleArray([...draftData.teamOne.players]);
         const shuffledTeamTwo = StateManager.shuffleArray([...draftData.teamTwo.players]);
-
-        // Clone the shuffled teams to avoid modifying the original arrays
         const teamOnePlayers = [...shuffledTeamOne];
         const teamTwoPlayers = [...shuffledTeamTwo];
 
-        // Generate balanced foursomes for the course
         while (teamOnePlayers.length >= 2 && teamTwoPlayers.length >= 2) {
             const [cartOne, cartTwo] = assignCarts(teamOnePlayers, teamTwoPlayers);
             courseFoursomes.push({ cartOne, cartTwo });
         }
 
-        // Log any unassigned players for debugging
-        if (teamOnePlayers.length > 0 || teamTwoPlayers.length > 0) {
-            console.warn(`Extra players for course ${course.name}:`, { teamOnePlayers, teamTwoPlayers });
-        }
-
-        // Add the generated foursomes to the course
         allFoursomes[course.id] = courseFoursomes;
     });
 
-    // Update the draft data with generated foursomes
-    StateManager.updateDraftData({ foursomes: allFoursomes });
     console.log('Foursomes generated:', allFoursomes);
+    return allFoursomes; // ✅ Now returns the generated foursomes
 }
+
 
 
 

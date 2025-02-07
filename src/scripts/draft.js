@@ -11,6 +11,8 @@ function initializeDraftTab() {
     $('#start-draft-btn').on('click', startDraft);
     $('#commission-draft-btn').on('click', commissionDraft);
     $('#start-over-btn').on('click', resetDraft);
+    $("#save-draft-btn").on('click', saveDraft);
+
 }
 
 function resetDropdown($dropdown) {
@@ -68,6 +70,62 @@ function resetDraft() {
     StateManager.set('playerProfiles', restoredPlayers);
 
     updateUIAfterReset();
+}
+
+function saveDraft() {
+    console.log("Saving draft...");
+
+    // ✅ Ensure there's a commissioned draft before saving
+    const draftData = StateManager.get("commissionedDraft");
+    if (!draftData) {
+        alert("No draft to save! Please commission a draft first.");
+        return;
+    }
+
+    // ✅ Prompt user for a custom description
+    const userDescription = prompt("Enter a description for this draft:", draftData.description);
+    if (!userDescription) {
+        alert("Draft save cancelled.");
+        return;
+    }
+
+    const draftPayload = {
+        timestamp: draftData.timestamp,
+        description: userDescription,
+        foursomes: draftData.foursomes
+    };
+
+    // ✅ Send the draft data to API Gateway for persistence
+    $.ajax({
+        url: API_GATEWAY_URL + "/drafts",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(draftPayload),
+        success: function (response) {
+            alert("Draft saved successfully!");
+            console.log("Draft saved response:", response);
+            $('#save-draft-btn').prop('disabled', true); // ✅ Disable after saving
+        },
+        error: function (xhr, status, error) {
+            console.error("Error saving draft:", error);
+            alert("Failed to save draft.");
+        }
+    });
+}
+
+
+
+function getCurrentFoursomes() {
+    // Implement logic to retrieve the current state of foursomes
+    // Example: extracting from the UI
+    let foursomes = [];
+    $(".foursome").each(function () {
+        let players = $(this).find(".player").map(function () {
+            return $(this).text();
+        }).get();
+        foursomes.push(players);
+    });
+    return foursomes;
 }
 
 /** ========================== DRAFT LOGIC ========================== **/

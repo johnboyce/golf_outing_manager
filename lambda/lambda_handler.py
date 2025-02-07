@@ -115,21 +115,45 @@ def get_latest_draft(debug=False):
     except Exception as e:
         return generate_error_response(e, debug)
 
-def create_draft(data, debug=False):
+def create_draft(event, debug=False):
     try:
+        print("Received event:", json.dumps(event))  # ✅ Log full event
+
+        # ✅ Ensure request body is present
+        if "body" not in event or not event["body"]:
+            return generate_response(400, {"error": "Missing request body"}, debug)
+
+        body = json.loads(event["body"])
+        print("Parsed body:", json.dumps(body))  # ✅ Debug parsed body
+
+        # ✅ Validate required fields
+        if "description" not in body or "players" not in body:
+            return generate_response(400, {"error": "Missing required fields: 'description' and 'players'"}, debug)
+
         timestamp = int(time.time())
         draft_id = f"DRAFT#{timestamp}"
+
         item = {
-            "PK": f"DRAFT#{draft_id}",
+            "PK": draft_id,
             "SK": "DETAILS",
-            "description": data.get("description", ""),
-            "players": data.get("players", []),
+            "description": body.get("description", ""),
+            "players": body.get("players", []),
             "foursomes": []
         }
+        print("DynamoDB Item to Insert:", json.dumps(item))  # ✅ Debug item before insertion
+
+        # ✅ Insert into DynamoDB
         drafts_table.put_item(Item=item)
+
         return generate_response(201, {"draft_id": draft_id}, debug)
+
+    except json.JSONDecodeError:
+        print("JSON Decode Error")  # ✅ Log JSON errors
+        return generate_response(400, {"error": "Invalid JSON format"}, debug)
     except Exception as e:
+        print("ERROR:", traceback.format_exc())  # ✅ Print full error traceback
         return generate_error_response(e, debug)
+
 
 def deserialize_items(items) -> List[Dict]:
     deserialized = []
