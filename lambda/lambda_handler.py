@@ -106,6 +106,12 @@ def handle_drafts(event, method, debug):
         return get_latest_draft(debug)
     if method == "POST":
         print("DEBUG: Raw event body before parsing:", event["body"])  # ✅ Print the raw request body
+        try:
+            body = json.loads(event["body"])
+        except json.JSONDecodeError as e:
+            print(f"JSON Decode Error: {str(e)}")
+            return {"statusCode": 400, "body": json.dumps({"error": "Invalid JSON"})}
+
         body = json.loads(event["body"])
         return create_draft(body, debug)
     return generate_response(405, {"error": "Method Not Allowed"}, debug)
