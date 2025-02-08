@@ -140,15 +140,19 @@ def create_draft(body, debug=False):
         log_debug("Received body", body, debug)
 
         # ✅ Ensure required fields exist
-        if "description" not in body or "players" not in body or "foursomes" not in body:
-            return generate_response(400, {"error": "Missing required fields"}, debug)
+        required_fields = ["description", "foursomes", "teamOne", "teamTwo"]
+        missing_fields = [field for field in required_fields if field not in body]
+
+        if missing_fields:
+            return generate_response(400, {"error": f"Missing required fields: {', '.join(missing_fields)}"}, debug)
 
         draft_id = f"DRAFT#{int(time.time())}"
         item = {
             "PK": draft_id,
             "SK": "DETAILS",
             "description": body["description"],
-            "players": body["players"],
+            "teamOne": body["teamOne"],
+            "teamTwo": body["teamTwo"],
             "foursomes": body["foursomes"]
         }
 
