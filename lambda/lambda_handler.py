@@ -3,33 +3,33 @@ import boto3
 import time
 import traceback
 import decimal
+import os
 from boto3.dynamodb.conditions import Key
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from typing import List, Dict
 
+# ✅ Load table names from environment variables (Best Practice)
 dynamodb = boto3.resource("dynamodb")
-players_table = dynamodb.Table("GolfOutingPlayersTable")
-courses_table = dynamodb.Table("GolfOutingCoursesTable")
-drafts_table = dynamodb.Table("GolfOutingDraftsTable")
+players_table = dynamodb.Table(os.environ["PLAYERS_TABLE"])
+courses_table = dynamodb.Table(os.environ["COURSES_TABLE"])
+drafts_table = dynamodb.Table(os.environ["DRAFTS_TABLE"])
 
 deserializer = TypeDeserializer()
 serializer = TypeSerializer()
 
 def lambda_handler(event, context):
+    """Main entry point for API Gateway."""
     debug = event.get("queryStringParameters", {}).get("debug", "false").lower() == "true"
 
     try:
-        print("DEBUG: Received full event:", json.dumps(event, indent=2))  # ✅ Log entire event
+        log_debug("Received full event", event, debug)
 
-        if debug:
-            print("DEBUG MODE ENABLED")
-            print("Received Event:", json.dumps(event, indent=2))
+        # Handle CORS preflight
+        if event.get("requestContext", {}).get("http", {}).get("method") == "OPTIONS":
+            return generate_response(200, {"message": "CORS preflight successful"}, debug)
 
         path = event.get("rawPath", "")
         method = event.get("requestContext", {}).get("http", {}).get("method", "")
-
-        if method == "OPTIONS":
-            return generate_response(200, {"message": "CORS preflight successful"}, debug)
 
         routes = {
             "/players": handle_players,
@@ -39,33 +39,33 @@ def lambda_handler(event, context):
 
         for route, handler in routes.items():
             if path.startswith(route):
-                response = handler(event, method, debug)
-                break
-        else:
-            response = generate_response(404, {"error": "Not Found"}, debug)
+                return handler(event, method, debug)
+
+        return generate_response(404, {"error": "Not Found"}, debug)
 
     except Exception as e:
-        response = generate_error_response(e, debug)
-
-    return response
+        return generate_error_response(e, debug)
 
 def handle_players(event, method, debug):
+    """Handles player-related API requests."""
     if method == "GET":
         return get_players(debug)
     if method == "POST":
-        body = json.loads(event["body"])
-        return create_player(body, debug)
+        return process_request_body(event, create_player, debug)
+    if method == "PUT":
+        return process_request_body(event, update_player, debug)
     return generate_response(405, {"error": "Method Not Allowed"}, debug)
 
 def get_players(debug=False):
+    """Retrieves all players from DynamoDB."""
     try:
         response = players_table.scan()
-        players = deserialize_items(response.get("Items", []))
-        return generate_response(200, players, debug)
+        return generate_response(200, deserialize_items(response.get("Items", [])), debug)
     except Exception as e:
         return generate_error_response(e, debug)
 
 def create_player(data, debug=False):
+    """Creates a new player."""
     try:
         item = serialize_item(data)
         item["PK"] = f"PLAYER#{data['id']}"
@@ -75,23 +75,35 @@ def create_player(data, debug=False):
     except Exception as e:
         return generate_error_response(e, debug)
 
+def update_player(data, debug=False):
+    """Updates an existing player."""
+    try:
+        item = serialize_item(data)
+        item["PK"] = f"PLAYER#{data['id']}"
+        item["SK"] = "DETAILS"
+        players_table.put_item(Item=item)
+        return generate_response(200, {"player_id": data["id"], "message": "Player updated"}, debug)
+    except Exception as e:
+        return generate_error_response(e, debug)
+
 def handle_courses(event, method, debug):
+    """Handles course-related API requests."""
     if method == "GET":
         return get_courses(debug)
     if method == "POST":
-        body = json.loads(event["body"])
-        return create_course(body, debug)
+        return process_request_body(event, create_course, debug)
     return generate_response(405, {"error": "Method Not Allowed"}, debug)
 
 def get_courses(debug=False):
+    """Retrieves all courses from DynamoDB."""
     try:
         response = courses_table.scan()
-        courses = deserialize_items(response.get("Items", []))
-        return generate_response(200, courses, debug)
+        return generate_response(200, deserialize_items(response.get("Items", [])), debug)
     except Exception as e:
         return generate_error_response(e, debug)
 
 def create_course(data, debug=False):
+    """Creates a new course."""
     try:
         item = serialize_item(data)
         item["PK"] = f"COURSE#{data['id']}"
@@ -102,102 +114,97 @@ def create_course(data, debug=False):
         return generate_error_response(e, debug)
 
 def handle_drafts(event, method, debug):
+    """Handles draft-related API requests."""
     if method == "GET":
         return get_latest_draft(debug)
     if method == "POST":
-        print("DEBUG: Raw event body before parsing:", event["body"])  # ✅ Print the raw request body
-        try:
-            body = json.loads(event["body"])
-        except json.JSONDecodeError as e:
-            print(f"JSON Decode Error: {str(e)}")
-            return {"statusCode": 400, "body": json.dumps({"error": "Invalid JSON"})}
-
-        body = json.loads(event["body"])
-        return create_draft(body, debug)
+        return process_request_body(event, create_draft, debug)
     return generate_response(405, {"error": "Method Not Allowed"}, debug)
 
 def get_latest_draft(debug=False):
+    """Retrieves the most recent draft from DynamoDB."""
     try:
-        response = drafts_table.scan()
+        response = drafts_table.query(
+            KeyConditionExpression=Key('PK').begins_with('DRAFT#'),
+            ScanIndexForward=False,
+            Limit=1
+        )
         drafts = deserialize_items(response.get("Items", []))
-        return generate_response(200, drafts, debug)
+        return generate_response(200, drafts[0] if drafts else {}, debug)
     except Exception as e:
         return generate_error_response(e, debug)
 
-def create_draft(body, debug=False):  # Renamed "event" to "body"
+def create_draft(body, debug=False):
+    """Creates a new draft."""
     try:
-        print("Received body:", json.dumps(body))  # ✅ Log full body
+        log_debug("Received body", body, debug)
 
-        # ✅ Ensure request body is present
-        if not body:  # No need to check "body" key, "body" is already parsed
-            return generate_response(400, {"error": "Missing request body"}, debug)
+        # ✅ Ensure required fields exist
+        if "description" not in body or "players" not in body or "foursomes" not in body:
+            return generate_response(400, {"error": "Missing required fields"}, debug)
 
-        print("Parsed body:", json.dumps(body))  # ✅ Debug parsed body
-
-        # ✅ Validate required fields
-        if "description" not in body or "players" not in body:
-            return generate_response(400, {"error": "Missing required fields: 'description' and 'players'"}, debug)
-
-        timestamp = int(time.time())
-        draft_id = f"DRAFT#{timestamp}"
-
+        draft_id = f"DRAFT#{int(time.time())}"
         item = {
             "PK": draft_id,
             "SK": "DETAILS",
-            "description": body.get("description", ""),
-            "players": body.get("players", []),
-            "foursomes": []
+            "description": body["description"],
+            "players": body["players"],
+            "foursomes": body["foursomes"]
         }
-        print("DynamoDB Item to Insert:", json.dumps(item))  # ✅ Debug item before insertion
 
-        # ✅ Insert into DynamoDB
+        log_debug("DynamoDB Item to Insert", item, debug)
         drafts_table.put_item(Item=item)
-
         return generate_response(201, {"draft_id": draft_id}, debug)
 
-    except json.JSONDecodeError:
-        print("JSON Decode Error")  # ✅ Log JSON errors
-        return generate_response(400, {"error": "Invalid JSON format"}, debug)
     except Exception as e:
-        print("ERROR:", traceback.format_exc())  # ✅ Print full error traceback
         return generate_error_response(e, debug)
 
+def process_request_body(event, handler, debug):
+    """Safely processes JSON request body and calls the appropriate handler."""
+    try:
+        if "body" not in event or not event["body"]:
+            return generate_response(400, {"error": "Missing request body"}, debug)
+        body = json.loads(event["body"])
+        return handler(body, debug)
+    except json.JSONDecodeError:
+        return generate_response(400, {"error": "Invalid JSON format"}, debug)
 
 def deserialize_items(items) -> List[Dict]:
-    deserialized = []
-    for item in items:
-        deserialized.append({k: convert_decimals(v) for k, v in item.items()})
-    return deserialized
+    """Deserializes DynamoDB items into JSON-compatible format."""
+    return [{k: convert_decimals(v) for k, v in item.items()} for item in items]
 
 def generate_response(status_code, body, debug=False):
-    response_body = body if isinstance(body, str) else json.dumps(convert_decimals(body))
+    """Formats API Gateway-compatible responses."""
     response = {
         "statusCode": status_code,
         "headers": {
-            "Access-Control-Allow-Origin": "*",  # Allow all origins
+            "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE",
             "Access-Control-Allow-Headers": "Content-Type,Authorization",
             "Access-Control-Allow-Credentials": "true"
         },
-        "body": response_body
+        "body": json.dumps(body)
     }
-    if debug:
-        print("Response:", json.dumps(response, indent=2))
+    log_debug("Response", response, debug)
     return response
 
 def generate_error_response(exception, debug=False):
-    error_details = {
-        "error": str(exception),
-        "traceback": traceback.format_exc()
-    }
-    print("ERROR OCCURRED:", json.dumps(error_details, indent=2))
-    return generate_response(500, {"error": "Internal Server Error", "debug_info": error_details}, debug)
+    """Handles error responses and logs stack traces."""
+    error_details = {"error": str(exception), "traceback": traceback.format_exc()}
+    log_debug("ERROR OCCURRED", error_details, debug)
+    return generate_response(500, {"error": "Internal Server Error", "details": error_details}, debug)
+
+def log_debug(message, data, debug):
+    """Logs debug information when enabled."""
+    if debug:
+        print(f"DEBUG: {message}: {json.dumps(data, indent=2)}")
 
 def convert_decimals(obj):
+    """Converts DynamoDB decimals to integers or floats."""
     if isinstance(obj, list):
         return [convert_decimals(i) for i in obj]
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         return {k: convert_decimals(v) for k, v in obj.items()}
-    elif isinstance(obj, decimal.Decimal):
+    if isinstance(obj, decimal.Decimal):
         return int(obj) if obj % 1 == 0 else float(obj)
     return obj
