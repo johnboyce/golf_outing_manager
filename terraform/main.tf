@@ -338,7 +338,9 @@ resource "aws_lambda_function" "create_draft_lambda" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE = "GolfOutingDraftsTable"
+      DYNAMODB_PLAYERS_TABLE = "GolfOutingPlayersTable"
+      DYNAMODB_COURSES_TABLE = "GolfOutingCoursesTable"
+      DYNAMODB_DRAFTS_TABLE  = "GolfOutingDraftsTable"
     }
   }
 
@@ -361,7 +363,9 @@ resource "aws_lambda_function" "get_latest_draft_lambda" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE = "GolfOutingDraftsTable"
+      DYNAMODB_PLAYERS_TABLE = "GolfOutingPlayersTable"
+      DYNAMODB_COURSES_TABLE = "GolfOutingCoursesTable"
+      DYNAMODB_DRAFTS_TABLE  = "GolfOutingDraftsTable"
     }
   }
 
@@ -384,7 +388,9 @@ resource "aws_lambda_function" "regenerate_foursomes_lambda" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE = "GolfOutingDraftsTable"
+      DYNAMODB_PLAYERS_TABLE = "GolfOutingPlayersTable"
+      DYNAMODB_COURSES_TABLE = "GolfOutingCoursesTable"
+      DYNAMODB_DRAFTS_TABLE  = "GolfOutingDraftsTable"
     }
   }
 
@@ -407,7 +413,9 @@ resource "aws_lambda_function" "finalize_draft_lambda" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE = "GolfOutingDraftsTable"
+      DYNAMODB_PLAYERS_TABLE = "GolfOutingPlayersTable"
+      DYNAMODB_COURSES_TABLE = "GolfOutingCoursesTable"
+      DYNAMODB_DRAFTS_TABLE  = "GolfOutingDraftsTable"
     }
   }
 
