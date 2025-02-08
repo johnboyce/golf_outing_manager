@@ -7,13 +7,31 @@ $(document).ready(() => {
 function initializeDraftTab() {
     console.log('Initializing Draft Tab...');
     fetchPlayersForDraft();
+    fetchLatestDraft();  // ✅ Fetch the latest draft on load
 
     $('#start-draft-btn').on('click', startDraft);
     $('#commission-draft-btn').on('click', commissionDraft);
     $('#start-over-btn').on('click', resetDraft);
     $("#save-draft-btn").on('click', saveDraft);
-
 }
+
+function fetchLatestDraft() {
+    console.log("Fetching latest draft...");
+    $.getJSON(`${API_GATEWAY_URL}/drafts`)
+        .done(draft => {
+            console.log("Latest draft fetched:", draft);
+
+            // ✅ Store the draft data in StateManager
+            StateManager.set('draftData', draft);
+
+            // ✅ Update UI with the latest draft data
+            updateDraftUI();
+        })
+        .fail(() => {
+            console.warn("No previous drafts found or error retrieving draft.");
+        });
+}
+
 
 function resetDropdown($dropdown) {
     $dropdown.empty().append('<option value="">Select Captain</option>');
@@ -286,14 +304,26 @@ function updateUIAfterReset() {
 
 function updateDraftUI() {
     const draftData = StateManager.get('draftData');
-    const availablePlayers = StateManager.get('playerProfiles');
+    if (!draftData) return;
 
-    updateTeamHeaders(draftData);
-    updateAvailablePlayersList(availablePlayers, draftData.currentDraftTurn);
+    console.log("Updating UI with draft data:", draftData);
+
+    // ✅ Populate Captains
+    $('#team-one-captain-selector').val(draftData.teamOne.captain.id);
+    $('#team-two-captain-selector').val(draftData.teamTwo.captain.id);
+
+    // ✅ Populate Teams
     updateTeamLists(draftData.teamOne.players, draftData.teamTwo.players);
 
-    toggleCommissionDraftButton(availablePlayers.length === 0);
+    // ✅ Populate Foursomes
+    updateFoursomesUI(draftData.foursomes);
+
+    // ✅ Enable appropriate buttons based on draft state
+    $('#start-draft-btn').prop('disabled', draftData.draftStarted);
+    $('#start-over-btn').prop('disabled', !draftData.draftStarted);
+    $('#commission-draft-btn').prop('disabled', draftData.foursomes.length === 0);
 }
+
 
 function updateTeamHeaders(draftData) {
     $('#team-one-header').text(`Team ${draftData.teamOne.captain.nickname}`);

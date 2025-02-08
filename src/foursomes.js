@@ -17,25 +17,34 @@ function initializeFoursomesTab() {
 // Update Foursomes UI
 function updateFoursomesUI(foursomes) {
     const $foursomesContainer = $('#foursomes-container').empty();
+    if (!foursomes || Object.keys(foursomes).length === 0) return;
 
-    Object.entries(foursomes).forEach(([course, players], index) => {
+    Object.entries(foursomes).forEach(([course, groups]) => {
         const courseHeader = `<h3 class="course-header">${formatCourseName(course)}</h3>`;
         const courseGroup = $('<div class="course-group"></div>').append(courseHeader);
 
-        players.forEach((player, groupIndex) => {
-            const playerCard = `
-                <div class="player-card">
-                    <img src="${player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo}" 
-                         alt="${player.team}" class="team-logo">
-                    <span>${player.name} (${player.handicap})</span>
-                </div>
-            `;
-            courseGroup.append(playerCard);
+        groups.forEach((group, groupIndex) => {
+            const groupContainer = $('<div class="foursome-group"></div>');
+
+            group.cartOne.concat(group.cartTwo).forEach(player => {
+                const teamLogo = player.team === 'Team One' ? TEAM_LOGOS.teamOne : TEAM_LOGOS.teamTwo;
+
+                const playerCard = `
+                    <div class="player-card">
+                        <img src="${teamLogo}" alt="${player.team}" class="team-logo">
+                        <span>${player.name} (${player.handicap})</span>
+                    </div>
+                `;
+                groupContainer.append(playerCard);
+            });
+
+            courseGroup.append(groupContainer);
         });
 
         $foursomesContainer.append(courseGroup);
     });
 }
+
 
 // Display No Foursomes Message
 function displayNoFoursomesMessage() {
