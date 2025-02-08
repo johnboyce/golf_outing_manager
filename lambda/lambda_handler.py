@@ -122,17 +122,24 @@ def handle_drafts(event, method, debug):
     return generate_response(405, {"error": "Method Not Allowed"}, debug)
 
 def get_latest_draft(debug=False):
-    """Retrieves the most recent draft from DynamoDB."""
+    """Fetches the latest saved draft."""
     try:
-        response = drafts_table.query(
-            KeyConditionExpression=Key('PK').begins_with('DRAFT#'),
-            ScanIndexForward=False,
-            Limit=1
-        )
+        response = drafts_table.scan()
+
+        # Convert items to usable format
         drafts = deserialize_items(response.get("Items", []))
-        return generate_response(200, drafts[0] if drafts else {}, debug)
+
+        if not drafts:
+            return generate_response(404, {"error": "No drafts found"}, debug)
+
+        # ✅ Sort by timestamp to get the latest draft
+        latest_draft = max(drafts, key=lambda d: int(d["PK"].split("#")[1]))
+
+        return generate_response(200, latest_draft, debug)
+
     except Exception as e:
         return generate_error_response(e, debug)
+
 
 def create_draft(body, debug=False):
     """Creates a new draft."""
