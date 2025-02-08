@@ -19,6 +19,8 @@ def lambda_handler(event, context):
     debug = event.get("queryStringParameters", {}).get("debug", "false").lower() == "true"
 
     try:
+        print("DEBUG: Received full event:", json.dumps(event, indent=2))  # ✅ Log entire event
+
         if debug:
             print("DEBUG MODE ENABLED")
             print("Received Event:", json.dumps(event, indent=2))
@@ -103,6 +105,7 @@ def handle_drafts(event, method, debug):
     if method == "GET":
         return get_latest_draft(debug)
     if method == "POST":
+        print("DEBUG: Raw event body before parsing:", event["body"])  # ✅ Print the raw request body
         body = json.loads(event["body"])
         return create_draft(body, debug)
     return generate_response(405, {"error": "Method Not Allowed"}, debug)
