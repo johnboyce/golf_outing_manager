@@ -151,9 +151,9 @@ def create_draft(body, debug=False):
             "PK": draft_id,
             "SK": "DETAILS",
             "description": body["description"],
-            "teamOne": body["teamOne"],
-            "teamTwo": body["teamTwo"],
-            "foursomes": body["foursomes"]
+            "teamOne": convert_to_decimal(body["teamOne"]),   # ✅ Convert float values
+            "teamTwo": convert_to_decimal(body["teamTwo"]),   # ✅ Convert float values
+            "foursomes": convert_to_decimal(body["foursomes"])  # ✅
         }
 
         log_debug("DynamoDB Item to Insert", item, debug)
@@ -211,4 +211,14 @@ def convert_decimals(obj):
         return {k: convert_decimals(v) for k, v in obj.items()}
     if isinstance(obj, decimal.Decimal):
         return int(obj) if obj % 1 == 0 else float(obj)
+    return obj
+
+def convert_to_decimal(obj):
+    """Converts float values to Decimal before storing in DynamoDB."""
+    if isinstance(obj, list):
+        return [convert_to_decimal(i) for i in obj]
+    if isinstance(obj, dict):
+        return {k: convert_to_decimal(v) for k, v in obj.items()}
+    if isinstance(obj, float):
+        return decimal.Decimal(str(obj))  # ✅ Convert float to Decimal (as string first)
     return obj
