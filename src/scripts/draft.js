@@ -73,38 +73,31 @@ function resetDraft() {
 }
 
 function saveDraft() {
-    console.log("Saving draft...");
+    const draftData = StateManager.get('draftData');
 
-    // ✅ Ensure there's a commissioned draft before saving
-    const draftData = StateManager.get("commissionedDraft");
-    if (!draftData) {
-        alert("No draft to save! Please commission a draft first.");
+    if (!draftData.foursomes || draftData.foursomes.length === 0) {
+        alert("No foursomes to save.");
         return;
     }
 
-    // ✅ Prompt user for a custom description
-    const userDescription = prompt("Enter a description for this draft:", draftData.description);
-    if (!userDescription) {
-        alert("Draft save cancelled.");
-        return;
-    }
-
-    const draftPayload = {
-        timestamp: draftData.timestamp,
-        description: userDescription,
+    const requestBody = {
+        timestamp: draftData.timestamp,  // ✅ Use stored timestamp
+        description: draftData.description, // ✅ Use stored description
+        teamOne: draftData.teamOne,
+        teamTwo: draftData.teamTwo,
         foursomes: draftData.foursomes
     };
 
-    // ✅ Send the draft data to API Gateway for persistence
+    console.log("Saving draft:", requestBody);
+
     $.ajax({
         url: API_GATEWAY_URL + "/drafts",
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify(draftPayload),
+        data: JSON.stringify(requestBody),
         success: function (response) {
             alert("Draft saved successfully!");
-            console.log("Draft saved response:", response);
-            $('#save-draft-btn').prop('disabled', true); // ✅ Disable after saving
+            console.log("API Response:", response);
         },
         error: function (xhr, status, error) {
             console.error("Error saving draft:", error);
@@ -112,7 +105,6 @@ function saveDraft() {
         }
     });
 }
-
 
 
 function getCurrentFoursomes() {

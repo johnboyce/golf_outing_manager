@@ -527,3 +527,25 @@ resource "aws_lambda_permission" "allow_api_gateway_finalize_draft" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.golf_outing_api.execution_arn}/*"
 }
+
+resource "aws_dynamodb_table" "golf_outing_drafts" {
+  name           = "GolfOutingDraftsTable"
+  billing_mode   = "PAY_PER_REQUEST"  # ✅ Adjust if you need provisioned capacity
+  hash_key       = "PK"
+  range_key      = "SK"
+
+  attribute {
+    name = "PK"
+    type = "S"
+  }
+
+  attribute {
+    name = "SK"
+    type = "S"
+  }
+
+  tags = {
+    Name        = "Golf Outing Drafts Table"
+    Environment = "Production"
+  }
+}

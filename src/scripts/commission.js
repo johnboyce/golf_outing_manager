@@ -8,7 +8,6 @@ function initializeCommissionTab() {
     $('#commission-draft-btn').on('click', commissionDraft);
 }
 
-// Commission Draft
 // Commission Draft (No Persistence Yet)
 function commissionDraft() {
     console.log('Commissioning draft...');
@@ -20,29 +19,21 @@ function commissionDraft() {
         return;
     }
 
-    // ✅ Generate foursomes and save to state
+    const timestamp = new Date().toISOString();
+    const description = `Commissioned Draft - ${new Date().toLocaleString()}`;
+
+    // ✅ Generate and save foursomes
     const foursomes = generateFoursomes();
-    StateManager.updateDraftData({ foursomes });
+    StateManager.updateDraftData({ timestamp, description, foursomes });
 
     console.log("Foursomes generated and saved:", foursomes);
-
-    // ✅ Store commissioned draft in memory (DO NOT persist it yet)
-    StateManager.set("commissionedDraft", {
-        timestamp: new Date().toISOString(),
-        description: `Commissioned Draft - ${new Date().toLocaleString()}`,
-        foursomes: foursomes
-    });
-
-    // ✅ Ensure UI updates after commission
     updateDraftTabUI();
-    updateFoursomesTab();
-
-    // ✅ Enable "Save Draft" button
+    // ✅ Enable "Save Draft" button after commission
     $('#save-draft-btn').prop('disabled', false);
 
-    // ✅ Show success message
     $('#draft-turn-banner').html('<div class="alert alert-success">Draft commissioned successfully! Now you can save it.</div>');
 }
+
 
 function updateDraftTabUI() {
     console.log("Updating Draft Tab UI...");
