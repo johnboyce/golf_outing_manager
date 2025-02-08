@@ -81,8 +81,8 @@ function saveDraft() {
     }
 
     const requestBody = {
-        timestamp: draftData.timestamp,  // ✅ Use stored timestamp
-        description: draftData.description, // ✅ Use stored description
+        timestamp: draftData.timestamp || new Date().toISOString(), // ✅ Ensure timestamp is present
+        description: draftData.description || "Untitled Draft" + draftData.timestamp,  // ✅ Provide a default description
         teamOne: draftData.teamOne,
         teamTwo: draftData.teamTwo,
         foursomes: draftData.foursomes
@@ -95,30 +95,49 @@ function saveDraft() {
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify(requestBody),
-        success: function (response) {
-            alert("Draft saved successfully!");
-            console.log("API Response:", response);
+        success: function (response, status, xhr) {
+            if (xhr.status === 201) {
+                alert("Draft saved successfully!");
+                console.log("API Response:", response);
+            } else {
+                console.warn("Unexpected API response:", response);
+                alert("Draft may not have been saved correctly. Please check.");
+            }
         },
-        error: function (xhr, status, error) {
-            console.error("Error saving draft:", error);
-            alert("Failed to save draft.");
+        error: function (xhr) {
+            console.error("Error saving draft:", xhr.responseText);
+            let message = "Failed to save draft.";
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                message += ` Error: ${xhr.responseJSON.error}`;
+            }
+            alert(message);
         }
     });
 }
 
 
+
 function getCurrentFoursomes() {
-    // Implement logic to retrieve the current state of foursomes
-    // Example: extracting from the UI
     let foursomes = [];
+
     $(".foursome").each(function () {
         let players = $(this).find(".player").map(function () {
-            return $(this).text();
+            return $(this).attr("data-player-id"); // ✅ Ensure it uses IDs
         }).get();
-        foursomes.push(players);
+
+        if (players.length === 4) {
+            foursomes.push({
+                cartOne: [players[0], players[1]],
+                cartTwo: [players[2], players[3]]
+            });
+        } else {
+            console.warn("Skipping invalid foursome:", players);
+        }
     });
-    return foursomes;
+
+    return { lighthouse: foursomes };
 }
+
 
 /** ========================== DRAFT LOGIC ========================== **/
 
@@ -223,8 +242,14 @@ function populateCaptainSelectors(players) {
 }
 
 function validateCaptainSelection(players, $teamOneSelector, $teamTwoSelector, $startDraftButton) {
-    const teamOneCaptain = players.find(player => player.id === $teamOneSelector.val());
-    const teamTwoCaptain = players.find(player => player.id === $teamTwoSelector.val());
+    const teamOneCaptain = players.find(player => player.id === $teamOneSelector.val()) || null;
+    const teamTwoCaptain = players.find(player => player.id === $teamTwoSelector.val()) || null;
+
+    // ✅ Ensure captains are not null before setting them
+    if (!teamOneCaptain || !teamTwoCaptain || teamOneCaptain.id === teamTwoCaptain.id) {
+        $startDraftButton.prop('disabled', true);
+        return;
+    }
 
     StateManager.updateDraftData({
         teamOne: { ...StateManager.get('draftData').teamOne, captain: teamOneCaptain },

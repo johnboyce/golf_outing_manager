@@ -10,9 +10,9 @@ from typing import List, Dict
 
 # ✅ Load table names from environment variables (Best Practice)
 dynamodb = boto3.resource("dynamodb")
-players_table = dynamodb.Table(os.environ["PLAYERS_TABLE"])
-courses_table = dynamodb.Table(os.environ["COURSES_TABLE"])
-drafts_table = dynamodb.Table(os.environ["DRAFTS_TABLE"])
+players_table = dynamodb.Table(os.environ["DYNAMODB_PLAYERS_TABLE"])
+courses_table = dynamodb.Table(os.environ["DYNAMODB_COURSES_TABLE"])
+drafts_table = dynamodb.Table(os.environ["DYNAMODB_DRAFTS_TABLE"])
 
 deserializer = TypeDeserializer()
 serializer = TypeSerializer()
