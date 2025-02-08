@@ -124,15 +124,14 @@ def get_latest_draft(debug=False):
     except Exception as e:
         return generate_error_response(e, debug)
 
-def create_draft(event, debug=False):
+def create_draft(body, debug=False):  # Renamed "event" to "body"
     try:
-        print("Received event:", json.dumps(event))  # ✅ Log full event
+        print("Received body:", json.dumps(body))  # ✅ Log full body
 
         # ✅ Ensure request body is present
-        if "body" not in event or not event["body"]:
+        if not body:  # No need to check "body" key, "body" is already parsed
             return generate_response(400, {"error": "Missing request body"}, debug)
 
-        body = json.loads(event["body"])
         print("Parsed body:", json.dumps(body))  # ✅ Debug parsed body
 
         # ✅ Validate required fields
