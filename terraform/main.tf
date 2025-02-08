@@ -329,7 +329,7 @@ resource "aws_lambda_function" "create_draft_lambda" {
   function_name = "create_draft_lambda"
   runtime       = "python3.9"
   role          = aws_iam_role.golf_outing_lambda_role.arn
-  handler       = "lambda.create_draft"
+  handler       = "lambda_handler.lambda_handler"
   s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
   s3_key        = aws_s3_object.lambda_zip.key
 
@@ -352,7 +352,7 @@ resource "aws_lambda_function" "get_latest_draft_lambda" {
   function_name = "get_latest_draft_lambda"
   runtime       = "python3.9"
   role          = aws_iam_role.golf_outing_lambda_role.arn
-  handler       = "lambda.get_latest_draft"
+  handler       = "lambda_handler.lambda_handler"
   s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
   s3_key        = aws_s3_object.lambda_zip.key
 
@@ -375,7 +375,7 @@ resource "aws_lambda_function" "regenerate_foursomes_lambda" {
   function_name = "regenerate_foursomes_lambda"
   runtime       = "python3.9"
   role          = aws_iam_role.golf_outing_lambda_role.arn
-  handler       = "lambda.regenerate_foursomes"
+  handler       = "lambda_handler.lambda_handler"
   s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
   s3_key        = aws_s3_object.lambda_zip.key
 
@@ -398,7 +398,7 @@ resource "aws_lambda_function" "finalize_draft_lambda" {
   function_name = "finalize_draft_lambda"
   runtime       = "python3.9"
   role          = aws_iam_role.golf_outing_lambda_role.arn
-  handler       = "lambda.finalize_draft"
+  handler       = "lambda_handler.lambda_handler"
   s3_bucket     = aws_s3_bucket.lambda_deployment_bucket.id
   s3_key        = aws_s3_object.lambda_zip.key
 
