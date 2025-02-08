@@ -20,31 +20,76 @@ function commissionDraft() {
         return;
     }
 
-    // ✅ Generate foursomes and save them to state
+    // ✅ Generate foursomes and save to state
     const foursomes = generateFoursomes();
     StateManager.updateDraftData({ foursomes });
 
     console.log("Foursomes generated and saved:", foursomes);
 
-    // ✅ Store commissioned draft in memory but DO NOT persist it yet
+    // ✅ Store commissioned draft in memory (DO NOT persist it yet)
     StateManager.set("commissionedDraft", {
         timestamp: new Date().toISOString(),
         description: `Commissioned Draft - ${new Date().toLocaleString()}`,
         foursomes: foursomes
     });
 
-    // ✅ Update the UI to show the new foursomes
+    // ✅ Ensure UI updates after commission
+    updateDraftTabUI();
     updateFoursomesTab();
 
-    // ✅ Enable "Save Draft" button after commission is complete
+    // ✅ Enable "Save Draft" button
     $('#save-draft-btn').prop('disabled', false);
 
+    // ✅ Show success message
     $('#draft-turn-banner').html('<div class="alert alert-success">Draft commissioned successfully! Now you can save it.</div>');
-    $('#commission-draft-btn').prop('disabled', false).removeClass('d-none');
-    $('#foursomes-tab').click();
-    $('#draft-tab').addClass('d-none');
-    $('#foursomes-tab').removeClass('d-none');
 }
+
+function updateDraftTabUI() {
+    console.log("Updating Draft Tab UI...");
+
+    const draftData = StateManager.get('draftData');
+
+    if (!draftData.teamOne.captain || !draftData.teamTwo.captain) {
+        console.error("Captains are missing, unable to update Draft Tab.");
+        return;
+    }
+
+    const $draftTabContent = $('#draft-section').empty().removeClass('d-none');
+
+    const teamOneHTML = `
+        <div class="col-md-6">
+            <h3 class="text-center text-primary">Team ${draftData.teamOne.captain.nickname}</h3>
+            <div class="text-center mb-3">
+                <img src="${draftData.teamOne.captain.teamLogo}" class="team-logo" alt="Team One Logo" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid #007bff;">
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item active text-white bg-primary">${draftData.teamOne.captain.name} (Captain)</li>
+                ${draftData.teamOne.players.map(player => `
+                    <li class="list-group-item">${player.name} (${player.handicap})</li>
+                `).join("")}
+            </ul>
+        </div>
+    `;
+
+    const teamTwoHTML = `
+        <div class="col-md-6">
+            <h3 class="text-center text-danger">Team ${draftData.teamTwo.captain.nickname}</h3>
+            <div class="text-center mb-3">
+                <img src="${draftData.teamTwo.captain.teamLogo}" class="team-logo" alt="Team Two Logo" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid #dc3545;">
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item active text-white bg-danger">${draftData.teamTwo.captain.name} (Captain)</li>
+                ${draftData.teamTwo.players.map(player => `
+                    <li class="list-group-item">${player.name} (${player.handicap})</li>
+                `).join("")}
+            </ul>
+        </div>
+    `;
+
+    $draftTabContent.append(`<div class="row">${teamOneHTML}${teamTwoHTML}</div>`);
+}
+
+
 
 
 
@@ -52,44 +97,76 @@ function commissionDraft() {
 // Generate Foursomes
 function generateFoursomes() {
     console.log('Generating foursomes...');
+
     const draftData = StateManager.get('draftData');
     const courses = StateManager.get('courses');
     const allFoursomes = {};
 
+    // ✅ Get team captain logos
+    const teamOneLogo = draftData.teamOne.captain.teamLogo || "default_logo.png";
+    const teamTwoLogo = draftData.teamTwo.captain.teamLogo || "default_logo.png";
+
     courses.forEach(course => {
         const courseFoursomes = [];
+
+        // Shuffle the teams independently for this course
         const shuffledTeamOne = StateManager.shuffleArray([...draftData.teamOne.players]);
         const shuffledTeamTwo = StateManager.shuffleArray([...draftData.teamTwo.players]);
+
+        // Clone the shuffled teams to avoid modifying the original arrays
         const teamOnePlayers = [...shuffledTeamOne];
         const teamTwoPlayers = [...shuffledTeamTwo];
 
+        // Generate balanced foursomes for the course
         while (teamOnePlayers.length >= 2 && teamTwoPlayers.length >= 2) {
-            const [cartOne, cartTwo] = assignCarts(teamOnePlayers, teamTwoPlayers);
+            const [cartOne, cartTwo] = assignCarts(teamOnePlayers, teamTwoPlayers, teamOneLogo, teamTwoLogo);
             courseFoursomes.push({ cartOne, cartTwo });
         }
 
+        // Log any unassigned players for debugging
+        if (teamOnePlayers.length > 0 || teamTwoPlayers.length > 0) {
+            console.warn(`Extra players for course ${course.name}:`, { teamOnePlayers, teamTwoPlayers });
+        }
+
+        // Add the generated foursomes to the course
         allFoursomes[course.id] = courseFoursomes;
     });
 
+    // Update the draft data with generated foursomes
+    StateManager.updateDraftData({ foursomes: allFoursomes });
     console.log('Foursomes generated:', allFoursomes);
-    return allFoursomes; // ✅ Now returns the generated foursomes
+
+    return allFoursomes;
 }
 
-
-
-
-
-function assignCarts(teamOnePlayers, teamTwoPlayers) {
+function assignCarts(teamOnePlayers, teamTwoPlayers, teamOneLogo, teamTwoLogo) {
     const cartOne = [];
     const cartTwo = [];
 
-    if (teamOnePlayers.length > 0) cartOne.push(teamOnePlayers.shift());
-    if (teamTwoPlayers.length > 0) cartOne.push(teamTwoPlayers.shift());
-    if (teamOnePlayers.length > 0) cartTwo.push(teamOnePlayers.shift());
-    if (teamTwoPlayers.length > 0) cartTwo.push(teamTwoPlayers.shift());
+    if (teamOnePlayers.length > 0) {
+        let player = teamOnePlayers.shift();
+        player.teamLogo = teamOneLogo; // ✅ Assign team captain's logo
+        cartOne.push(player);
+    }
+    if (teamTwoPlayers.length > 0) {
+        let player = teamTwoPlayers.shift();
+        player.teamLogo = teamTwoLogo; // ✅ Assign team captain's logo
+        cartOne.push(player);
+    }
+    if (teamOnePlayers.length > 0) {
+        let player = teamOnePlayers.shift();
+        player.teamLogo = teamOneLogo; // ✅ Assign team captain's logo
+        cartTwo.push(player);
+    }
+    if (teamTwoPlayers.length > 0) {
+        let player = teamTwoPlayers.shift();
+        player.teamLogo = teamTwoLogo; // ✅ Assign team captain's logo
+        cartTwo.push(player);
+    }
 
     return [cartOne, cartTwo];
 }
+
 
 
 
