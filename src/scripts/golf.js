@@ -58,8 +58,12 @@ function setupTabNavigation() {
         if (targetTab === '#foursomes-tab') {
             console.log("Foursome tab clicked.");
 
-            $('#foursomes-section').removeClass('d-none'); // Ensure Foursome UI is visible
-
+            // ✅ Ensure the Foursomes section is visible
+            if ($("#foursomes-section").hasClass("d-none")) {
+                console.log("Making Foursomes UI visible...");
+                updateDraftTabUI();
+                $("#foursomes-section").removeClass("d-none");
+            }
             const draftData = StateManager.get("draftData");
 
             if (draftData && draftData.foursomes) {
