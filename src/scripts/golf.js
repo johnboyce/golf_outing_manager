@@ -37,6 +37,45 @@ function setupTabNavigation() {
         if (targetTab === '#courses-tab') {
             loadCourses();
         }
+        // Load latest draft when "Draft" tab is clicked
+        if (targetTab === '#drafts-tab') {
+            console.log("Draft tab clicked. Checking for latest draft...");
+            // ✅ Show the Draft UI (if hidden)
+            $('#draft-section').removeClass('d-none');
+            const draftData = StateManager.get("draftData");
+            if (draftData) {
+                console.log("Existing draft data found. Updating UI...");
+                updateDraftUI();  // ✅ Update UI if draft is already stored
+                updateDraftTabUI();
+            } else {
+                console.log("No draft data found. Fetching latest draft...");
+                // loadLatestDraft();  // ✅ Fetch latest draft from API
+            }
+        }
+
+        // ✅ Load the latest foursomes when the "Foursomes" tab is clicked
+        // ✅ Load Foursome UI only if needed
+        if (targetTab === '#foursomes-tab') {
+            console.log("Foursome tab clicked.");
+
+            $('#foursomes-section').removeClass('d-none'); // Ensure Foursome UI is visible
+
+            const draftData = StateManager.get("draftData");
+
+            if (draftData && draftData.foursomes) {
+                console.log("Updating Foursome UI with existing draft data...");
+                updateFoursomesUI(draftData.foursomes);
+            } else {
+                console.log("No draft found, fetching latest draft...");
+                fetchLatestDraft(() => {
+                    const updatedDraft = StateManager.get("draftData");
+                    if (updatedDraft?.foursomes) {
+                        updateFoursomesUI(updatedDraft.foursomes);
+                    }
+                });
+            }
+        }
+
     });
 
     // Load the default tab (Players Tab)

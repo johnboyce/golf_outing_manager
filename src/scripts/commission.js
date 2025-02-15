@@ -159,6 +159,52 @@ function assignCarts(teamOnePlayers, teamTwoPlayers, teamOneLogo, teamTwoLogo) {
 }
 
 
+function updateFoursomesUI(foursomes) {
+    const $foursomesContainer = $('#foursomes-container').empty();
+    if ($("#foursomes-section").hasClass("d-none")) {
+        console.log("Making Foursomes UI visible...");
+        $("#foursomes-section").removeClass("d-none");
+    }
+
+    if (!foursomes || Object.keys(foursomes).length === 0) {
+        $foursomesContainer.html('<p>No foursomes available.</p>');
+        return;
+    }
+
+    console.log("Rendering foursomes UI...", foursomes);
+
+    Object.entries(foursomes).forEach(([course, groups]) => {
+        const courseHeader = `<h3 class="course-header">${course}</h3>`;
+        const courseGroup = $('<div class="course-group"></div>').append(courseHeader);
+
+        groups.forEach((group, index) => {
+            const groupContainer = $('<div class="foursome-group"></div>');
+
+            group.cartOne.forEach(player => {
+                groupContainer.append(renderPlayerCard(player, "cartOne"));
+            });
+
+            group.cartTwo.forEach(player => {
+                groupContainer.append(renderPlayerCard(player, "cartTwo"));
+            });
+
+            courseGroup.append(groupContainer);
+        });
+
+        $foursomesContainer.append(courseGroup);
+    });
+}
+
+function renderPlayerCard(player, cart) {
+    return `
+        <div class="player-card">
+            <span>${player}</span> 
+            <small class="cart-label">(${cart})</small>
+        </div>
+    `;
+}
+
+
 
 
 // Update Foursomes Tab

@@ -8,29 +8,34 @@ function initializeDraftTab() {
     console.log('Initializing Draft Tab...');
     fetchPlayersForDraft();
     fetchLatestDraft();  // ✅ Fetch the latest draft on load
-
     $('#start-draft-btn').on('click', startDraft);
     $('#commission-draft-btn').on('click', commissionDraft);
     $('#start-over-btn').on('click', resetDraft);
     $("#save-draft-btn").on('click', saveDraft);
 }
 
-function fetchLatestDraft() {
-    console.log("Fetching latest draft...");
-    $.getJSON(`${API_GATEWAY_URL}/drafts`)
+function fetchLatestDraft(callback) {
+    console.log("Fetching latest draft from API...");
+
+    $.getJSON(`${API_GATEWAY_URL}/drafts/latest`)
         .done(draft => {
-            console.log("Latest draft fetched:", draft);
+            console.log("Latest draft loaded:", draft);
 
-            // ✅ Store the draft data in StateManager
-            StateManager.set('draftData', draft);
+            // ✅ Store the latest draft globally
+            StateManager.set("draftData", draft);
 
-            // ✅ Update UI with the latest draft data
-            updateDraftUI();
+            // ✅ Update Draft UI
+            updateDraftTabUI();
+
+            // ✅ Update Foursomes UI if needed
+            if (callback) callback();
         })
         .fail(() => {
-            console.warn("No previous drafts found or error retrieving draft.");
+            console.error("Error fetching latest draft.");
+            alert("Failed to load the latest draft.");
         });
 }
+
 
 
 function resetDropdown($dropdown) {
